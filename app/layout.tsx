@@ -1,16 +1,33 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import localFont from "next/font/local";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
+const oldschool = localFont({
+  src: [
+    {
+      path: "../public/fonts/oldschool/OldschoolGrotesk-NormalLight.otf",
+      weight: "200",
+    },
+    {
+      path: "../public/fonts/oldschool/OldschoolGrotesk-NormalRegular.otf",
+      weight: "300",
+    },
+    {
+      path: "../public/fonts/oldschool/OldschoolGrotesk-NormalMedium.otf",
+      weight: "400",
+    },
+    {
+      path: "../public/fonts/oldschool/OldschoolGrotesk-NormalBook.otf",
+      weight: "500",
+    },
+    {
+      path: "../public/fonts/oldschool/OldschoolGrotesk-NormalBold.otf",
+      weight: "600",
+    },
+  ],
+  variable: "--font-oldschool",
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
 
 export const metadata: Metadata = {
   title: "Create Next App",
@@ -25,7 +42,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${oldschool.variable} antialiased font-poppins font-oldschool`}
       >
         {children}
       </body>
