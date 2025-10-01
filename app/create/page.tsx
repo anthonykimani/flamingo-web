@@ -2,6 +2,7 @@
 
 import ChooseCanvasType from '@/components/custom/choose_canvas_type';
 import ChooseGameType from '@/components/custom/choose_game_type'
+import CreateQuiz from '@/components/custom/create_quiz';
 import { CreateGameStep } from '@/enums/create_game_step';
 import React, { useState } from 'react'
 
@@ -37,13 +38,13 @@ const GameType = () => {
       case CreateGameStep.GAMECANVAS:
         return (
           <div className='canvas-type-background h-screen bg-no-repeat bg-cover flex justify-center items-center p-3'>
-            <ChooseCanvasType />
+            <ChooseCanvasType onSelect={handleNextStep} />
           </div>
         )
       case CreateGameStep.GAMEFORM:
         return (
-          <div className='choose-game-type-background h-screen bg-no-repeat bg-cover flex justify-center items-center p-3'>
-            <ChooseCanvasType />
+          <div className='quiz-form-background h-screen bg-no-repeat bg-cover flex justify-center items-center p-3'>
+            <CreateQuiz />
           </div>
         )
     }

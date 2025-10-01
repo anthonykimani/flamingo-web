@@ -5,14 +5,14 @@ import { Button } from '../ui/button'
 import { FilePlusIcon, RankingIcon, RobotIcon, StrategyIcon, UsersThreeIcon } from '@phosphor-icons/react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card'
 
-const ChooseCanvasType = () => {
+const ChooseCanvasType = ({ onSelect }: { onSelect: () => void }) => {
     return (
         <div className="flex flex-col h-1/2 justify-around items-center">
             <h1 className="font-[Oi] text-white [text-stroke:_2px_black] text-3xl sm:text-6xl text-center">
                 Create New Game
             </h1>
             <div className="flex flex-col sm:flex-row justify-center w-full">
-                <Card className='flex flex-row m-2'>
+                <Card className='flex flex-row m-2 cursor-pointer'>
                     <CardHeader>
                         <RobotIcon size={32} />
                     </CardHeader>
@@ -26,7 +26,7 @@ const ChooseCanvasType = () => {
                     </CardContent>
                 </Card>
 
-                <Card className='flex flex-row m-2'>
+                <Card className='flex flex-row m-2 cursor-pointer' onClick={onSelect}>
                     <CardHeader>
                         <FilePlusIcon size={32} />
                     </CardHeader>
