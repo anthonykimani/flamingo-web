@@ -28,6 +28,16 @@ const oldschool = localFont({
   variable: "--font-oldschool",
 });
 
+const oi = localFont({
+  src: [
+    {
+      path: "../public/fonts/oi/Oi-Regular.ttf",
+      weight: "400"
+    }
+  ], 
+  variable: "--font-oi"
+})
+
 
 export const metadata: Metadata = {
   title: "Create Next App",

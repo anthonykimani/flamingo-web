@@ -1,8 +1,14 @@
-@import url("https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&family=Poppins&display=swap");
-
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=Oi&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
 @import "tailwindcss";
 @import "tw-animate-css";
 
+*{
+  /* border: 1px solid red; */
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+}
+
+@custom-variant dark (&:is(.dark *));
 
 @font-face {
   font-family: "Oldschool";
@@ -11,6 +17,12 @@
   src: url("../public/fonts/oldschool/OldschoolGrotesk-NormalRegular.otf") format("otf");
 }
 
+@font-face {
+  font-family: "Oi";
+  font-style: normal;
+  font-display: swap;
+  src: url("../public/fonts/oi/Oi-Regular.ttf") format("ttf");
+}
 
 /* @custom-variant dark (&:is(.dark *)); */
 
@@ -20,6 +32,7 @@
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
   --font-oldschool: var(--font-oldschool);
+  --font-oi: var(--font-oi);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -124,6 +137,30 @@
   --sidebar-ring: oklch(0.556 0 0);
 }
 
+@utility start-screen-background {
+  background-image: url("../public/svg/start-screen-background.svg")
+}
+
+@utility game-type-background {
+  background-image: url("../public/svg/game-type-background.svg")
+}
+
+@utility canvas-type-background {
+  background-image: url("../public/svg/canvas-type-background.svg")
+}
+
+@utility quiz-form-background {
+  background-image: url("../public/svg/create-quiz-background.svg")
+}
+
+@utility circle-answer {
+  background-image: url("../public/svg/circle-answer.svg")
+}
+
+@theme {
+  --font-oi-regular: "Oi", serif;
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;
@@ -131,4 +168,16 @@
   body {
     @apply bg-background text-foreground;
   }
+}
+
+@utility text-stroke-2 {
+  -webkit-text-stroke-width: 2px;
+}
+
+@utility text-stroke-black {
+  -webkit-text-stroke-color: black;
+}
+
+@utility text-fill-white {
+  -webkit-text-fill-color: white;
 }
