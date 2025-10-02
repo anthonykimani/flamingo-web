@@ -2,6 +2,12 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
+*{
+  /* border: 1px solid red; */
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+}
+
 @custom-variant dark (&:is(.dark *));
 
 @font-face {
@@ -145,6 +151,10 @@
 
 @utility quiz-form-background {
   background-image: url("../public/svg/create-quiz-background.svg")
+}
+
+@utility circle-answer {
+  background-image: url("../public/svg/circle-answer.svg")
 }
 
 @theme {
