@@ -4,8 +4,8 @@
 
 *{
   /* border: 1px solid red; */
-  scrollbar-width: none; /* Firefox */
-  -ms-overflow-style: none; /* IE and Edge */
+   scrollbar-width: none; /* Firefox */
+   -ms-overflow-style: none; /* IE and Edge */
 }
 
 @custom-variant dark (&:is(.dark *));

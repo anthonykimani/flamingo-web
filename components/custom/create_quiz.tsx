@@ -161,9 +161,9 @@ const CreateQuiz = () => {
     const currentQuestion = quizData.questions[currentQuestionIndex]
 
     return (
-        <div className='flex gap-10'>
+        <div className='flex flex-col md:flex-row gap-10 h-full w-screen'>
             {/* Sidebar with question navigation */}
-            <div className='grid grid-cols-1 items-start max-h-screen overflow-y-auto scrollbar-hide p-2'>
+            <div className='flex flex-row md:flex-col overflow-x-auto md:overflow-x-visible md:overflow-y-auto min-h-[110px]'>
                 {quizData.questions.map((q, index) => (
                     <Button
                         key={q.id}
@@ -204,7 +204,7 @@ const CreateQuiz = () => {
                     onChange={handleQuestionChange}
                 />
 
-                <div className='grid grid-cols-1 sm:grid-cols-2 gap-2'>
+                <div className='grid grid-cols-1 lg:grid-cols-2 gap-2'>
                     {currentQuestion.answers.map((answer, index) => (
                         <Input
                             key={index}
@@ -221,7 +221,7 @@ const CreateQuiz = () => {
                 </div>
 
                 {/* Submit button */}
-                <div className='flex justify-end mt-4 gap-2'>
+                <div className='flex flex-col md:flex-row justify-end mt-4 gap-2'>
                     <Button
                         leftIcon={<XIcon size={24} color='white' />}
                         variant="destructive"

@@ -43,7 +43,7 @@ const GameType = () => {
         )
       case CreateGameStep.GAMEFORM:
         return (
-          <div className='quiz-form-background h-screen bg-no-repeat bg-cover flex justify-center items-center p-3'>
+          <div className='quiz-form-background h-full md:h-screen w-screen bg-no-repeat bg-cover md:flex md:justify-center md:items-center p-1 sm:p-3'>
             <CreateQuiz />
           </div>
         )
