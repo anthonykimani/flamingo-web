@@ -6,6 +6,7 @@ import { Button } from '../ui/button'
 import { JoystickIcon, MagicWandIcon, PlusCircleIcon, XIcon } from '@phosphor-icons/react'
 import Image from 'next/image'
 import { circleAnswer, squareAnswer, starAnswer, triangleAnswer } from '@/lib/svg'
+import { useRouter } from 'next/navigation'
 
 // Types for quiz data
 interface Answer {
@@ -27,7 +28,7 @@ interface QuizData {
 
 const ANSWER_ICONS = [circleAnswer, starAnswer, triangleAnswer, squareAnswer]
 
-const CreateQuiz = () => {
+const CreateQuiz = ({ onSave }: { onSave: () => void }) => {
     const [quizData, setQuizData] = useState<QuizData>({
         title: '',
         questions: [
@@ -45,6 +46,7 @@ const CreateQuiz = () => {
     })
 
     const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0)
+    const router = useRouter();
 
     // Update quiz title
     const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -155,7 +157,7 @@ const CreateQuiz = () => {
     const handleSubmit = () => {
         console.log('Quiz Data:', quizData)
         // Add your submission logic here
-        alert('Quiz submitted! Check console for data.')
+        router.push("/lobby");
     }
 
     const currentQuestion = quizData.questions[currentQuestionIndex]

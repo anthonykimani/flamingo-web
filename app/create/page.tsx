@@ -3,6 +3,7 @@
 import ChooseCanvasType from '@/components/custom/choose_canvas_type';
 import ChooseGameType from '@/components/custom/choose_game_type'
 import CreateQuiz from '@/components/custom/create_quiz';
+import GamePin from '@/components/custom/game_pin';
 import { CreateGameStep } from '@/enums/create_game_step';
 import React, { useState } from 'react'
 
@@ -44,7 +45,7 @@ const GameType = () => {
       case CreateGameStep.GAMEFORM:
         return (
           <div className='quiz-form-background h-full md:h-screen w-screen bg-no-repeat bg-cover md:flex md:justify-center md:items-center p-1 sm:p-3'>
-            <CreateQuiz />
+            <CreateQuiz onSave={handleNextStep} />
           </div>
         )
     }
