@@ -12,13 +12,13 @@ const buttonVariants = cva(
         default:
           "bg-white/70 hover:bg-white text-slate-400 hover:text-black  border-2 border-slate-600 hover:border-slate-800 border-b-6 border-r-6 active:border-b-2 active:border-r-2",
         active:
-          "bg-white text-black border-2 border-slate-800 border-b-6 border-r-6 active:border-b-2 active:border-r-2",
+          "bg-white text-black border-2 border-slate-800 border-b-6 border-r-6 active:border-b-2 active:border-r-2 w-full",
         primary:
           "bg-sky-400 text-primary-foreground hover:bg-sky-400/90 border-sky-500 border-2 border-b-6 border-r-6 active:border-b-2 active:border-r-2",
         outline:
           "bg-white text-sky-500 hover:bg-slate-100",
         destructive:
-          "bg-red-500 text-white border-2 border-slate-800 border-b-6 border-r-6 active:border-b-2 active:border-r-2"
+          "bg-red-500 text-white border-2 border-slate-800 border-b-6 border-r-6 active:border-b-2 active:border-r-2 w-full"
       },
       size: {
         default: "h-9 px-4 py-2 has-[>svg]:px-3",
@@ -26,13 +26,14 @@ const buttonVariants = cva(
         lg: "h-10 rounded-md px-6 has-[>svg]:px-4",
         xl: "h-14 rounded-xl px-8 ",
         gametype: "h-[110px] w-full sm:w-[210px] px-8 m-2",
-        sidebarquestion: "h-[110px] px-16 mb-2 relative w-full",
+        sidebarquestion: "h-[110px] w-full px-16 mb-2",
         icon: "size-9",
       },
       buttoncolor: {
         gametype: "bg-[#2819DB] text-white",
         gameCanvas: "bg-[#DA0202] text-white",
-        transparent: "bg-transparent text-white"
+        transparent: "bg-transparent text-white",
+        gamePin: "bg-[#FF9700] text-white",
       },
       width: {
         full: "w-full",
