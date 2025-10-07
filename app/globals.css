@@ -157,6 +157,10 @@
   background-image: url("../public/svg/circle-answer.svg")
 }
 
+@utility game-pin-background {
+  background-image: url("../public/svg/game-pin-background.svg")
+}
+
 @theme {
   --font-oi-regular: "Oi", serif;
 }

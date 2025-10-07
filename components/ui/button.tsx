@@ -34,6 +34,7 @@ const buttonVariants = cva(
         gameCanvas: "bg-[#DA0202] text-white",
         transparent: "bg-transparent text-white",
         gamePin: "bg-[#FF9700] text-white",
+        darkened: "bg-[#E950BE] text-white"
       },
       width: {
         full: "w-full",
