@@ -24,6 +24,8 @@ const PlayGame = () => {
                     >
                         2 Answers
                     </Button>
+
+                    
                 </div>
                 <div className='grid grid-cols-2 gap-2'>
                     <Button
