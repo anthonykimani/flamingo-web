@@ -161,6 +161,10 @@
   background-image: url("../public/svg/game-pin-background.svg")
 }
 
+@utility result-background {
+  background-image: url("../public/svg/result-background.svg")
+}
+
 @theme {
   --font-oi-regular: "Oi", serif;
 }

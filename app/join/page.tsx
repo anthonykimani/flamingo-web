@@ -5,10 +5,12 @@ import { Card, CardHeader } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { JoinGameStep } from '@/enums/join_game_step'
 import { LegoIcon, SparkleIcon, UserIcon } from '@phosphor-icons/react'
+import { useRouter } from 'next/navigation'
 import React, { useState } from 'react'
 
 const JoinGame = () => {
     const [stepper, setStepper] = useState<JoinGameStep>(JoinGameStep.CHOOSEGAMEMODE);
+    const router = useRouter();
 
     const handleNextStep = () => {
         switch (stepper) {
@@ -47,7 +49,7 @@ const JoinGame = () => {
                                 leftIcon={<SparkleIcon size={28} color='black' />}
                                 variant="active"
                                 size="xl"
-                                onClick={() => handleNextStep()}
+                                onClick={() => router.push("/create")}
                             >
                                 Create New Game
                             </Button>
@@ -62,6 +64,7 @@ const JoinGame = () => {
                         </h1>
                         <div className='flex flex-col justify-end mt-4 gap-2'>
                             <Input
+                                name='gamepin'
                                 className=''
                                 variant="default"
                                 placeholder='Enter Game Pin'
@@ -86,6 +89,7 @@ const JoinGame = () => {
                         </h1>
                         <div className='flex flex-col justify-end mt-4 gap-2'>
                             <Input
+                                name='nickname'
                                 className=''
                                 variant="default"
                                 placeholder='Choose Nickname'
