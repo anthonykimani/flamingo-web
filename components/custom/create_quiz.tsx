@@ -7,39 +7,23 @@ import { JoystickIcon, MagicWandIcon, PlusCircleIcon, XIcon } from '@phosphor-ic
 import Image from 'next/image'
 import { circleAnswer, squareAnswer, starAnswer, triangleAnswer } from '@/lib/svg'
 import { useRouter } from 'next/navigation'
-
-// Types for quiz data
-interface Answer {
-    text: string
-    isCorrect: boolean
-    icon: any
-}
-
-interface Question {
-    id: number
-    question: string
-    answers: Answer[]
-}
-
-interface QuizData {
-    title: string
-    questions: Question[]
-}
+import { addQuiz } from '@/services/quiz_service'
+import { IQuestion, IQuiz } from '@/interfaces/IQuiz'
 
 const ANSWER_ICONS = [circleAnswer, starAnswer, triangleAnswer, squareAnswer]
 
 const CreateQuiz = ({ onSave }: { onSave: () => void }) => {
-    const [quizData, setQuizData] = useState<QuizData>({
+    const [quizData, setQuizData] = useState<IQuiz>({
         title: '',
         questions: [
             {
-                id: 1,
+                questionNumber: 1,
                 question: '',
                 answers: [
-                    { text: '', isCorrect: false, icon: circleAnswer },
-                    { text: '', isCorrect: false, icon: starAnswer },
-                    { text: '', isCorrect: false, icon: triangleAnswer },
-                    { text: '', isCorrect: false, icon: squareAnswer }
+                    { answer: '', correctAnswer: false },
+                    { answer: '', correctAnswer: false },
+                    { answer: '', correctAnswer: false },
+                    { answer: '', correctAnswer: false }
                 ]
             }
         ]
@@ -56,7 +40,7 @@ const CreateQuiz = ({ onSave }: { onSave: () => void }) => {
         }))
     }
 
-    // Update question text
+    // Update question answer
     const handleQuestionChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setQuizData(prev => ({
             ...prev,
@@ -68,7 +52,7 @@ const CreateQuiz = ({ onSave }: { onSave: () => void }) => {
         }))
     }
 
-    // Update answer text
+    // Update answer answer
     const handleAnswerChange = (answerIndex: number, value: string) => {
         setQuizData(prev => ({
             ...prev,
@@ -77,7 +61,7 @@ const CreateQuiz = ({ onSave }: { onSave: () => void }) => {
                     ? {
                         ...q,
                         answers: q.answers.map((a, aIdx) =>
-                            aIdx === answerIndex ? { ...a, text: value } : a
+                            aIdx === answerIndex ? { ...a, answer: value } : a
                         )
                     }
                     : q
@@ -94,7 +78,7 @@ const CreateQuiz = ({ onSave }: { onSave: () => void }) => {
                     ? {
                         ...q,
                         answers: q.answers.map((a, aIdx) =>
-                            aIdx === answerIndex ? { ...a, isCorrect: checked } : a
+                            aIdx === answerIndex ? { ...a, correctAnswer: checked } : a
                         )
                     }
                     : q
@@ -104,14 +88,14 @@ const CreateQuiz = ({ onSave }: { onSave: () => void }) => {
 
     // Add new question
     const handleAddQuestion = () => {
-        const newQuestion: Question = {
-            id: quizData.questions.length + 1,
+        const newQuestion: IQuestion = {
+            questionNumber: quizData.questions.length + 1,
             question: '',
             answers: [
-                { text: '', isCorrect: false, icon: circleAnswer },
-                { text: '', isCorrect: false, icon: starAnswer },
-                { text: '', isCorrect: false, icon: triangleAnswer },
-                { text: '', isCorrect: false, icon: squareAnswer }
+                { answer: '', correctAnswer: false },
+                { answer: '', correctAnswer: false },
+                { answer: '', correctAnswer: false },
+                { answer: '', correctAnswer: false }
             ]
         }
 
@@ -154,9 +138,10 @@ const CreateQuiz = ({ onSave }: { onSave: () => void }) => {
     }
 
     // Submit quiz
-    const handleSubmit = () => {
+    const handleSubmit = async () => {
         console.log('Quiz Data:', quizData)
         // Add your submission logic here
+        await addQuiz(quizData)
         router.push("/lobby");
     }
 
@@ -168,14 +153,14 @@ const CreateQuiz = ({ onSave }: { onSave: () => void }) => {
             <div className='flex flex-row md:flex-col overflow-x-auto md:overflow-x-visible md:overflow-y-auto min-h-[110px]'>
                 {quizData.questions.map((q, index) => (
                     <Button
-                        key={q.id}
+                        key={q.questionNumber}
                         variant={currentQuestionIndex === index ? "active" : "default"}
                         size="sidebarquestion"
                         onClick={() => handleQuestionSelect(index)}
                         onDelete={(e) => handleDeleteQuestion(index, e)}
                         showDelete={quizData.questions.length > 1 && currentQuestionIndex === index}
                     >
-                        Question {q.id}
+                        Question {q.questionNumber}
                     </Button>
                 ))}
                 <Button
@@ -211,12 +196,12 @@ const CreateQuiz = ({ onSave }: { onSave: () => void }) => {
                         <Input
                             key={index}
                             variant="answer"
-                            leftIcon={<Image src={answer.icon} alt="" />}
+                            leftIcon={<Image src={ANSWER_ICONS[index]} alt="" />}
                             placeholder={`Add Answer ${index + 1}`}
                             rightCheckbox={true}
-                            value={answer.text}
+                            value={answer.answer}
                             onChange={(e) => handleAnswerChange(index, e.target.value)}
-                            checkboxChecked={answer.isCorrect}
+                            checkboxChecked={answer.correctAnswer}
                             onCheckboxChange={(checked) => handleCorrectAnswerToggle(index, checked)}
                         />
                     ))}

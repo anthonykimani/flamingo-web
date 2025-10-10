@@ -1,11 +1,19 @@
 'use client'
 
-import React from 'react'
+import React, { useState } from 'react'
 import { Button } from '../ui/button'
 import { Card, CardHeader } from '../ui/card'
 import { UserIcon } from '@phosphor-icons/react'
+import { useRouter } from 'next/navigation'
 
 const GamePin = () => {
+    const [readyToPlay, setReadyToPlay] = useState(true);
+    const router = useRouter();
+
+    const handlePlay = () => {
+        router.push("/game")
+    }
+
     return (
         <div className="flex flex-col p-2 gap-2  h-screen bg-no-repeat bg-cover justify-center items-center">
             <h1 className="font-[Oi] text-white [text-stroke:_2px_black] text-3xl sm:text-8xl ">
@@ -80,7 +88,7 @@ const GamePin = () => {
                     <h3 className='text-white text-xl text-center'> Jyuko </h3>
                 </div>
             </div>
-            <Button variant={"active"} buttoncolor={"gamePin"} className="m-2 text-xl" size={"xl"} >Waiting for Players to Join</Button>
+            {readyToPlay ? <Button onClick={() => handlePlay()} variant={"active"} buttoncolor={"gamePin"} className="m-2 text-xl" size={"xl"} >Press Space to Start</Button> : <Button variant={"active"} buttoncolor={"gamePin"} className="m-2 text-xl" size={"xl"} >Waiting for Players to Join</Button>}
         </div>
     )
 }
