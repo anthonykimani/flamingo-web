@@ -3,17 +3,14 @@
 import ChooseCanvasType from '@/components/custom/choose_canvas_type';
 import ChooseGameType from '@/components/custom/choose_game_type'
 import CreateQuiz from '@/components/custom/create_quiz';
-import GamePin from '@/components/custom/game_pin';
 import { CreateGameStep } from '@/enums/create_game_step';
+import { useRouter } from 'next/navigation';
 import React, { useState } from 'react'
 
 const GameType = () => {
   const [stepper, setStepper] = useState<CreateGameStep>(CreateGameStep.GAMETYPE);
-  const [gameData, setGameData] = useState({
-    gameType: null,
-    canvasData: null,
-    formData: null
-  })
+  const [gameSession, setGameSession] = useState<any>(null)
+  const router = useRouter()
 
   const handleNextStep = () => {
     switch (stepper) {
@@ -24,8 +21,15 @@ const GameType = () => {
         setStepper(CreateGameStep.GAMEFORM)
         break
       case CreateGameStep.GAMEFORM:
+        // This will be handled by CreateQuiz onSave
         break
     }
+  }
+
+  const handleQuizSave = (session: any) => {
+    setGameSession(session)
+    // Navigate to lobby with game session
+    router.push(`/lobby?sessionId=${session.id}&gamePin=${session.gamePin}`)
   }
 
   const renderStep = () => {
@@ -45,14 +49,13 @@ const GameType = () => {
       case CreateGameStep.GAMEFORM:
         return (
           <div className='quiz-form-background h-full md:h-screen w-screen bg-no-repeat bg-cover md:flex md:justify-center md:items-center p-1 sm:p-3'>
-            <CreateQuiz onSave={handleNextStep} />
+            <CreateQuiz onSave={handleQuizSave} />
           </div>
         )
     }
   }
-  return (
-    renderStep()
-  )
+
+  return renderStep()
 }
 
 export default GameType

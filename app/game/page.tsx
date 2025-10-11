@@ -3,77 +3,53 @@
 import { Button } from '@/components/ui/button'
 import { Card, CardHeader } from '@/components/ui/card'
 import { JoystickIcon, SquareIcon, StarIcon, CircleIcon, TriangleIcon } from '@phosphor-icons/react'
-import { useRouter } from 'next/navigation'
-import React, { useState } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
+import React, { useState, useEffect } from 'react'
+import { getQuizById } from '@/services/quiz_service'
+import { IQuiz } from '@/interfaces/IQuiz'
 
-// Dummy questions data - replace this with API data later
-const dummyQuestions = [
-    {
-        id: 1,
-        question: "Who is Satoshi Nakamoto?",
-        timer: 10,
-        options: [
-            { id: 1, text: "Anonymous Bitcoin Creator", icon: SquareIcon },
-            { id: 2, text: "Elon Musk", icon: CircleIcon },
-            { id: 3, text: "Vitalik Buterin", icon: TriangleIcon },
-            { id: 4, text: "Craig Wright", icon: StarIcon }
-        ]
-    },
-    {
-        id: 2,
-        question: "What year was Bitcoin created?",
-        timer: 8,
-        options: [
-            { id: 1, text: "2007", icon: SquareIcon },
-            { id: 2, text: "2009", icon: CircleIcon },
-            { id: 3, text: "2011", icon: TriangleIcon },
-            { id: 4, text: "2013", icon: StarIcon }
-        ]
-    },
-    {
-        id: 3,
-        question: "What is the maximum supply of Bitcoin?",
-        timer: 12,
-        options: [
-            { id: 1, text: "21 million", icon: SquareIcon },
-            { id: 2, text: "100 million", icon: CircleIcon },
-            { id: 3, text: "No limit", icon: TriangleIcon },
-            { id: 4, text: "50 million", icon: StarIcon }
-        ]
-    },
-    {
-        id: 4,
-        question: "What is a blockchain?",
-        timer: 15,
-        options: [
-            { id: 1, text: "Distributed ledger", icon: SquareIcon },
-            { id: 2, text: "Type of cryptocurrency", icon: CircleIcon },
-            { id: 3, text: "Mining software", icon: TriangleIcon },
-            { id: 4, text: "Digital wallet", icon: StarIcon }
-        ]
-    },
-    {
-        id: 5,
-        question: "Which consensus mechanism does Bitcoin use?",
-        timer: 10,
-        options: [
-            { id: 1, text: "Proof of Work", icon: SquareIcon },
-            { id: 2, text: "Proof of Stake", icon: CircleIcon },
-            { id: 3, text: "Delegated PoS", icon: TriangleIcon },
-            { id: 4, text: "Proof of Authority", icon: StarIcon }
-        ]
-    }
-]
+// Icon mapping for answers
+const ANSWER_ICONS = [SquareIcon, StarIcon, TriangleIcon, CircleIcon]
+
 
 const GamePage = () => {
+    const [quizData, setQuizData] = useState<IQuiz | null>(null)
     const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0)
-    const [answersReceived, setAnswersReceived] = useState(2) // Simulated answer count
-    const router = useRouter();
+    const [answersReceived, setAnswersReceived] = useState(0)
+    const [loading, setLoading] = useState(true)
+    const [error, setError] = useState<string | null>(null)
+    
+    const router = useRouter()
+    const searchParams = useSearchParams()
+    // const quizId = searchParams.get('id')
+    const quizId = 'a8a4f067-a6aa-4fc6-9d3c-2a5d21df45e2'
 
-    const currentQuestion = dummyQuestions[currentQuestionIndex]
+    useEffect(() => {
+        const fetchQuiz = async () => {
+            if (!quizId) {
+                setError('No quiz ID provided')
+                setLoading(false)
+                return
+            }
+
+            try {
+                setLoading(true)
+                const response = await getQuizById(quizId)
+                setQuizData(response.payload)
+                setLoading(false)
+            } catch (err) {
+                setError(err instanceof Error ? err.message : 'Failed to load quiz')
+                setLoading(false)
+            }
+        }
+
+        fetchQuiz()
+    }, [quizId])
 
     const handleNextQuestion = () => {
-        if (currentQuestionIndex < dummyQuestions.length - 1) {
+        if (!quizData) return
+
+        if (currentQuestionIndex < quizData.questions.length - 1) {
             setCurrentQuestionIndex(currentQuestionIndex + 1)
             // Reset answers for new question
             setAnswersReceived(Math.floor(Math.random() * 5)) // Random for demo
@@ -81,6 +57,32 @@ const GamePage = () => {
             router.push("/score")
         }
     }
+
+    // Loading state
+    if (loading) {
+        return (
+            <div className='game-pin-background h-screen bg-no-repeat bg-cover flex justify-center items-center'>
+                <Card>
+                    <CardHeader className='text-2xl'>Loading quiz...</CardHeader>
+                </Card>
+            </div>
+        )
+    }
+
+    // Error state
+    if (error || !quizData) {
+        return (
+            <div className='game-pin-background h-screen bg-no-repeat bg-cover flex justify-center items-center'>
+                <Card>
+                    <CardHeader className='text-2xl text-red-500'>
+                        {error || 'Quiz not found'}
+                    </CardHeader>
+                </Card>
+            </div>
+        )
+    }
+
+    const currentQuestion = quizData.questions[currentQuestionIndex]
 
     return (
         <div className='game-pin-background h-screen bg-no-repeat bg-cover flex justify-around '>
@@ -90,9 +92,11 @@ const GamePage = () => {
                         {currentQuestion.question}
                     </CardHeader>
                 </Card>
+                
                 <div className='flex justify-between'>
                     <div className='border-2 border-black p-5 font-[Oi] text-white text-3xl rounded-full bg-[#F24E1E]'>
-                        {currentQuestion.timer}
+                        {/* You can add timer logic here later */}
+                        10
                     </div>
                     <Button
                         variant="active"
@@ -101,24 +105,26 @@ const GamePage = () => {
                         {answersReceived} Answers
                     </Button>
                 </div>
+                
                 <div className='grid grid-cols-2 gap-2'>
-                    {currentQuestion.options.map((option) => {
-                        const IconComponent = option.icon
+                    {currentQuestion.answers.map((answer, index) => {
+                        const IconComponent = ANSWER_ICONS[index % ANSWER_ICONS.length]
                         return (
                             <Button
-                                key={option.id}
+                                key={answer.id}
                                 leftIcon={<IconComponent size={32} />}
                                 variant="active"
                                 size="xl"
                             >
-                                {option.text}
+                                {answer.answer}
                             </Button>
                         )
                     })}
                 </div>
+                
                 <div className='flex flex-col md:flex-row justify-between items-center mt-4 gap-2'>
                     <div className='text-white text-lg font-semibold'>
-                        Question {currentQuestionIndex + 1} of {dummyQuestions.length}
+                        Question {currentQuestionIndex + 1} of {quizData.questions.length}
                     </div>
                     <Button
                         leftIcon={<JoystickIcon size={28} />}
@@ -126,7 +132,7 @@ const GamePage = () => {
                         size="xl"
                         onClick={handleNextQuestion}
                     >
-                        {currentQuestionIndex < dummyQuestions.length - 1 ? 'Next Question' : 'Finish Quiz'}
+                        {currentQuestionIndex < quizData.questions.length - 1 ? 'Next Question' : 'Finish Quiz'}
                     </Button>
                 </div>
             </div>
