@@ -7,12 +7,12 @@ import { JoystickIcon, MagicWandIcon, PlusCircleIcon, XIcon } from '@phosphor-ic
 import Image from 'next/image'
 import { circleAnswer, squareAnswer, starAnswer, triangleAnswer } from '@/lib/svg'
 import { useRouter } from 'next/navigation'
-import { addQuiz } from '@/services/quiz_service'
+import { addQuiz, createGameSession } from '@/services/quiz_service'
 import { IQuestion, IQuiz } from '@/interfaces/IQuiz'
 
 const ANSWER_ICONS = [circleAnswer, starAnswer, triangleAnswer, squareAnswer]
 
-const CreateQuiz = ({ onSave }: { onSave: () => void }) => {
+const CreateQuiz = ({ onSave }: { onSave: (gameSession: any) => void }) => {
     const [quizData, setQuizData] = useState<IQuiz>({
         title: '',
         questions: [
@@ -30,9 +30,9 @@ const CreateQuiz = ({ onSave }: { onSave: () => void }) => {
     })
 
     const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0)
-    const router = useRouter();
+    const [isSubmitting, setIsSubmitting] = useState(false)
+    const router = useRouter()
 
-    // Update quiz title
     const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setQuizData(prev => ({
             ...prev,
@@ -40,7 +40,6 @@ const CreateQuiz = ({ onSave }: { onSave: () => void }) => {
         }))
     }
 
-    // Update question answer
     const handleQuestionChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setQuizData(prev => ({
             ...prev,
@@ -52,7 +51,6 @@ const CreateQuiz = ({ onSave }: { onSave: () => void }) => {
         }))
     }
 
-    // Update answer answer
     const handleAnswerChange = (answerIndex: number, value: string) => {
         setQuizData(prev => ({
             ...prev,
@@ -69,7 +67,6 @@ const CreateQuiz = ({ onSave }: { onSave: () => void }) => {
         }))
     }
 
-    // Toggle correct answer
     const handleCorrectAnswerToggle = (answerIndex: number, checked: boolean) => {
         setQuizData(prev => ({
             ...prev,
@@ -86,7 +83,6 @@ const CreateQuiz = ({ onSave }: { onSave: () => void }) => {
         }))
     }
 
-    // Add new question
     const handleAddQuestion = () => {
         const newQuestion: IQuestion = {
             questionNumber: quizData.questions.length + 1,
@@ -104,20 +100,16 @@ const CreateQuiz = ({ onSave }: { onSave: () => void }) => {
             questions: [...prev.questions, newQuestion]
         }))
 
-        // Navigate to the new question
         setCurrentQuestionIndex(quizData.questions.length)
     }
 
-    // Navigate to specific question
     const handleQuestionSelect = (index: number) => {
         setCurrentQuestionIndex(index)
     }
 
-    // Delete question
     const handleDeleteQuestion = (index: number, e: React.MouseEvent) => {
-        e.stopPropagation() // Prevent button click from triggering
+        e.stopPropagation()
 
-        // Don't allow deleting if it's the only question
         if (quizData.questions.length === 1) {
             alert("You must have at least one question")
             return
@@ -127,29 +119,70 @@ const CreateQuiz = ({ onSave }: { onSave: () => void }) => {
             ...prev,
             questions: prev.questions.filter((_, idx) => idx !== index).map((q, idx) => ({
                 ...q,
-                id: idx + 1 // Renumber questions
+                questionNumber: idx + 1
             }))
         }))
 
-        // Adjust current question index if needed
         if (currentQuestionIndex >= quizData.questions.length - 1) {
             setCurrentQuestionIndex(Math.max(0, currentQuestionIndex - 1))
         }
     }
 
-    // Submit quiz
     const handleSubmit = async () => {
-        console.log('Quiz Data:', quizData)
-        // Add your submission logic here
-        await addQuiz(quizData)
-        router.push("/lobby");
+        // Validate quiz data
+        if (!quizData.title.trim()) {
+            alert('Please add a quiz title')
+            return
+        }
+
+        const hasEmptyQuestions = quizData.questions.some(q => !q.question.trim())
+        if (hasEmptyQuestions) {
+            alert('Please fill in all questions')
+            return
+        }
+
+        const hasEmptyAnswers = quizData.questions.some(q => 
+            q.answers.some(a => !a.answer.trim())
+        )
+        if (hasEmptyAnswers) {
+            alert('Please fill in all answers')
+            return
+        }
+
+        const hasCorrectAnswers = quizData.questions.every(q => 
+            q.answers.some(a => a.correctAnswer)
+        )
+        if (!hasCorrectAnswers) {
+            alert('Each question must have at least one correct answer')
+            return
+        }
+
+        try {
+            setIsSubmitting(true)
+            
+            // Create quiz
+            const quizResponse = await addQuiz(quizData)
+            console.log('Quiz created:', quizResponse.payload)
+            
+            // Create game session
+            const sessionResponse = await createGameSession(quizResponse.payload.id)
+            console.log('Game session created:', sessionResponse.payload)
+            
+            // Pass game session to parent
+            onSave(sessionResponse.payload)
+            
+        } catch (error) {
+            console.error('Failed to create quiz/session:', error)
+            alert('Failed to create game. Please try again.')
+        } finally {
+            setIsSubmitting(false)
+        }
     }
 
     const currentQuestion = quizData.questions[currentQuestionIndex]
 
     return (
         <div className='flex flex-col md:flex-row gap-10 h-full w-screen'>
-            {/* Sidebar with question navigation */}
             <div className='flex flex-row md:flex-col overflow-x-auto md:overflow-x-visible md:overflow-y-auto min-h-[110px]'>
                 {quizData.questions.map((q, index) => (
                     <Button
@@ -172,7 +205,6 @@ const CreateQuiz = ({ onSave }: { onSave: () => void }) => {
                 </Button>
             </div>
 
-            {/* Main form area */}
             <div className="flex flex-col justify-around w-full gap-3">
                 <Input
                     className=''
@@ -207,12 +239,12 @@ const CreateQuiz = ({ onSave }: { onSave: () => void }) => {
                     ))}
                 </div>
 
-                {/* Submit button */}
                 <div className='flex flex-col md:flex-row justify-end mt-4 gap-2'>
                     <Button
                         leftIcon={<XIcon size={24} color='white' />}
                         variant="destructive"
                         size="xl"
+                        onClick={() => router.push('/')}
                     >
                         Cancel
                     </Button>
@@ -221,8 +253,9 @@ const CreateQuiz = ({ onSave }: { onSave: () => void }) => {
                         variant="active"
                         size="xl"
                         onClick={handleSubmit}
+                        disabled={isSubmitting}
                     >
-                        Save & Continue
+                        {isSubmitting ? 'Creating...' : 'Save & Continue'}
                     </Button>
                 </div>
             </div>

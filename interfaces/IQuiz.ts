@@ -1,31 +1,43 @@
+// interfaces/IQuiz.ts
 export interface IQuiz {
+    id?: string;
     title: string;
     questions: IQuestion[];
-}
-
-export const QUIZ: IQuiz = {
-    title: "",
-    questions: []
+    isPublished?: boolean;
+    createdAt?: string;
+    updatedAt?: string;
 }
 
 export interface IQuestion {
+    id?: string;
     questionNumber: number;
     question: string;
     answers: IAnswer[];
-}
-
-export const QUESTION: IQuestion = {
-    questionNumber: 1,
-    question: "",
-    answers: []
+    createdAt?: string;
 }
 
 export interface IAnswer {
+    id?: string;
     answer: string;
     correctAnswer: boolean;
+    deleted?: boolean;
 }
 
-export const ANSWER: IAnswer = {
-    answer: "",
-    correctAnswer: false,
+export interface IGameSession {
+    id: string;
+    gamePin: string;
+    quiz: IQuiz;
+    isActive: boolean;
+    startedAt: string;
+    endedAt?: string;
+}
+
+export interface IPlayer {
+    id: string;
+    playerName: string;
+    totalScore: number;
+    correctAnswers: number;
+    wrongAnswers: number;
+    currentStreak: number;
+    bestStreak: number;
 }
