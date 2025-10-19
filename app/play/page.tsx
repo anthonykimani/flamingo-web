@@ -4,7 +4,6 @@ import React, { Suspense } from 'react'
 const PlayGameContainer = () => {
     return (
         <Suspense>
-
             <PlayGame />
         </Suspense>
     )
