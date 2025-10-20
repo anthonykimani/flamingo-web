@@ -5,7 +5,7 @@ import { Card, CardHeader } from '@/components/ui/card'
 import { JoystickIcon, SquareIcon, StarIcon, CircleIcon, TriangleIcon } from '@phosphor-icons/react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import React, { useState, useEffect } from 'react'
-import { getQuizById } from '@/services/quiz_service'
+import { getGameSessionByGamePin, getQuizById } from '@/services/quiz_service'
 import { IQuiz } from '@/interfaces/IQuiz'
 
 // Icon mapping for answers
@@ -18,23 +18,27 @@ const GamePage = () => {
     const [answersReceived, setAnswersReceived] = useState(0)
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
-    
+    const [showResult, setShowResult] = useState(false)
+    const [timeLeft, setTimeLeft] = useState(10);
+
     const router = useRouter()
     const searchParams = useSearchParams()
     const quizId = searchParams.get('id')
+    const gamePinId = searchParams.get("gamePin")
 
 
     useEffect(() => {
         const fetchQuiz = async () => {
-            if (!quizId) {
-                setError('No quiz ID provided')
+            if (!gamePinId) {
+                setError('No gamePin ID provided')
                 setLoading(false)
                 return
             }
 
             try {
                 setLoading(true)
-                const response = await getQuizById(quizId)
+                const gamePinData = await getGameSessionByGamePin(gamePinId)
+                const response = await getQuizById(gamePinData.payload.quiz.id)
                 setQuizData(response.payload)
                 setLoading(false)
             } catch (err) {
@@ -44,7 +48,28 @@ const GamePage = () => {
         }
 
         fetchQuiz()
-    }, [quizId])
+    }, [gamePinId])
+
+    useEffect(() => {
+        if (showResult || timeLeft === 0 || !quizData) return
+
+        const timer = setInterval(() => {
+            setTimeLeft(prev => {
+                if (prev <= 1) {
+                    
+                    return 0
+                }
+                return prev - 1
+            })
+        }, 1000)
+
+        return () => clearInterval(timer)
+    }, [timeLeft, showResult, quizData, currentQuestionIndex])
+
+    // Reset timer when moving to next question
+    useEffect(() => {
+        setTimeLeft(10)
+    }, [currentQuestionIndex])
 
     const handleNextQuestion = () => {
         if (!quizData) return
@@ -92,11 +117,11 @@ const GamePage = () => {
                         {currentQuestion.question}
                     </CardHeader>
                 </Card>
-                
+
                 <div className='flex justify-between'>
                     <div className='border-2 border-black p-5 font-[Oi] text-white text-3xl rounded-full bg-[#F24E1E]'>
                         {/* You can add timer logic here later */}
-                        10
+                        {timeLeft}
                     </div>
                     <Button
                         variant="active"
@@ -105,7 +130,7 @@ const GamePage = () => {
                         {answersReceived} Answers
                     </Button>
                 </div>
-                
+
                 <div className='grid grid-cols-2 gap-2'>
                     {currentQuestion.answers.map((answer, index) => {
                         const IconComponent = ANSWER_ICONS[index % ANSWER_ICONS.length]
@@ -121,7 +146,7 @@ const GamePage = () => {
                         )
                     })}
                 </div>
-                
+
                 <div className='flex flex-col md:flex-row justify-between items-center mt-4 gap-2'>
                     <div className='text-white text-lg font-semibold'>
                         Question {currentQuestionIndex + 1} of {quizData.questions.length}

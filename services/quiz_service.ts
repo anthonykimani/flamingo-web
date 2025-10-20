@@ -200,3 +200,21 @@ export async function getGameSession(id: string): Promise<IResponse> {
 
     throw new Error(`Failed to Get Game Session: ${response.payload.message}`)
 }
+
+
+export async function getGameSessionByGamePin(id: string): Promise<IResponse> {
+    const response = await Http.get(`${apiOptions.endpoints.gameService}/games/gamepin/${id}`);
+
+    if (response.payload.status === 200) {
+        return {
+            message: response.payload.message,
+            payload: response.payload.data,
+            status: response.payload.status,
+            ok: response.ok,
+            statusText: response.payload.statusText,
+            json: response.payload.json,
+        }
+    }
+
+    throw new Error(`Failed to Get Game Session: ${response.payload.message}`)
+}
