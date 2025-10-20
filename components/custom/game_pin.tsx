@@ -8,20 +8,40 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { getGameSession, getLeaderboard, startGame } from '@/services/quiz_service'
 import { IPlayer } from '@/interfaces/IQuiz'
 import { GameState } from '@/enums/game_state'
+import { IGameSession } from '@/interfaces/IGame'
 
 const GamePin = () => {
     const [players, setPlayers] = useState<IPlayer[]>([])
     const [readyToPlay, setReadyToPlay] = useState(false)
     const [gamePin, setGamePin] = useState('')
     const [sessionId, setSessionId] = useState('')
-    
+    const [gameSession, setGameSession] = useState<IGameSession>({
+        id: "",
+        gamePin: "",
+        quiz: {
+            title: "",
+            questions: []
+        },
+        gameTitle: "",
+        entryFee: "",
+        maxPlayers: 5,
+        status: GameState.IN_PROGRESS,
+        isActive: true,
+        startedAt: "",
+        endedAt: "",
+        playerAnswers: [],
+        createdAt: "",
+        updatedAt: "",
+        deleted: false,
+    })
+
     const router = useRouter()
     const searchParams = useSearchParams()
 
     useEffect(() => {
         const pin = searchParams.get('gamePin')
         const sid = searchParams.get('sessionId')
-        
+
         if (pin) setGamePin(pin)
         if (sid) setSessionId(sid)
 
@@ -32,6 +52,7 @@ const GamePin = () => {
                     const response = await getLeaderboard(sid)
                     const gameSession = await getGameSession(sid);
                     setPlayers(response.payload)
+                    setGameSession(gameSession.payload)
                     if (response.payload.length > 0) {
                         setReadyToPlay(true)
                     }
@@ -47,8 +68,8 @@ const GamePin = () => {
     const handlePlay = () => {
         if (sessionId) {
             startGame(sessionId, GameState.IN_PROGRESS);
-            router.push(`/game?sessionId=${sessionId}`)
-            
+            router.push(`/game?sessionId=${sessionId}&gamePin=${gameSession.gamePin}`)
+
         }
     }
 
@@ -73,7 +94,7 @@ const GamePin = () => {
                     GAME PIN: {gamePin}
                 </Button>
             </div>
-            
+
             {players.length > 0 ? (
                 <div className='grid grid-cols-2 sm:grid-cols-4 gap-10'>
                     {players.map((player) => (
@@ -92,20 +113,20 @@ const GamePin = () => {
             )}
 
             {readyToPlay ? (
-                <Button 
-                    onClick={handlePlay} 
-                    variant={"active"} 
-                    buttoncolor={"gamePin"} 
-                    className="m-2 text-xl" 
+                <Button
+                    onClick={handlePlay}
+                    variant={"active"}
+                    buttoncolor={"gamePin"}
+                    className="m-2 text-xl"
                     size={"xl"}
                 >
                     Press Space to Start
                 </Button>
             ) : (
-                <Button 
-                    variant={"active"} 
-                    buttoncolor={"gamePin"} 
-                    className="m-2 text-xl" 
+                <Button
+                    variant={"active"}
+                    buttoncolor={"gamePin"}
+                    className="m-2 text-xl"
                     size={"xl"}
                     disabled
                 >

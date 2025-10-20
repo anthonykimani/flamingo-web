@@ -23,15 +23,6 @@ export interface IAnswer {
     deleted?: boolean;
 }
 
-export interface IGameSession {
-    id: string;
-    gamePin: string;
-    quiz: IQuiz;
-    isActive: boolean;
-    startedAt: string;
-    endedAt?: string;
-}
-
 export interface IPlayer {
     id: string;
     playerName: string;
