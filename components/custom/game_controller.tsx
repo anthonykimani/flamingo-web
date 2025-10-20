@@ -5,8 +5,9 @@ import { Card, CardHeader } from '@/components/ui/card'
 import { JoystickIcon, SquareIcon, StarIcon, CircleIcon, TriangleIcon, UserIcon } from '@phosphor-icons/react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import React, { useState, useEffect } from 'react'
-import { getGameSessionByGamePin, getLeaderboard, getQuizById } from '@/services/quiz_service'
+import { getGameSessionByGamePin, getLeaderboard, getQuizById, updateGame } from '@/services/quiz_service'
 import { IPlayer, IQuiz } from '@/interfaces/IQuiz'
+import { GameState } from '@/enums/game_state'
 
 // Icon mapping for answers
 const ANSWER_CONFIG = [
@@ -28,7 +29,6 @@ const GamePage = () => {
 
     const router = useRouter()
     const searchParams = useSearchParams()
-    const quizId = searchParams.get('id')
     const gamePinId = searchParams.get("gamePin")
     const sessionId = searchParams.get("sessionId");
 
@@ -72,6 +72,7 @@ const GamePage = () => {
                 try {
                     const leaderboardResult = await getLeaderboard(sessionId)
                     setLeaderboard(leaderboardResult.payload)
+                    updateGame(sessionId, GameState.TIMEOUT)
                     setShowResult(true)
                 } catch (error) {
                     console.error('Failed to fetch leaderboard:', error)
@@ -80,7 +81,7 @@ const GamePage = () => {
             }
 
         }, 1000)
-        
+
         return () => clearInterval(timer)
     }, [timeLeft, showResult, quizData, currentQuestionIndex, sessionId])
 
