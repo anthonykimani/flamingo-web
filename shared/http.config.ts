@@ -8,8 +8,7 @@ interface Params {
 
 const getHttpConfig = (): Params => ({
   headers: {
-    Authorization: `Bearer ${localStorage.getItem('token')}`,
-    apiKey: `${apiOptions.apiKey}`,
+    Authorization: `Bearer ${localStorage.getItem('token')}`
   },
 });
 
