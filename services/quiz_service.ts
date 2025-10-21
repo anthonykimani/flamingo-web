@@ -24,6 +24,25 @@ export async function addQuiz(gameData: IQuiz): Promise<IResponse> {
         Failed to add reward program: ${response.payload.message}`);
 }
 
+export async function addAgentQuiz(prompt: string): Promise<IResponse> {
+    const response = await Http.post(
+        `${apiOptions.endpoints.gameService}/quizzes/createAgentQuiz`, prompt
+    );
+
+    if (response.payload.status == 200) {
+        return {
+            message: response.payload.message,
+            payload: response.payload.data,
+            status: response.payload.status,
+            ok: response.ok,
+            statusText: response.payload.statusText,
+            json: response.payload.json,
+        }
+    }
+    throw new Error(`
+        Failed to add reward program: ${response.payload.message}`);
+}
+
 
 export async function getQuizById(id: string): Promise<IResponse> {
     const response = await Http.get(`${apiOptions.endpoints.gameService}/quizzes/quiz/${id}`)
