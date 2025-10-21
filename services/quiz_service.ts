@@ -26,7 +26,9 @@ export async function addQuiz(gameData: IQuiz): Promise<IResponse> {
 
 export async function addAgentQuiz(prompt: string): Promise<IResponse> {
     const response = await Http.post(
-        `${apiOptions.endpoints.gameService}/quizzes/createAgentQuiz`, prompt
+        `${apiOptions.endpoints.gameService}/quizzes/createAgentQuiz`, {
+        "prompt": prompt
+    }
     );
 
     if (response.payload.status == 200) {

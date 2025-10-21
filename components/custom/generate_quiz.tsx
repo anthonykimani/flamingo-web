@@ -1,3 +1,5 @@
+'use client'
+
 import React, { useState } from 'react'
 import { Card, CardHeader } from '../ui/card'
 import { Button } from '../ui/button'
@@ -18,7 +20,7 @@ const GenerateQuiz = () => {
     const handleSubmit = async () => {
         try {
             setIsSubmitting(true)
-            
+
             // Create Quiz
             const quizResponse = await addAgentQuiz(prompt);
             console.log('Quiz created:', quizResponse.payload)
@@ -26,6 +28,9 @@ const GenerateQuiz = () => {
             // Create game session
             const sessionResponse = await createGameSession(quizResponse.payload.id)
             console.log('Game session created:', sessionResponse.payload)
+            
+            // Navigate to lobby with game session
+            router.push(`/lobby?sessionId=${sessionResponse.payload.id}&gamePin=${sessionResponse.payload.gamePin}`)
         } catch (error) {
             console.error('Failed to create quiz/session:', error)
             alert('Failed to create game. Please try again.')
@@ -36,11 +41,10 @@ const GenerateQuiz = () => {
     }
 
     return (
-        <div className='game-pin-background h-screen bg-no-repeat bg-cover flex justify-center items-center'>
+        <div className='game-pin-background h-screen bg-no-repeat bg-cover flex flex-col justify-center items-center'>
             <Input
-                className=''
+                className='w-1/2'
                 variant="title"
-                leftIcon={<MagicWandIcon size={32} />}
                 placeholder='Generate Game with AI'
                 value={prompt}
                 onChange={handlePromptChange}
