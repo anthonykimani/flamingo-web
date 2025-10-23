@@ -28,8 +28,8 @@ const GameType = () => {
 
   const handleQuizSave = (session: any) => {
     setGameSession(session)
-    // Navigate to lobby with game session
-    router.push(`/lobby?sessionId=${session.id}&gamePin=${session.gamePin}`)
+    // Navigate to lobby as host
+    router.push(`/lobby?sessionId=${session.id}&gamePin=${session.gamePin}&host=true`)
   }
 
   const renderStep = () => {
