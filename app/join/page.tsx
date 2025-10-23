@@ -9,6 +9,7 @@ import { useRouter } from 'next/navigation'
 import React, { useState, useEffect } from 'react'
 import { addPlayer, joinGame, getGameSession } from '@/services/quiz_service'
 import { GameState } from '@/enums/game_state'
+import socketClient from '@/utils/socket.client'
 
 const JoinGame = () => {
     const [stepper, setStepper] = useState<JoinGameStep>(JoinGameStep.CHOOSEGAMEMODE)
@@ -16,30 +17,59 @@ const JoinGame = () => {
     const [nickname, setNickname] = useState('')
     const [gameSession, setGameSession] = useState<any>(null)
     const [error, setError] = useState('')
+    const [isConnected, setIsConnected] = useState(false)
     const router = useRouter()
 
-    // Poll for game start in lobby room
+    // Connect to WebSocket when component mounts
+    useEffect(() => {
+        const socket = socketClient.connect()
+        
+        socket.on('connect', () => {
+            console.log('Player WebSocket connected')
+            setIsConnected(true)
+        })
+
+        socket.on('disconnect', () => {
+            console.log('WebSocket disconnected')
+            setIsConnected(false)
+        })
+
+        // Cleanup
+        return () => {
+            // Don't disconnect - other pages need the connection
+        }
+    }, [])
+
+    // Listen for game start in lobby room
     useEffect(() => {
         if (stepper !== JoinGameStep.LOBBYROOM || !gameSession?.id) return
 
-        const pollInterval = setInterval(async () => {
-            try {
-                const response = await getGameSession(gameSession.id)
-                const session = response.payload
-                
-                // Check if game has started (you might need to add a 'hasStarted' field)
-                // For now, we'll check if startedAt is set
-                if (session.status === GameState.IN_PROGRESS ) {
-                    clearInterval(pollInterval)
-                    // Navigate to play page
-                    router.push(`/play?sessionId=${session.id}&playerName=${nickname}&quizId=${session.quiz.id}`)
-                }
-            } catch (error) {
-                console.error('Failed to check game status:', error)
-            }
-        }, 2000) // Poll every 2 seconds
+        // Listen for game started event via WebSocket
+        socketClient.onGameStarted((data) => {
+            console.log('Game started via WebSocket:', data)
+            // Navigate to play page immediately
+            router.push(`/play?sessionId=${gameSession.id}&playerName=${nickname}&quizId=${gameSession.quiz.id}`)
+        })
 
-        return () => clearInterval(pollInterval)
+        // Also poll as backup (in case WebSocket fails)
+        // const pollInterval = setInterval(async () => {
+        //     try {
+        //         const response = await getGameSession(gameSession.id)
+        //         const session = response.payload
+                
+        //         if (session.status === GameState.IN_PROGRESS) {
+        //             clearInterval(pollInterval)
+        //             router.push(`/play?sessionId=${session.id}&playerName=${nickname}&quizId=${session.quiz.id}`)
+        //         }
+        //     } catch (error) {
+        //         console.error('Failed to check game status:', error)
+        //     }
+        // }, 3000) // Poll every 3 seconds as backup
+
+        return () => {
+            // clearInterval(pollInterval)
+            socketClient.off('game-started')
+        }
     }, [stepper, gameSession, nickname, router])
 
     const handleNextStep = async () => {
@@ -70,12 +100,26 @@ const JoinGame = () => {
                 }
                 try {
                     setError('')
-                    // Add player to game session
+                    // Add player to game session via HTTP
                     await addPlayer({
                         playerName: nickname,
                         gameSessionId: gameSession.id
                     })
-                    setStepper(JoinGameStep.LOBBYROOM)
+                    
+                    // Join game via WebSocket
+                    socketClient.joinGame(gameSession.id, nickname)
+                    
+                    // Listen for confirmation
+                    socketClient.onJoinedGame((data) => {
+                        console.log('Joined game via WebSocket:', data)
+                        setStepper(JoinGameStep.LOBBYROOM)
+                    })
+                    
+                    // Move to lobby even if WebSocket confirmation doesn't arrive
+                    setTimeout(() => {
+                        setStepper(JoinGameStep.LOBBYROOM)
+                    }, 1000)
+                    
                 } catch (err) {
                     console.error('Add player error:', err)
                     setError('Failed to join game. This nickname might already be taken.')
@@ -110,6 +154,10 @@ const JoinGame = () => {
                                 Create New Game
                             </Button>
                         </div>
+                        {/* Connection Status */}
+                        <p className='text-white text-sm mt-4'>
+                            {isConnected ? '🟢 Connected' : '🔴 Connecting...'}
+                        </p>
                     </div>
                 )
             case JoinGameStep.ENTERGAMEPIN:
@@ -125,8 +173,9 @@ const JoinGame = () => {
                                 placeholder='Enter Game Pin'
                                 value={gamePin}
                                 onChange={(e) => setGamePin(e.target.value)}
+                                maxLength={6}
                             />
-                            {error && <p className='text-red-500 text-center'>{error}</p>}
+                            {error && <p className='text-red-500 text-center font-semibold'>{error}</p>}
                             <Button
                                 variant="active"
                                 size="xl"
@@ -151,8 +200,9 @@ const JoinGame = () => {
                                 placeholder='Choose Nickname'
                                 value={nickname}
                                 onChange={(e) => setNickname(e.target.value)}
+                                maxLength={20}
                             />
-                            {error && <p className='text-red-500 text-center'>{error}</p>}
+                            {error && <p className='text-red-500 text-center font-semibold'>{error}</p>}
                             <Button
                                 leftIcon={<SparkleIcon size={28} color='black' />}
                                 variant="active"
@@ -167,23 +217,38 @@ const JoinGame = () => {
             case JoinGameStep.LOBBYROOM:
                 return (
                     <div className="flex flex-col p-2 gap-2 game-type-background h-screen bg-no-repeat bg-cover justify-center items-center">
-                        <div className='flex flex-col'>
+                        <div className='flex flex-col items-center gap-3'>
                             <Card className='active:border-b-6 active:border-r-6'>
                                 <CardHeader className='justify-center items-center px-10'>
-                                    <UserIcon size={32} />
+                                    <UserIcon size={48} />
                                 </CardHeader>
                             </Card>
-                            <h3 className='text-white text-xl text-center'>{nickname}</h3>
+                            <h3 className='text-white text-2xl font-bold text-center'>{nickname}</h3>
                         </div>
-                        <Card className='active:border-b-6 active:border-r-6 w-1/5'>
-                            <CardHeader className='justify-center items-center'>
-                                You're in! See your nickname on Screen?
+                        
+                        <Card className='w-auto max-w-md mx-4'>
+                            <CardHeader className='text-center px-8'>
+                                <p className='text-lg font-semibold mb-2'>You're in! 🎉</p>
+                                <p className='text-sm text-gray-600'>
+                                    See your nickname on the host's screen?
+                                </p>
                             </CardHeader>
                         </Card>
-                        <p className='text-white text-lg'>Waiting for game to start...</p>
-                        <div className='animate-pulse text-white text-sm'>
-                            Checking for game start...
+                        
+                        <div className='text-center'>
+                            <p className='text-white text-xl font-semibold mb-2'>
+                                Waiting for game to start...
+                            </p>
+                            <div className='animate-pulse text-white/80 text-sm flex items-center justify-center gap-2'>
+                                <span>⏳</span>
+                                <span>Get ready!</span>
+                            </div>
                         </div>
+
+                        {/* Connection Status */}
+                        <p className='text-white/60 text-xs mt-4'>
+                            {isConnected ? '🟢 Connected' : '🔴 Reconnecting...'}
+                        </p>
                     </div>
                 )
         }
