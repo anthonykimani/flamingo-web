@@ -6,8 +6,8 @@ class SocketClient {
     private socket: Socket | null = null;
     private url: string;
 
-    constructor(url?: string) {
-        this.url = url || process.env.NEXT_PUBLIC_GAMESERVICE_BASE_URL??"";
+    constructor() {
+        this.url = process.env.NEXT_PUBLIC_GAMESERVICE_BASE_URL??"";
     }
 
     connect(): Socket {
