@@ -21,10 +21,8 @@ const Http = {
    */
   post: async function (url: string, data: any): Promise<IResponse> {
     const httpConfig = getHttpConfig(); 
-    console.log("url", url, data, httpConfig.headers.Authorization)
     try {
       let response = await axios({
-        ...httpConfig,
         url: `${url}`,
         data,
         method: "post",
@@ -55,7 +53,6 @@ const Http = {
     const httpConfig = getHttpConfig(); 
     try {
       let response = await axios({
-        ...httpConfig,
         url: `${url}`,
         method: "get",
       });
@@ -84,7 +81,6 @@ const Http = {
     const httpConfig = getHttpConfig(); 
     try {
       let response = await axios({
-        ...httpConfig,
         url: `${url}`,
         data,
         method: "delete",
