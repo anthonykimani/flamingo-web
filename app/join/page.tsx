@@ -24,7 +24,7 @@ const JoinGame = () => {
     // Connect to WebSocket when component mounts
     useEffect(() => {
         const socket = socketClient.connect()
-        
+
         socket.on('connect', () => {
             console.log('🦦 Player WebSocket connected')
             setIsConnected(true)
@@ -71,13 +71,13 @@ const JoinGame = () => {
                     setError('')
                     const response = await getGameSessionByGamePin(gamePin)
                     console.log('Game session:', response.payload)
-                    
+
                     // Check if game is in correct state
                     if (response.payload.status !== GameState.WAITING && response.payload.status !== GameState.CREATED) {
                         setError('Game has already started or ended')
                         return
                     }
-                    
+
                     setGameSession(response.payload)
                     setStepper(JoinGameStep.ENTERNICKNAME)
                 } catch (err) {
@@ -90,41 +90,41 @@ const JoinGame = () => {
                     setError('Please enter a nickname')
                     return
                 }
-                
+
                 // Validate nickname
                 if (nickname.length < 2) {
                     setError('Nickname must be at least 2 characters')
                     return
                 }
-                
+
                 if (nickname.length > 20) {
                     setError('Nickname must be 20 characters or less')
                     return
                 }
-                
+
                 try {
                     setError('')
-                   
+
                     // Join game via WebSocket
                     socketClient.joinGame(gameSession.id, nickname)
-                    
+
                     // Listen for confirmation
                     socketClient.onJoinedGame((data) => {
                         console.log('✅ Joined game via WebSocket:', data)
-                        
+
                         if (data.success) {
                             setStepper(JoinGameStep.LOBBYROOM)
                         } else {
                             setError('Failed to join game')
                         }
                     })
-                    
+
                     // Listen for errors
                     socketClient.onError((data) => {
                         console.error('❌ Join error:', data.message)
                         setError(data.message)
                     })
-                    
+
                 } catch (err) {
                     console.error('Add player error:', err)
                     setError('Failed to join game. This nickname might already be taken.')
@@ -138,7 +138,7 @@ const JoinGame = () => {
             case JoinGameStep.CHOOSEGAMEMODE:
                 return (
                     <div className='flex flex-col start-screen-background h-screen w-screen bg-no-repeat bg-cover md:flex justify-center md:items-center p-1 sm:p-3'>
-                        <h1 className="font-[Oi] text-white [text-stroke:_2px_black] text-4xl sm:text-6xl text-center">
+                        <h1 className="font-[Oi] text-white [-webkit-text-stroke:2px_black] sm:[-webkit-text-stroke:3px_black] text-4xl xsm:text-6xl sm:text-8xl">
                             Flamingo
                         </h1>
                         <div className='flex flex-col justify-end mt-4 gap-2'>
@@ -168,7 +168,7 @@ const JoinGame = () => {
             case JoinGameStep.ENTERGAMEPIN:
                 return (
                     <div className='flex flex-col game-pin-background h-screen w-screen bg-no-repeat bg-cover md:flex justify-center md:items-center p-1 sm:p-3'>
-                        <h1 className="font-[Oi] text-white [text-stroke:_2px_black] text-4xl sm:text-6xl text-center">
+                        <h1 className="font-[Oi] text-white [-webkit-text-stroke:2px_black] sm:[-webkit-text-stroke:3px_black] text-4xl xsm:text-6xl sm:text-8xl">
                             Flamingo
                         </h1>
                         <div className='flex flex-col justify-end mt-4 gap-2'>
@@ -185,7 +185,7 @@ const JoinGame = () => {
                             <Button
                                 variant="active"
                                 size="xl"
-                                buttoncolor={"darkened"}
+                                className='bg-[#FF00B7] text-white'
                                 onClick={() => handleNextStep()}
                                 disabled={!gamePin.trim()}
                             >
@@ -194,7 +194,6 @@ const JoinGame = () => {
                             <Button
                                 variant="active"
                                 size="xl"
-                                buttoncolor={"darkened"}
                                 onClick={() => setStepper(JoinGameStep.CHOOSEGAMEMODE)}
                             >
                                 Back
@@ -205,7 +204,7 @@ const JoinGame = () => {
             case JoinGameStep.ENTERNICKNAME:
                 return (
                     <div className='flex flex-col start-screen-background h-screen w-screen bg-no-repeat bg-cover md:flex justify-center md:items-center p-1 sm:p-3'>
-                        <h1 className="font-[Oi] text-white [text-stroke:_2px_black] text-4xl sm:text-6xl text-center">
+                        <h1 className="font-[Oi] text-white [-webkit-text-stroke:2px_black] sm:[-webkit-text-stroke:3px_black] text-4xl xsm:text-6xl sm:text-8xl">
                             Flamingo
                         </h1>
                         <div className='flex flex-col justify-end mt-4 gap-2'>
@@ -231,7 +230,6 @@ const JoinGame = () => {
                             <Button
                                 variant="active"
                                 size="xl"
-                                buttoncolor={"darkened"}
                                 onClick={() => setStepper(JoinGameStep.ENTERGAMEPIN)}
                             >
                                 Back
@@ -241,7 +239,7 @@ const JoinGame = () => {
                 )
             case JoinGameStep.LOBBYROOM:
                 return (
-                    <div className="flex flex-col p-2 gap-2 game-type-background h-screen bg-no-repeat bg-cover justify-center items-center">
+                    <div className="flex flex-col p-2 gap-2 game-type-background h-screen bg-no-repeat bg-cover justify-center">
                         <div className='flex flex-col items-center gap-3'>
                             <Card className='active:border-b-6 active:border-r-6'>
                                 <CardHeader className='justify-center items-center px-10'>
@@ -250,8 +248,9 @@ const JoinGame = () => {
                             </Card>
                             <h3 className='text-white text-2xl font-bold text-center'>{nickname}</h3>
                         </div>
-                        
-                        <Card className='w-auto max-w-md mx-4'>
+
+                        <div className='flex justify-around'>
+                            <Card className='w-full max-w-md  mx-4'>
                             <CardHeader className='text-center px-8'>
                                 <p className='text-lg font-semibold mb-2'>You're in! 🎉</p>
                                 <p className='text-sm text-gray-600'>
@@ -262,7 +261,8 @@ const JoinGame = () => {
                                 </p>
                             </CardHeader>
                         </Card>
-                        
+                        </div>
+
                         <div className='text-center'>
                             <p className='text-white text-xl font-semibold mb-2'>
                                 Waiting for game to start...
@@ -274,7 +274,7 @@ const JoinGame = () => {
                         </div>
 
                         {/* Connection Status */}
-                        <p className='text-white/60 text-xs mt-4'>
+                        <p className='absolute top-4 right-4 bg-black/50 text-white text-xs p-2 rounded'>
                             {isConnected ? '🟢 Connected to game' : '🔴 Reconnecting...'}
                         </p>
                     </div>

@@ -15,7 +15,7 @@ const ChooseCanvasType = ({ onSelect }: { onSelect: () => void }) => {
 
     return (
         <div className="flex flex-col h-1/2 justify-around items-center">
-            <h1 className="font-[Oi] text-white [text-stroke:_2px_black] text-3xl sm:text-6xl text-center">
+            <h1 className="font-[Oi] text-white [-webkit-text-stroke:1.5px_black] sm:[-webkit-text-stroke:2px_black] text-3xl xsm:text-5xl sm:text-6xl text-center">
                 Create New Game
             </h1>
             <div className="flex flex-col sm:flex-row justify-center w-full">
