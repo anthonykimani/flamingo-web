@@ -97,6 +97,10 @@ class SocketClient {
         this.socket?.on(SocketEvents.GAME_STARTED, callback);
     }
 
+    onQuestionStarted(callback: (data: any) => void) {
+    this.socket?.on(SocketEvents.QUESTION_STARTED, callback);
+}
+
     onNextQuestion(callback: (data: any) => void) {
         this.socket?.on(SocketEvents.NEXT_QUESTION, callback);
     }

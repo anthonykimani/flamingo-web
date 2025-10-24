@@ -5,7 +5,7 @@ import { Card, CardHeader } from '@/components/ui/card'
 import { JoystickIcon, SquareIcon, StarIcon, CircleIcon, TriangleIcon, UserIcon } from '@phosphor-icons/react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import React, { useState, useEffect } from 'react'
-import { getGameSessionByGamePin, getLeaderboard, getQuizById, updateGame } from '@/services/quiz_service'
+import { getGameSessionByGamePin, getQuizById } from '@/services/quiz_service'
 import { IPlayer, IQuiz } from '@/interfaces/IQuiz'
 import { GameState } from '@/enums/game_state'
 import socketClient from '@/utils/socket.client'
@@ -24,44 +24,19 @@ const GamePage = () => {
     const [answersReceived, setAnswersReceived] = useState(0)
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
-    const [showResult, setShowResult] = useState(false)
     const [timeLeft, setTimeLeft] = useState(10)
     const [leaderboard, setLeaderboard] = useState<IPlayer[]>([])
     const [playersAnswered, setPlayersAnswered] = useState<Set<string>>(new Set())
     const [isConnected, setIsConnected] = useState(false)
+    const [gameState, setGameState] = useState<GameState>(GameState.WAITING)
+    const [countdown, setCountdown] = useState<number | null>(null)
 
     const router = useRouter()
     const searchParams = useSearchParams()
     const gamePinId = searchParams.get("gamePin")
     const sessionId = searchParams.get("sessionId")
 
-    // Connect to WebSocket and setup listeners
-    useEffect(() => {
-        const socket = socketClient.connect()
-        
-        socket.on('connect', () => {
-            console.log('Host connected to WebSocket')
-            setIsConnected(true)
-        })
-
-        socket.on('disconnect', () => {
-            console.log('Host disconnected from WebSocket')
-            setIsConnected(false)
-        })
-
-        // Listen for player answers in real-time
-        socketClient.onPlayerAnswered((data) => {
-            console.log('Player answered:', data)
-            setPlayersAnswered(prev => new Set([...prev, data.playerName]))
-            setAnswersReceived(prev => prev + 1)
-        })
-
-        // Cleanup
-        return () => {
-            socketClient.off('player-answered')
-        }
-    }, [])
-
+    // Fetch quiz data
     useEffect(() => {
         const fetchQuiz = async () => {
             if (!gamePinId) {
@@ -85,46 +60,83 @@ const GamePage = () => {
         fetchQuiz()
     }, [gamePinId])
 
-    // Timer countdown
+    // Handle countdown timer
     useEffect(() => {
-        if (showResult || timeLeft === 0 || !quizData || !sessionId) return
+        if (countdown === null || countdown <= 0) return
 
-        const timer = setInterval(async () => {
-            setTimeLeft(prev => {
-                if (prev <= 1) {
-                    return 0
-                }
-                return prev - 1
-            })
-
-            if (timeLeft === 1) {
-                try {
-                    // Fetch leaderboard when timer ends
-                    const leaderboardResult = await getLeaderboard(sessionId)
-                    setLeaderboard(leaderboardResult.payload)
-                    
-                    // Update game state
-                    await updateGame(sessionId, GameState.RESULTS_READY)
-                    
-                    // Emit WebSocket event to show results to all players
-                    if (quizData.questions[currentQuestionIndex]?.id) {
-                        socketClient.showResults(sessionId, quizData.questions[currentQuestionIndex].id)
-                    }
-                    
-                    // Show results on host screen
-                    setShowResult(true)
-                } catch (error) {
-                    console.error('Failed to fetch leaderboard:', error)
-                }
-            }
+        const countdownTimer = setTimeout(() => {
+            setCountdown(prev => prev! - 1)
         }, 1000)
 
-        return () => clearInterval(timer)
-    }, [timeLeft, showResult, quizData, currentQuestionIndex, sessionId])
+        return () => clearTimeout(countdownTimer)
+    }, [countdown])
 
-    // Reset timer and answer tracking when moving to next question
+    // Connect to WebSocket and setup listeners
     useEffect(() => {
-        setTimeLeft(10)
+        if (!sessionId) return
+
+        const socket = socketClient.connect()
+
+        if (socket.connected) {
+            console.log('✅ Already connected to WebSocket')
+            setIsConnected(true)
+        }
+
+        socket.on('connect', () => {
+            console.log('✅ Host connected to WebSocket')
+            setIsConnected(true)
+        })
+
+        socket.on('disconnect', () => {
+            console.log('❌ Host disconnected from WebSocket')
+            setIsConnected(false)
+        })
+
+        // Listen for countdown ticks from backend
+        socket.on('countdown-tick', (data) => {
+            console.log('⏳ Countdown tick:', data.countdown)
+            setCountdown(data.countdown)
+            setGameState(GameState.COUNTDOWN)
+        })
+
+        // Listen for real-time timer updates from backend
+        socket.on('time-update', (data) => {
+            setTimeLeft(data.timeLeft)
+        })
+
+        // Listen for player answers in real-time
+        socketClient.onPlayerAnswered((data) => {
+            console.log('✅ Player answered:', data.playerName)
+            setPlayersAnswered(prev => new Set([...prev, data.playerName]))
+            setAnswersReceived(data.answerCount)
+        })
+
+        // Listen for question results (when timer hits 0)
+        socketClient.onQuestionResults((data) => {
+            console.log('📊 Question results:', data)
+            setLeaderboard(data.leaderboard)
+            setGameState(GameState.RESULTS_READY)
+        })
+
+        // Listen for question started (after countdown)
+        socket.on('question-started', (data) => {
+            console.log('⏱️ Question timer started:', data)
+            setGameState(GameState.IN_PROGRESS)
+            setCountdown(null)
+        })
+
+        // Cleanup
+        return () => {
+            socketClient.off('player-answered')
+            socketClient.off('question-results')
+            socket.off('question-started')
+            socket.off('countdown-tick')
+            socket.off('time-update')
+        }
+    }, [sessionId])
+
+    // Reset answer tracking when moving to next question
+    useEffect(() => {
         setPlayersAnswered(new Set())
         setAnswersReceived(0)
     }, [currentQuestionIndex])
@@ -132,24 +144,20 @@ const GamePage = () => {
     const handleNextQuestion = async () => {
         if (!quizData || !sessionId) return
 
-        setShowResult(false)
-
         if (currentQuestionIndex < quizData.questions.length - 1) {
             const nextIndex = currentQuestionIndex + 1
             setCurrentQuestionIndex(nextIndex)
-            
-            // Emit WebSocket event for next question
+            setGameState(GameState.IN_PROGRESS)
+
+            // Emit WebSocket event for next question - backend handles timer
             socketClient.nextQuestion(sessionId, nextIndex)
-            
-            // Update game state
-            await updateGame(sessionId, GameState.IN_PROGRESS)
         } else {
             // Game finished
-            await updateGame(sessionId, GameState.COMPLETED)
-            
+            setGameState(GameState.COMPLETED)
+
             // Emit game ended event
             socketClient.endGame(sessionId)
-            
+
             // Navigate to final score
             router.push(`/score?sessionId=${sessionId}`)
         }
@@ -179,10 +187,36 @@ const GamePage = () => {
         )
     }
 
+
+    // Connection waiting
+    if (!isConnected) {
+        return (
+            <div className='game-pin-background h-screen bg-no-repeat bg-cover flex justify-center items-center'>
+                <Card>
+                    <CardHeader className='text-2xl'>Connecting to game server...</CardHeader>
+                </Card>
+            </div>
+        )
+    }
+
     const currentQuestion = quizData.questions[currentQuestionIndex]
 
+    // Show countdown screen before question starts
+    if (countdown !== null && countdown > 0) {
+        return (
+            <div className='game-pin-background h-screen bg-no-repeat bg-cover flex justify-center items-center'>
+                <div className='text-center'>
+                    <div className='text-white text-9xl font-bold animate-pulse mb-4'>
+                        {countdown}
+                    </div>
+                    <p className='text-white text-2xl'>Get Ready!</p>
+                </div>
+            </div>
+        )
+    }
+
     // Show result screen
-    if (showResult) {
+    if (gameState === GameState.RESULTS_READY || gameState === GameState.PAYOUT) {
         return (
             <div className='result-background h-screen bg-no-repeat bg-cover flex flex-col justify-around p-8'>
                 <Card>
@@ -190,8 +224,8 @@ const GamePage = () => {
                         Scoreboard
                     </CardHeader>
                 </Card>
-                
-                <div className='flex flex-col items-center gap-3'>
+
+                <div className='flex flex-col items-center gap-3 max-h-96 overflow-y-auto'>
                     {leaderboard.length === 0 ? (
                         <p className='text-white text-xl'>No players yet...</p>
                     ) : (
@@ -251,10 +285,7 @@ const GamePage = () => {
                     <div className='border-2 border-black p-5 font-[Oi] text-white text-3xl rounded-full bg-[#F24E1E]'>
                         {timeLeft}
                     </div>
-                    <Button
-                        variant="active"
-                        size="xl"
-                    >
+                    <Button variant="active" size="xl">
                         {answersReceived} Answers
                     </Button>
                 </div>
@@ -283,19 +314,9 @@ const GamePage = () => {
                     <div className='text-white text-lg font-semibold'>
                         Question {currentQuestionIndex + 1} of {quizData.questions.length}
                     </div>
-                    <Button
-                        leftIcon={<JoystickIcon size={28} />}
-                        variant="active"
-                        size="xl"
-                        onClick={handleNextQuestion}
-                        disabled={timeLeft > 0}
-                    >
-                        {timeLeft > 0 
-                            ? `Wait ${timeLeft}s` 
-                            : currentQuestionIndex < quizData.questions.length - 1 
-                                ? 'Next Question' 
-                                : 'Finish Quiz'}
-                    </Button>
+                    <div className='text-white text-sm'>
+                        Game State: {gameState}
+                    </div>
                 </div>
 
                 {/* Players Who Answered (Real-time) */}
@@ -305,7 +326,7 @@ const GamePage = () => {
                             <p className='text-sm text-gray-600'>Players who answered:</p>
                             <div className='flex flex-wrap gap-2 mt-2'>
                                 {Array.from(playersAnswered).map((playerName) => (
-                                    <span 
+                                    <span
                                         key={playerName}
                                         className='bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm'
                                     >
@@ -316,6 +337,17 @@ const GamePage = () => {
                         </CardHeader>
                     </Card>
                 )}
+
+                {/* Timer Status */}
+                <Card>
+                    <CardHeader className='text-center'>
+                        <p className='text-sm text-gray-600'>
+                            {timeLeft > 0
+                                ? `Waiting for answers... ${timeLeft}s remaining`
+                                : 'Calculating results...'}
+                        </p>
+                    </CardHeader>
+                </Card>
             </div>
         </div>
     )

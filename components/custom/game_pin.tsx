@@ -134,15 +134,11 @@ const LobbyPage = () => {
         try {
             console.log('🎮 Starting game...')
             
-            // Update game state via HTTP
-            await startGame(sessionId, GameState.IN_PROGRESS)
-            
             // Emit WebSocket event to notify all players
             console.log('📡 Broadcasting start-game event')
             socketClient.startGame(sessionId)
             
-            // Navigate to game page
-            router.push(`/game?sessionId=${sessionId}&gamePin=${gamePin}`)
+            
         } catch (error) {
             console.error('❌ Failed to start game:', error)
         }
