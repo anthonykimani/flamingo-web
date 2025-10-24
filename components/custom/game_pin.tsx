@@ -10,6 +10,7 @@ import { IPlayer } from '@/interfaces/IQuiz'
 import { GameState } from '@/enums/game_state'
 import socketClient from '@/utils/socket.client'
 import { IGameSession } from '@/interfaces/IGame'
+import { SocketEvents } from '@/enums/socket-events'
 
 const LobbyPage = () => {
     const [players, setPlayers] = useState<IPlayer[]>([])
@@ -118,26 +119,14 @@ const LobbyPage = () => {
 
         // Cleanup
         return () => {
-            socketClient.off('player-joined')
-            socketClient.off('player-left')
-            socketClient.off('game-started')
-            socketClient.off('error')
+            socketClient.off(SocketEvents.PLAYER_JOINED)
+            socketClient.off(SocketEvents.PLAYER_LEFT)
+            socketClient.off(SocketEvents.GAME_STARTED)
+            socketClient.off(SocketEvents.ERROR)
             // Don't disconnect, other pages need the connection
         }
     }, [sessionId, gamePin, isHost, router])
 
-
-    // // Poll for players as backup (in case WebSocket fails)
-    // useEffect(() => {
-    //     if (!sessionId || !isConnected) return
-
-    //     // Poll every 3 seconds as backup
-    //     const pollInterval = setInterval(() => {
-    //         refreshPlayerList()
-    //     }, 3000)
-
-    //     return () => clearInterval(pollInterval)
-    // }, [sessionId, isConnected])
 
     const handleStartGame = async () => {
         if (!sessionId || !gameSession) return

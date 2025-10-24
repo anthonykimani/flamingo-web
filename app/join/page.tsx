@@ -7,9 +7,10 @@ import { JoinGameStep } from '@/enums/join_game_step'
 import { LegoIcon, SparkleIcon, UserIcon } from '@phosphor-icons/react'
 import { useRouter } from 'next/navigation'
 import React, { useState, useEffect } from 'react'
-import { addPlayer, joinGame, getGameSession } from '@/services/quiz_service'
+import { addPlayer, joinGame, getGameSession, getGameSessionByGamePin } from '@/services/quiz_service'
 import { GameState } from '@/enums/game_state'
 import socketClient from '@/utils/socket.client'
+import { SocketEvents } from '@/enums/socket-events'
 
 const JoinGame = () => {
     const [stepper, setStepper] = useState<JoinGameStep>(JoinGameStep.CHOOSEGAMEMODE)
@@ -25,12 +26,12 @@ const JoinGame = () => {
         const socket = socketClient.connect()
         
         socket.on('connect', () => {
-            console.log('Player WebSocket connected')
+            console.log('🦦 Player WebSocket connected')
             setIsConnected(true)
         })
 
         socket.on('disconnect', () => {
-            console.log('WebSocket disconnected')
+            console.log('🦦 Player WebSocket disconnected')
             setIsConnected(false)
         })
 
@@ -51,24 +52,9 @@ const JoinGame = () => {
             router.push(`/play?sessionId=${gameSession.id}&playerName=${nickname}&quizId=${gameSession.quiz.id}`)
         })
 
-        // Also poll as backup (in case WebSocket fails)
-        // const pollInterval = setInterval(async () => {
-        //     try {
-        //         const response = await getGameSession(gameSession.id)
-        //         const session = response.payload
-                
-        //         if (session.status === GameState.IN_PROGRESS) {
-        //             clearInterval(pollInterval)
-        //             router.push(`/play?sessionId=${session.id}&playerName=${nickname}&quizId=${session.quiz.id}`)
-        //         }
-        //     } catch (error) {
-        //         console.error('Failed to check game status:', error)
-        //     }
-        // }, 3000) // Poll every 3 seconds as backup
-
         return () => {
             // clearInterval(pollInterval)
-            socketClient.off('game-started')
+            socketClient.off(SocketEvents.GAME_STARTED)
         }
     }, [stepper, gameSession, nickname, router])
 
@@ -84,7 +70,7 @@ const JoinGame = () => {
                 }
                 try {
                     setError('')
-                    const response = await joinGame(gamePin)
+                    const response = await getGameSessionByGamePin(gamePin)
                     console.log('Game session:', response.payload)
                     setGameSession(response.payload)
                     setStepper(JoinGameStep.ENTERNICKNAME)
@@ -100,12 +86,7 @@ const JoinGame = () => {
                 }
                 try {
                     setError('')
-                    // Add player to game session via HTTP
-                    await addPlayer({
-                        playerName: nickname,
-                        gameSessionId: gameSession.id
-                    })
-                    
+                   
                     // Join game via WebSocket
                     socketClient.joinGame(gameSession.id, nickname)
                     
@@ -114,12 +95,6 @@ const JoinGame = () => {
                         console.log('Joined game via WebSocket:', data)
                         setStepper(JoinGameStep.LOBBYROOM)
                     })
-                    
-                    // Move to lobby even if WebSocket confirmation doesn't arrive
-                    setTimeout(() => {
-                        setStepper(JoinGameStep.LOBBYROOM)
-                    }, 1000)
-                    
                 } catch (err) {
                     console.error('Add player error:', err)
                     setError('Failed to join game. This nickname might already be taken.')
