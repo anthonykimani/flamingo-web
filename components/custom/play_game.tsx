@@ -7,8 +7,16 @@ import { SocketEvents } from '@/enums/socket-events'
 import { IAnswer, IQuestion } from '@/interfaces/IQuiz'
 import { getGameSession } from '@/services/quiz_service'
 import socketClient from '@/utils/socket.client'
+import { CircleIcon, SquareIcon, StarIcon, TriangleIcon } from '@phosphor-icons/react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import React, { useEffect, useState } from 'react'
+
+const ANSWER_CONFIG = [
+    { Icon: TriangleIcon, color: 'bg-[#009900]', borderColor: 'border-[#006600]' },
+    { Icon: CircleIcon, color: 'bg-[#FF9700]', borderColor: 'border-[#cc7800]' },
+    { Icon: SquareIcon, color: 'bg-[#2819DB]', borderColor: 'border-[#1a0f8a]' },
+    { Icon: StarIcon, color: 'bg-[#F14100]', borderColor: 'border-[#b33000]' }
+]
 
 const PlayGame = () => {
     const [question, setQuestion] = useState<IQuestion | null>(null)
@@ -26,7 +34,7 @@ const PlayGame = () => {
     } | null>(null)
     const [countdown, setCountdown] = useState<number | null>(null)
     const [questionStartTime, setQuestionStartTime] = useState<Date | null>(null)
-    
+
     const router = useRouter()
     const searchParams = useSearchParams()
     const sessionId = searchParams.get('sessionId')
@@ -124,7 +132,7 @@ const PlayGame = () => {
         if (hasAnswered || !question || !sessionId || !playerName || !questionStartTime) return
 
         setSelectedAnswer(answer.id!)
-        
+
         // Calculate time to answer
         const timeToAnswer = (new Date().getTime() - questionStartTime.getTime()) / 1000
 
@@ -238,26 +246,27 @@ const PlayGame = () => {
                 </Card>
 
                 {/* Answers Grid */}
-                <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+                <div className='grid grid-cols-2 gap-4'>
                     {question.answers?.map((answer, index) => {
-                        const colors = ['bg-red-500', 'bg-blue-500', 'bg-yellow-500', 'bg-green-500']
+                        const { Icon, color, borderColor } = ANSWER_CONFIG[index % ANSWER_CONFIG.length]
                         const isSelected = selectedAnswer === answer.id
-                        
+
                         return (
                             <Button
                                 key={answer.id}
                                 onClick={() => handleAnswerSelect(answer)}
                                 disabled={hasAnswered}
+                                centerIcon={<Icon size={64} color="white" weight="fill" />}
                                 className={`
-                                    ${colors[index % colors.length]} 
-                                    ${isSelected ? 'ring-4 ring-white' : ''}
-                                    ${hasAnswered ? 'opacity-50 cursor-not-allowed' : 'hover:scale-105'}
-                                    h-24 text-xl font-bold text-white transition-all
-                                `}
+                    ${color} 
+                    border-2 ${borderColor} border-b-[6px] border-r-[6px]
+                    ${isSelected ? 'ring-4 ring-white' : ''}
+                    ${hasAnswered ? 'opacity-50 cursor-not-allowed active:border-b-[6px] active:border-r-[6px]' : 'hover:scale-105 active:border-b-2 active:border-r-2'}
+                    h-32 text-white transition-all
+                `}
                                 variant="active"
                                 size="xl"
                             >
-                                {answer.answer}
                             </Button>
                         )
                     })}
