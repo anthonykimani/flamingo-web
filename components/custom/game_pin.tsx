@@ -172,14 +172,15 @@ const LobbyPage = () => {
                 {isHost && <div>👑 Host View</div>}
             </div>
 
+            <h1 className="font-[Oi] text-white [-webkit-text-stroke:2px_black] sm:[-webkit-text-stroke:3px_black] text-4xl xsm:text-6xl sm:text-8xl">
+                Flamingo
+            </h1>
+
             {/* Game PIN Display */}
             <Card className='w-full max-w-md'>
                 <CardHeader className='text-center'>
                     <h2 className='text-2xl font-bold mb-2'>Game PIN</h2>
                     <p className='text-5xl font-bold tracking-wider'>{gamePin}</p>
-                    <p className='text-sm text-gray-600 mt-2'>
-                        {isConnected ? '🟢 Live' : '🔴 Connecting...'}
-                    </p>
                 </CardHeader>
             </Card>
 
@@ -187,6 +188,9 @@ const LobbyPage = () => {
             <Card className='w-full max-w-md'>
                 <CardHeader className='text-center'>
                     <h3 className='text-xl font-semibold'>{gameSession.quiz?.title}</h3>
+                    <h3 className='text-xl font-semibold text-center'>
+                        Players {players.length}
+                    </h3>
                     <p className='text-sm text-gray-600'>
                         {gameSession.quiz?.questions?.length} Questions
                     </p>
@@ -196,20 +200,9 @@ const LobbyPage = () => {
             {/* Players List */}
             <div className='w-full max-w-2xl max-h-96 overflow-y-auto'>
                 <CardHeader>
-                    <h3 className='text-xl font-semibold mb-4'>
-                        Players ({players.length})
-                    </h3>
                 </CardHeader>
                 <div className='grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 px-6 pb-6'>
-                    {players.length === 0 ? (
-                        <div className='col-span-full text-center py-8'>
-                            <p className='text-gray-500'>Waiting for players to join...</p>
-                            <div className='animate-pulse mt-2'>⏳</div>
-                            <p className='text-xs text-gray-400 mt-2'>
-                                Share the PIN: <strong>{gamePin}</strong>
-                            </p>
-                        </div>
-                    ) : (
+                    {players.length === 0 ? null : (
                         players.map((player) => (
                             <div key={player.id} className='flex flex-col items-center gap-2 animate-fadeIn'>
                                 <Card className='active:border-b-6 active:border-r-6 w-full'>

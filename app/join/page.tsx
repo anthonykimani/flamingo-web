@@ -185,7 +185,7 @@ const JoinGame = () => {
                             <Button
                                 variant="active"
                                 size="xl"
-                                buttoncolor={"darkened"}
+                                className='bg-[#FF00B7] text-white'
                                 onClick={() => handleNextStep()}
                                 disabled={!gamePin.trim()}
                             >
@@ -194,7 +194,6 @@ const JoinGame = () => {
                             <Button
                                 variant="active"
                                 size="xl"
-                                buttoncolor={"darkened"}
                                 onClick={() => setStepper(JoinGameStep.CHOOSEGAMEMODE)}
                             >
                                 Back
@@ -231,7 +230,6 @@ const JoinGame = () => {
                             <Button
                                 variant="active"
                                 size="xl"
-                                buttoncolor={"darkened"}
                                 onClick={() => setStepper(JoinGameStep.ENTERGAMEPIN)}
                             >
                                 Back
@@ -241,7 +239,7 @@ const JoinGame = () => {
                 )
             case JoinGameStep.LOBBYROOM:
                 return (
-                    <div className="flex flex-col p-2 gap-2 game-type-background h-screen bg-no-repeat bg-cover justify-center items-center">
+                    <div className="flex flex-col p-2 gap-2 game-type-background h-screen bg-no-repeat bg-cover justify-center">
                         <div className='flex flex-col items-center gap-3'>
                             <Card className='active:border-b-6 active:border-r-6'>
                                 <CardHeader className='justify-center items-center px-10'>
@@ -251,7 +249,8 @@ const JoinGame = () => {
                             <h3 className='text-white text-2xl font-bold text-center'>{nickname}</h3>
                         </div>
 
-                        <Card className='w-auto max-w-md mx-4'>
+                        <div className='flex justify-around'>
+                            <Card className='w-full max-w-md  mx-4'>
                             <CardHeader className='text-center px-8'>
                                 <p className='text-lg font-semibold mb-2'>You're in! 🎉</p>
                                 <p className='text-sm text-gray-600'>
@@ -262,6 +261,7 @@ const JoinGame = () => {
                                 </p>
                             </CardHeader>
                         </Card>
+                        </div>
 
                         <div className='text-center'>
                             <p className='text-white text-xl font-semibold mb-2'>
@@ -274,7 +274,7 @@ const JoinGame = () => {
                         </div>
 
                         {/* Connection Status */}
-                        <p className='text-white/60 text-xs mt-4'>
+                        <p className='absolute top-4 right-4 bg-black/50 text-white text-xs p-2 rounded'>
                             {isConnected ? '🟢 Connected to game' : '🔴 Reconnecting...'}
                         </p>
                     </div>
