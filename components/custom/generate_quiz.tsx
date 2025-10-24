@@ -41,15 +41,15 @@ const GenerateQuiz = () => {
     }
 
     return (
-        <div className='game-pin-background h-screen bg-no-repeat bg-cover flex flex-col justify-center items-center'>
+        <div className='game-pin-background h-screen bg-no-repeat bg-cover flex flex-col justify-center items-center p-2'>
             <Input
-                className='w-1/2'
-                variant="title"
+                className='w-full sm:w-1/2'
+                variant="generate"
                 placeholder='Generate Game with AI'
                 value={prompt}
                 onChange={handlePromptChange}
             />
-            <div className='flex flex-col md:flex-row justify-end mt-4 gap-2'>
+            <div className='flex flex-col xsm:flex-row justify-end mt-4 gap-2'>
                 <Button
                     leftIcon={<XIcon size={24} color='white' />}
                     variant="destructive"
