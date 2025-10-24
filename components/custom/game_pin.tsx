@@ -5,11 +5,12 @@ import { Card, CardHeader } from '@/components/ui/card'
 import { UserIcon } from '@phosphor-icons/react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import React, { useState, useEffect } from 'react'
-import { getGameSession, startGame, getLeaderboard } from '@/services/quiz_service'
+import { getGameSession, getLeaderboard } from '@/services/quiz_service'
 import { IPlayer } from '@/interfaces/IQuiz'
 import { GameState } from '@/enums/game_state'
 import socketClient from '@/utils/socket.client'
 import { IGameSession } from '@/interfaces/IGame'
+import { SocketEvents } from '@/enums/socket-events'
 
 const LobbyPage = () => {
     const [players, setPlayers] = useState<IPlayer[]>([])
@@ -28,7 +29,7 @@ const LobbyPage = () => {
         if (!sessionId) return
         try {
             const leaderboardResponse = await getLeaderboard(sessionId)
-            setPlayers(leaderboardResponse.payload || [])
+            setPlayers(leaderboardResponse.payload)
         } catch (error) {
             console.error('Failed to refresh player list:', error)
         }
@@ -63,13 +64,10 @@ const LobbyPage = () => {
             console.log('✅ Connected to WebSocket')
             setIsConnected(true)
             
-            // IMPORTANT: Join the game room after connecting
-            // This tells the backend which game session to track
+            // FIX #1: Join as Host (won't create player entity in backend)
             if (sessionId) {
                 console.log('🎮 Joining game room:', sessionId)
-                // For host, join as "host", for players they'll join with their name in join page
-                const playerName = isHost ? 'Host' : 'Spectator'
-                socketClient.joinGame(sessionId, playerName)
+                socketClient.joinGame(sessionId, isHost ? 'Host' : 'Spectator')
             }
         })
 
@@ -118,26 +116,14 @@ const LobbyPage = () => {
 
         // Cleanup
         return () => {
-            socketClient.off('player-joined')
-            socketClient.off('player-left')
-            socketClient.off('game-started')
-            socketClient.off('error')
+            socketClient.off(SocketEvents.PLAYER_JOINED)
+            socketClient.off(SocketEvents.PLAYER_LEFT)
+            socketClient.off(SocketEvents.GAME_STARTED)
+            socketClient.off(SocketEvents.ERROR)
             // Don't disconnect, other pages need the connection
         }
     }, [sessionId, gamePin, isHost, router])
 
-
-    // // Poll for players as backup (in case WebSocket fails)
-    // useEffect(() => {
-    //     if (!sessionId || !isConnected) return
-
-    //     // Poll every 3 seconds as backup
-    //     const pollInterval = setInterval(() => {
-    //         refreshPlayerList()
-    //     }, 3000)
-
-    //     return () => clearInterval(pollInterval)
-    // }, [sessionId, isConnected])
 
     const handleStartGame = async () => {
         if (!sessionId || !gameSession) return
@@ -145,15 +131,10 @@ const LobbyPage = () => {
         try {
             console.log('🎮 Starting game...')
             
-            // Update game state via HTTP
-            await startGame(sessionId, GameState.IN_PROGRESS)
-            
             // Emit WebSocket event to notify all players
             console.log('📡 Broadcasting start-game event')
             socketClient.startGame(sessionId)
             
-            // Navigate to game page
-            router.push(`/game?sessionId=${sessionId}&gamePin=${gamePin}`)
         } catch (error) {
             console.error('❌ Failed to start game:', error)
         }
@@ -188,6 +169,7 @@ const LobbyPage = () => {
                 {isConnected ? '🟢 Connected' : '🔴 Disconnected'}
                 {sessionId && <div>Room: {sessionId.slice(0, 8)}...</div>}
                 {players.length > 0 && <div>Players: {players.length}</div>}
+                {isHost && <div>👑 Host View</div>}
             </div>
 
             {/* Game PIN Display */}

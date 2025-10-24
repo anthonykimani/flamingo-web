@@ -1,6 +1,5 @@
-// utils/socket.client.ts
 import { io, Socket } from 'socket.io-client';
-import { SocketEvents } from '@/lib/socket-events';
+import { SocketEvents } from '@/enums/socket-events';
 
 class SocketClient {
     private socket: Socket | null = null;
@@ -97,6 +96,10 @@ class SocketClient {
     onGameStarted(callback: (data: any) => void) {
         this.socket?.on(SocketEvents.GAME_STARTED, callback);
     }
+
+    onQuestionStarted(callback: (data: any) => void) {
+    this.socket?.on(SocketEvents.QUESTION_STARTED, callback);
+}
 
     onNextQuestion(callback: (data: any) => void) {
         this.socket?.on(SocketEvents.NEXT_QUESTION, callback);

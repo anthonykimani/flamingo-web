@@ -1,4 +1,3 @@
-// lib/socket-events.ts
 export enum SocketEvents {
     // Connection
     CONNECTION = 'connection',
@@ -17,6 +16,7 @@ export enum SocketEvents {
     JOINED_GAME = 'joined-game',
     
     // Question Flow
+    QUESTION_STARTED = 'question-started',
     NEXT_QUESTION = 'next-question',
     SUBMIT_ANSWER = 'submit-answer',
     ANSWER_SUBMITTED = 'answer-submitted',
