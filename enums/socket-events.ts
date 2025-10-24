@@ -1,4 +1,3 @@
-// lib/socket-events.ts
 export enum SocketEvents {
     // Connection
     CONNECTION = 'connection',

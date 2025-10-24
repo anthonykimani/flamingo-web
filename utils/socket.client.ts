@@ -1,6 +1,5 @@
-// utils/socket.client.ts
 import { io, Socket } from 'socket.io-client';
-import { SocketEvents } from '@/lib/socket-events';
+import { SocketEvents } from '@/enums/socket-events';
 
 class SocketClient {
     private socket: Socket | null = null;

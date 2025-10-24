@@ -28,7 +28,7 @@ const LobbyPage = () => {
         if (!sessionId) return
         try {
             const leaderboardResponse = await getLeaderboard(sessionId)
-            setPlayers(leaderboardResponse.payload || [])
+            setPlayers(leaderboardResponse.payload)
         } catch (error) {
             console.error('Failed to refresh player list:', error)
         }
