@@ -9,9 +9,9 @@ const inputVariants = cva(
     variants: {
       variant: {
         default: "h-14 w-full text-center text-xl ",
-        title: "h-14 w-full text-center text-3xl md:text-2xl",
-        question: "h-[110px] w-full text-center text-md md:text-3xl placeholder:text-md placeholder:text-3xl",
-        answer: "h-[110px] w-full text-center text-md md:text-2xl placeholder:text-md placeholder:text-2xl",
+        title: "h-14 w-full text-center text-xl md:text-2xl",
+        question: "h-[110px] w-full text-center text-xl xsm:text-2xl placeholder:text-xl xsm:placeholder:text-2xl",
+        answer: "h-[110px] w-full text-center text-xl xsm:text-2xl placeholder:text-xl xsm:placeholder:text-2xl",
         generate: "h-[110px] w-full text-center text-2xl md:text-2xl placeholder:text-md placeholder:text-2xl"
       }
     }

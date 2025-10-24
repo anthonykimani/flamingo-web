@@ -239,7 +239,7 @@ const CreateQuiz = ({ onSave }: { onSave: (gameSession: any) => void }) => {
                     ))}
                 </div>
 
-                <div className='flex flex-col md:flex-row justify-end mt-4 gap-2'>
+                <div className='flex flex-col-reverse md:flex-row justify-end mt-4 gap-2'>
                     <Button
                         leftIcon={<XIcon size={24} color='white' />}
                         variant="destructive"
