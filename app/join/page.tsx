@@ -7,7 +7,7 @@ import { JoinGameStep } from '@/enums/join_game_step'
 import { LegoIcon, SparkleIcon, UserIcon } from '@phosphor-icons/react'
 import { useRouter } from 'next/navigation'
 import React, { useState, useEffect } from 'react'
-import { addPlayer, joinGame, getGameSession, getGameSessionByGamePin } from '@/services/quiz_service'
+import { getGameSessionByGamePin } from '@/services/quiz_service'
 import { GameState } from '@/enums/game_state'
 import socketClient from '@/utils/socket.client'
 import { SocketEvents } from '@/enums/socket-events'
@@ -47,13 +47,12 @@ const JoinGame = () => {
 
         // Listen for game started event via WebSocket
         socketClient.onGameStarted((data) => {
-            console.log('Game started via WebSocket:', data)
-            // Navigate to play page immediately
-            router.push(`/play?sessionId=${gameSession.id}&playerName=${nickname}&quizId=${gameSession.quiz.id}`)
+            console.log('🚀 Game started via WebSocket:', data)
+            // Navigate to play page with playerName
+            router.push(`/play?sessionId=${gameSession.id}&playerName=${nickname}&gamePin=${gameSession.gamePin}`)
         })
 
         return () => {
-            // clearInterval(pollInterval)
             socketClient.off(SocketEvents.GAME_STARTED)
         }
     }, [stepper, gameSession, nickname, router])
@@ -72,6 +71,13 @@ const JoinGame = () => {
                     setError('')
                     const response = await getGameSessionByGamePin(gamePin)
                     console.log('Game session:', response.payload)
+                    
+                    // Check if game is in correct state
+                    if (response.payload.status !== GameState.WAITING && response.payload.status !== GameState.CREATED) {
+                        setError('Game has already started or ended')
+                        return
+                    }
+                    
                     setGameSession(response.payload)
                     setStepper(JoinGameStep.ENTERNICKNAME)
                 } catch (err) {
@@ -84,6 +90,18 @@ const JoinGame = () => {
                     setError('Please enter a nickname')
                     return
                 }
+                
+                // Validate nickname
+                if (nickname.length < 2) {
+                    setError('Nickname must be at least 2 characters')
+                    return
+                }
+                
+                if (nickname.length > 20) {
+                    setError('Nickname must be 20 characters or less')
+                    return
+                }
+                
                 try {
                     setError('')
                    
@@ -92,9 +110,21 @@ const JoinGame = () => {
                     
                     // Listen for confirmation
                     socketClient.onJoinedGame((data) => {
-                        console.log('Joined game via WebSocket:', data)
-                        setStepper(JoinGameStep.LOBBYROOM)
+                        console.log('✅ Joined game via WebSocket:', data)
+                        
+                        if (data.success) {
+                            setStepper(JoinGameStep.LOBBYROOM)
+                        } else {
+                            setError('Failed to join game')
+                        }
                     })
+                    
+                    // Listen for errors
+                    socketClient.onError((data) => {
+                        console.error('❌ Join error:', data.message)
+                        setError(data.message)
+                    })
+                    
                 } catch (err) {
                     console.error('Add player error:', err)
                     setError('Failed to join game. This nickname might already be taken.')
@@ -149,15 +179,25 @@ const JoinGame = () => {
                                 value={gamePin}
                                 onChange={(e) => setGamePin(e.target.value)}
                                 maxLength={6}
+                                autoFocus
                             />
-                            {error && <p className='text-red-500 text-center font-semibold'>{error}</p>}
+                            {error && <p className='text-red-500 text-center font-semibold bg-white/90 p-2 rounded'>{error}</p>}
                             <Button
                                 variant="active"
                                 size="xl"
                                 buttoncolor={"darkened"}
                                 onClick={() => handleNextStep()}
+                                disabled={!gamePin.trim()}
                             >
                                 Join Game
+                            </Button>
+                            <Button
+                                variant="active"
+                                size="xl"
+                                buttoncolor={"darkened"}
+                                onClick={() => setStepper(JoinGameStep.CHOOSEGAMEMODE)}
+                            >
+                                Back
                             </Button>
                         </div>
                     </div>
@@ -176,15 +216,25 @@ const JoinGame = () => {
                                 value={nickname}
                                 onChange={(e) => setNickname(e.target.value)}
                                 maxLength={20}
+                                autoFocus
                             />
-                            {error && <p className='text-red-500 text-center font-semibold'>{error}</p>}
+                            {error && <p className='text-red-500 text-center font-semibold bg-white/90 p-2 rounded'>{error}</p>}
                             <Button
                                 leftIcon={<SparkleIcon size={28} color='black' />}
                                 variant="active"
                                 size="xl"
                                 onClick={() => handleNextStep()}
+                                disabled={!nickname.trim()}
                             >
                                 Ok, LFG!
+                            </Button>
+                            <Button
+                                variant="active"
+                                size="xl"
+                                buttoncolor={"darkened"}
+                                onClick={() => setStepper(JoinGameStep.ENTERGAMEPIN)}
+                            >
+                                Back
                             </Button>
                         </div>
                     </div>
@@ -205,6 +255,9 @@ const JoinGame = () => {
                             <CardHeader className='text-center px-8'>
                                 <p className='text-lg font-semibold mb-2'>You're in! 🎉</p>
                                 <p className='text-sm text-gray-600'>
+                                    Game PIN: <strong>{gameSession?.gamePin}</strong>
+                                </p>
+                                <p className='text-xs text-gray-500 mt-2'>
                                     See your nickname on the host's screen?
                                 </p>
                             </CardHeader>
@@ -222,7 +275,7 @@ const JoinGame = () => {
 
                         {/* Connection Status */}
                         <p className='text-white/60 text-xs mt-4'>
-                            {isConnected ? '🟢 Connected' : '🔴 Reconnecting...'}
+                            {isConnected ? '🟢 Connected to game' : '🔴 Reconnecting...'}
                         </p>
                     </div>
                 )

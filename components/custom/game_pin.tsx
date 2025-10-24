@@ -5,7 +5,7 @@ import { Card, CardHeader } from '@/components/ui/card'
 import { UserIcon } from '@phosphor-icons/react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import React, { useState, useEffect } from 'react'
-import { getGameSession, startGame, getLeaderboard } from '@/services/quiz_service'
+import { getGameSession, getLeaderboard } from '@/services/quiz_service'
 import { IPlayer } from '@/interfaces/IQuiz'
 import { GameState } from '@/enums/game_state'
 import socketClient from '@/utils/socket.client'
@@ -64,13 +64,10 @@ const LobbyPage = () => {
             console.log('✅ Connected to WebSocket')
             setIsConnected(true)
             
-            // IMPORTANT: Join the game room after connecting
-            // This tells the backend which game session to track
+            // FIX #1: Join as Host (won't create player entity in backend)
             if (sessionId) {
                 console.log('🎮 Joining game room:', sessionId)
-                // For host, join as "host", for players they'll join with their name in join page
-                const playerName = isHost ? 'Host' : 'Spectator'
-                socketClient.joinGame(sessionId, playerName)
+                socketClient.joinGame(sessionId, isHost ? 'Host' : 'Spectator')
             }
         })
 
@@ -138,7 +135,6 @@ const LobbyPage = () => {
             console.log('📡 Broadcasting start-game event')
             socketClient.startGame(sessionId)
             
-            
         } catch (error) {
             console.error('❌ Failed to start game:', error)
         }
@@ -173,6 +169,7 @@ const LobbyPage = () => {
                 {isConnected ? '🟢 Connected' : '🔴 Disconnected'}
                 {sessionId && <div>Room: {sessionId.slice(0, 8)}...</div>}
                 {players.length > 0 && <div>Players: {players.length}</div>}
+                {isHost && <div>👑 Host View</div>}
             </div>
 
             {/* Game PIN Display */}
