@@ -191,9 +191,6 @@ const LobbyPage = () => {
                     <h3 className='text-xl font-semibold text-center'>
                         Players {players.length}
                     </h3>
-                    <p className='text-sm text-gray-600'>
-                        {gameSession.quiz?.questions?.length} Questions
-                    </p>
                 </CardHeader>
             </Card>
 
@@ -231,7 +228,7 @@ const LobbyPage = () => {
                     >
                         {players.length === 0 
                             ? 'Waiting for players...' 
-                            : `Start Game (${players.length} players)`}
+                            : `Start Game`}
                     </Button>
                     <p className='text-white text-center text-sm'>
                         {players.length === 0 
