@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { JoystickIcon, SquareIcon, StarIcon, CircleIcon, TriangleIcon, UserIcon } from '@phosphor-icons/react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import React, { useState, useEffect } from 'react'
-import { getGameSessionByGamePin, getQuizById } from '@/services/quiz_service'
+import { getGameSession, getGameSessionByGamePin, getQuizById } from '@/services/quiz_service'
 import { IPlayer, IQuiz } from '@/interfaces/IQuiz'
 import { GameState } from '@/enums/game_state'
 import socketClient from '@/utils/socket.client'
@@ -77,6 +77,15 @@ const GamePage = () => {
 
         const socket = socketClient.connect()
 
+        // Sync state on mount (handles page refresh)
+        if (socket.connected && sessionId) {
+            getGameSession(sessionId).then(response => {
+                setGameState(response.payload.status as GameState)
+                setCurrentQuestionIndex(response.payload.currentQuestionIndex)
+                setTimeLeft(response.payload.timeLeft)
+            }).catch(console.error)
+        }
+
         if (socket.connected) {
             console.log('✅ Already connected to WebSocket')
             setIsConnected(true)
@@ -102,6 +111,11 @@ const GamePage = () => {
         // Listen for real-time timer updates from backend
         socket.on('time-update', (data) => {
             setTimeLeft(data.timeLeft)
+        })
+
+        socket.on('game-state-changed', (data: { state: GameState }) => {
+            console.log('🔄 Game state changed:', data.state)
+            setGameState(data.state)
         })
 
         // Listen for player answers in real-time
@@ -132,6 +146,7 @@ const GamePage = () => {
             socket.off('question-started')
             socket.off('countdown-tick')
             socket.off('time-update')
+            socket.off('game-state-changed')
         }
     }, [sessionId])
 
@@ -218,33 +233,28 @@ const GamePage = () => {
     // Show result screen
     if (gameState === GameState.RESULTS_READY || gameState === GameState.PAYOUT) {
         return (
-            <div className='result-background h-screen bg-no-repeat bg-cover flex flex-col justify-around p-8'>
+            <div className='result-background h-screen bg-no-repeat bg-cover flex flex-col justify-around py-8 px-2'>
                 <Card>
                     <CardHeader className='text-3xl text-center'>
                         Scoreboard
                     </CardHeader>
                 </Card>
 
-                <div className='flex flex-col items-center gap-3 max-h-96 overflow-y-auto'>
+                <Card className='flex flex-col items-center gap-3 max-h-96 overflow-y-auto px-2'>
                     {leaderboard.length === 0 ? (
                         <p className='text-white text-xl'>No players yet...</p>
                     ) : (
                         leaderboard.map((player, index) => (
-                            <div key={player.id} className='flex items-center justify-center gap-5 w-full max-w-2xl'>
-                                <div className='text-white text-2xl font-bold w-8'>{index + 1}</div>
-                                <Card className='active:border-b-6 active:border-r-6'>
-                                    <CardHeader className='justify-center items-center px-10'>
-                                        <UserIcon size={32} />
-                                    </CardHeader>
-                                </Card>
-                                <h3 className='text-white text-xl text-center flex-1'>{player.playerName}</h3>
-                                <h3 className='font-[Oi] text-white [text-stroke:_2px_black] text-3xl'>
+                            <div key={player.id} className='flex text-black items-center justify-center gap-5 w-full max-w-2xl'>
+                                <div className='text-2xl font-bold w-8'>{index + 1}</div>
+                                <h3 className='text-3xl sm:text-4xl text-left flex-1'>{player.playerName}</h3>
+                                <h3 className=' text-4xl text-center'>
                                     {player.totalScore}
                                 </h3>
                             </div>
                         ))
                     )}
-                </div>
+                </Card>
 
                 <div className='flex justify-center'>
                     <Button
