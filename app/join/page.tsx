@@ -138,10 +138,10 @@ const JoinGame = () => {
             case JoinGameStep.CHOOSEGAMEMODE:
                 return (
                     <div className='flex flex-col start-screen-background h-screen w-screen bg-no-repeat bg-cover md:flex justify-center md:items-center p-1 sm:p-3'>
-                        <h1 className="font-[Oi] text-white [-webkit-text-stroke:2px_black] sm:[-webkit-text-stroke:3px_black] text-4xl xsm:text-6xl sm:text-8xl">
+                        <h1 className="font-[Oi] text-white [-webkit-text-stroke:2px_black] sm:[-webkit-text-stroke:3px_black] text-4xl xsm:text-6xl sm:text-8xl text-center">
                             Flamingo
                         </h1>
-                        <div className='flex flex-col justify-end mt-4 gap-2'>
+                        <div className='flex flex-col sm:flex-row justify-center mt-4 gap-2'>
                             <Button
                                 leftIcon={<LegoIcon size={24} weight="duotone" />}
                                 variant="active"
@@ -168,7 +168,7 @@ const JoinGame = () => {
             case JoinGameStep.ENTERGAMEPIN:
                 return (
                     <div className='flex flex-col game-pin-background h-screen w-screen bg-no-repeat bg-cover md:flex justify-center md:items-center p-1 sm:p-3'>
-                        <h1 className="font-[Oi] text-white [-webkit-text-stroke:2px_black] sm:[-webkit-text-stroke:3px_black] text-4xl xsm:text-6xl sm:text-8xl">
+                        <h1 className="font-[Oi] text-white [-webkit-text-stroke:2px_black] sm:[-webkit-text-stroke:3px_black] text-4xl xsm:text-6xl sm:text-8xl text-center">
                             Flamingo
                         </h1>
                         <div className='flex flex-col justify-end mt-4 gap-2'>
@@ -204,7 +204,7 @@ const JoinGame = () => {
             case JoinGameStep.ENTERNICKNAME:
                 return (
                     <div className='flex flex-col start-screen-background h-screen w-screen bg-no-repeat bg-cover md:flex justify-center md:items-center p-1 sm:p-3'>
-                        <h1 className="font-[Oi] text-white [-webkit-text-stroke:2px_black] sm:[-webkit-text-stroke:3px_black] text-4xl xsm:text-6xl sm:text-8xl">
+                        <h1 className="font-[Oi] text-white [-webkit-text-stroke:2px_black] sm:[-webkit-text-stroke:3px_black] text-4xl xsm:text-6xl sm:text-8xl text-center">
                             Flamingo
                         </h1>
                         <div className='flex flex-col justify-end mt-4 gap-2'>
@@ -239,7 +239,10 @@ const JoinGame = () => {
                 )
             case JoinGameStep.LOBBYROOM:
                 return (
-                    <div className="flex flex-col p-2 gap-2 game-type-background h-screen bg-no-repeat bg-cover justify-center">
+                    <div className="flex flex-col p-2 gap-2 game-type-background h-screen w-screen bg-no-repeat bg-cover md:flex justify-center md:items-center p-1 sm:p-3">
+                        <h1 className="font-[Oi] text-white [-webkit-text-stroke:2px_black] sm:[-webkit-text-stroke:3px_black] text-4xl xsm:text-6xl sm:text-8xl text-center">
+                            Flamingo
+                        </h1>
                         <div className='flex flex-col items-center gap-3'>
                             <Card className='active:border-b-6 active:border-r-6'>
                                 <CardHeader className='justify-center items-center px-10'>
