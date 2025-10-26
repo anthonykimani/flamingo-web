@@ -264,8 +264,8 @@ const GamePage = () => {
 
     // Show question screen
     return (
-        <div className='game-pin-background h-screen bg-no-repeat bg-cover flex justify-around'>
-            <div className='w-full md:w-1/2 flex flex-col justify-center gap-10 p-4'>
+        <div className='game-pin-background h-full bg-no-repeat bg-cover flex justify-around'>
+            <div className='w-full flex flex-col justify-center gap-10 px-4'>
                 {/* Connection Status */}
                 <div className='absolute top-4 right-4'>
                     <span className='text-white text-sm'>
@@ -282,8 +282,12 @@ const GamePage = () => {
 
                 {/* Timer and Answers Count */}
                 <div className='flex justify-between items-center'>
-                    <div className='border-2 border-black p-5 font-[Oi] text-white text-3xl rounded-full bg-[#F24E1E]'>
-                        {timeLeft}
+                    <div
+                        className='flex items-center text-white text-xl'>
+                        <div className='border-2 border-black p-5 font-[Oi] text-white text-3xl rounded-full bg-[#F24E1E]'>
+                            {timeLeft}
+                        </div>
+                        <p className='ml-2'>seconds remaining</p>
                     </div>
                     <Button variant="active" size="xl">
                         {answersReceived} Answers
@@ -303,7 +307,7 @@ const GamePage = () => {
                                     <Icon size={48} color="white" weight="fill" />
                                 </div>
                                 <CardContent className="flex items-center justify-center w-full pl-20 pr-6">
-                                    <p className="text-xl font-bold text-white text-center line-clamp-3 overflow-hidden break-words">
+                                    <p className="text-4xl font-bold text-white text-center line-clamp-3 overflow-hidden break-words">
                                         {answer.answer}
                                     </p>
                                 </CardContent>
@@ -313,7 +317,7 @@ const GamePage = () => {
                 </div>
 
                 {/* Progress and Controls */}
-                <div className='flex flex-col md:flex-row justify-between items-center mt-4 gap-2'>
+                <div className='flex flex-col md:flex-row justify-between items-center gap-2'>
                     <div className='text-white text-lg font-semibold'>
                         Question {currentQuestionIndex + 1} of {quizData.questions.length}
                     </div>
@@ -327,7 +331,7 @@ const GamePage = () => {
                     <Card>
                         <CardHeader>
                             <p className='text-sm text-gray-600'>Players who answered:</p>
-                            <div className='flex flex-wrap gap-2 mt-2'>
+                            <div className='flex flex-wrap gap-2 '>
                                 {Array.from(playersAnswered).map((playerName) => (
                                     <span
                                         key={playerName}
