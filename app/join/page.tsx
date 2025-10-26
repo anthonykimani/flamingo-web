@@ -240,41 +240,35 @@ const JoinGame = () => {
                 )
             case JoinGameStep.LOBBYROOM:
                 return (
-                    <div className="flex flex-col p-2 gap-2 game-type-background h-screen w-screen bg-no-repeat bg-cover md:flex justify-center md:items-center p-1 sm:p-3">
+                    <div className="flex flex-col p-2 gap-2 game-type-background h-screen w-screen bg-no-repeat bg-cover md:flex justify-center p-1 sm:p-3">
                         <h1 className="font-[Oi] text-white [-webkit-text-stroke:2px_black] sm:[-webkit-text-stroke:3px_black] text-4xl xsm:text-6xl sm:text-8xl text-center">
                             Flamingo
                         </h1>
                         <div className='flex flex-col items-center gap-3'>
-                            <Card className='active:border-b-6 active:border-r-6'>
+                            <Card className={'active:border-b-6 active:border-r-6 active:border-t-2 active:border-l-2 text-black p-6'}>
                                 <CardHeader className='justify-center items-center px-10'>
-                                    <UserIcon size={48} />
+                                    <UserIcon size={32} weight='bold' />
                                 </CardHeader>
                             </Card>
                             <h3 className='text-white text-2xl font-bold text-center'>{nickname}</h3>
                         </div>
 
                         <div className='flex justify-around'>
-                            <Card className='w-full max-w-md  mx-4'>
-                            <CardHeader className='text-center px-8'>
-                                <p className='text-lg font-semibold mb-2'>You're in! 🎉</p>
-                                <p className='text-sm text-gray-600'>
-                                    Game PIN: <strong>{gameSession?.gamePin}</strong>
-                                </p>
-                                <p className='text-xs text-gray-500 mt-2'>
-                                    See your nickname on the host's screen?
-                                </p>
-                            </CardHeader>
-                        </Card>
-                        </div>
-
-                        <div className='text-center'>
-                            <p className='text-white text-xl font-semibold mb-2'>
+                            <Card className='w-full max-w-md'>
+                                <CardHeader className='text-center px-8'>
+                                    <p className='text-2xl font-semibold mb-2 '>You're in! 🎉</p>
+                                    <p className='text-lg font-semibold mb-2'>
+                                        See your nickname on the host's screen?
+                                    </p>
+                            <p className='text-lg font-semibold mb-2'>
                                 Waiting for game to start...
                             </p>
-                            <div className='animate-pulse text-white/80 text-sm flex items-center justify-center gap-2'>
+                            <div className='animate-pulse text-black/80 text-sm flex items-center justify-center gap-2'>
                                 <span>⏳</span>
                                 <span>Get ready!</span>
                             </div>
+                                </CardHeader>
+                            </Card>
                         </div>
 
                         {/* Connection Status */}

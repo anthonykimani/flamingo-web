@@ -11,13 +11,15 @@ import { GameState } from '@/enums/game_state'
 import socketClient from '@/utils/socket.client'
 import { IGameSession } from '@/interfaces/IGame'
 import { SocketEvents } from '@/enums/socket-events'
+import { PLAYER_COLORS } from '@/lib/constant'
+
 
 const LobbyPage = () => {
     const [players, setPlayers] = useState<IPlayer[]>([])
     const [gameSession, setGameSession] = useState<IGameSession | null>(null)
     const [loading, setLoading] = useState(true)
     const [isConnected, setIsConnected] = useState(false)
-    
+
     const router = useRouter()
     const searchParams = useSearchParams()
     const sessionId = searchParams.get('sessionId')
@@ -43,11 +45,11 @@ const LobbyPage = () => {
             try {
                 const response = await getGameSession(sessionId)
                 setGameSession(response.payload)
-                
+
                 // Get initial players from leaderboard
                 const leaderboardResponse = await getLeaderboard(sessionId)
                 setPlayers(leaderboardResponse.payload)
-                
+
                 setLoading(false)
             } catch (error) {
                 console.error('Failed to fetch game session:', error)
@@ -59,11 +61,11 @@ const LobbyPage = () => {
 
         // Connect to WebSocket
         const socket = socketClient.connect()
-        
+
         socket.on('connect', () => {
             console.log('✅ Connected to WebSocket')
             setIsConnected(true)
-            
+
             // FIX #1: Join as Host (won't create player entity in backend)
             if (sessionId) {
                 console.log('🎮 Joining game room:', sessionId)
@@ -130,11 +132,11 @@ const LobbyPage = () => {
 
         try {
             console.log('🎮 Starting game...')
-            
+
             // Emit WebSocket event to notify all players
             console.log('📡 Broadcasting start-game event')
             socketClient.startGame(sessionId)
-            
+
         } catch (error) {
             console.error('❌ Failed to start game:', error)
         }
@@ -196,18 +198,16 @@ const LobbyPage = () => {
 
             {/* Players List */}
             <div className='w-full max-w-2xl max-h-96 overflow-y-auto'>
-                <CardHeader>
-                </CardHeader>
                 <div className='grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 px-6 pb-6'>
                     {players.length === 0 ? null : (
-                        players.map((player) => (
+                        players.map((player, index) => (
                             <div key={player.id} className='flex flex-col items-center gap-2 animate-fadeIn'>
-                                <Card className='active:border-b-6 active:border-r-6 w-full'>
-                                    <CardHeader className='justify-center items-center py-4'>
-                                        <UserIcon size={32} />
+                                <Card className={`active:border-b-6 active:border-r-6 active:border-t-2 active:border-l-2 ${PLAYER_COLORS[index % PLAYER_COLORS.length]} text-white p-6`}>
+                                    <CardHeader className='justify-center items-center'>
+                                        <UserIcon size={32} weight='fill' />
                                     </CardHeader>
                                 </Card>
-                                <p className='text-sm text-center font-medium truncate w-full'>
+                                <p className='text-lg text-white text-center font-bold truncate w-full'>
                                     {player.playerName}
                                 </p>
                             </div>
@@ -226,13 +226,13 @@ const LobbyPage = () => {
                         disabled={players.length === 0}
                         buttoncolor='gametype'
                     >
-                        {players.length === 0 
-                            ? 'Waiting for players...' 
+                        {players.length === 0
+                            ? 'Waiting for players...'
                             : `Start Game`}
                     </Button>
                     <p className='text-white text-center text-sm'>
-                        {players.length === 0 
-                            ? 'Share the PIN above with players' 
+                        {players.length === 0
+                            ? 'Share the PIN above with players'
                             : 'Click to start when everyone is ready'}
                     </p>
                 </div>
