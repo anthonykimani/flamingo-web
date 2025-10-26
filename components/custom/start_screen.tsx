@@ -4,20 +4,22 @@ import React from 'react'
 import { Button } from '../ui/button'
 import { GameControllerIcon, MagicWandIcon } from '@phosphor-icons/react'
 import { useRouter } from 'next/navigation';
-import { useAppKit } from '@reown/appkit/react';
+import { useAppKitWallet } from "@reown/appkit-wallet-button/react";
 
 const StartScreen = () => {
     const router = useRouter();
-    const { open, close } = useAppKit();
+    const { isReady, isPending, connect } = useAppKitWallet({
+    namespace: 'eip155', // Optional: specify chain namespace
+    onSuccess(parsedCaipAddress) {
+        router.push("/create") 
+    },
+    onError(error) {
+      // ...
+    }
+  })
 
     const createGame = async () => {
-        try {
-            open()
-        } catch (error) {
-            console.error(error)
-        } finally {
-            router.push("/create")
-        }
+        connect("google")
     }
 
     return (
