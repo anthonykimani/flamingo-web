@@ -219,8 +219,9 @@ const JoinGame = () => {
                             />
                             {error && <p className='text-red-500 text-center font-semibold bg-white/90 p-2 rounded'>{error}</p>}
                             <Button
-                                leftIcon={<SparkleIcon size={28} color='black' />}
+                                leftIcon={<SparkleIcon size={28} color='white' />}
                                 variant="active"
+                                className='bg-[#FF9700] text-white'
                                 size="xl"
                                 onClick={() => handleNextStep()}
                                 disabled={!nickname.trim()}
