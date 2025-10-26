@@ -4,7 +4,8 @@ import { Button } from '@/components/ui/button'
 import { Card, CardHeader } from '@/components/ui/card'
 import { GameState } from '@/enums/game_state'
 import { SocketEvents } from '@/enums/socket-events'
-import { IAnswer, IQuestion } from '@/interfaces/IQuiz'
+import { IAnswer, IPlayer, IQuestion } from '@/interfaces/IQuiz'
+import { getGameSession } from '@/services/quiz_service'
 import socketClient from '@/utils/socket.client'
 import { CircleIcon, SquareIcon, StarIcon, TriangleIcon } from '@phosphor-icons/react'
 import { useRouter, useSearchParams } from 'next/navigation'
@@ -33,6 +34,7 @@ const PlayGame = () => {
     } | null>(null)
     const [countdown, setCountdown] = useState<number | null>(null)
     const [questionStartTime, setQuestionStartTime] = useState<Date | null>(null)
+    const [leaderboard, setLeaderboard] = useState<IPlayer[]>([])
 
     const router = useRouter()
     const searchParams = useSearchParams()
@@ -46,6 +48,12 @@ const PlayGame = () => {
         }
 
         const socket = socketClient.connect()
+
+        if (socket.connected && sessionId) {
+            getGameSession(sessionId).then(response => {
+                setGameState(response.payload.status as GameState)
+            }).catch(console.error)
+        }
 
         // Listen for countdown
         socket.on('countdown-tick', (data: { count: number }) => {
@@ -101,6 +109,7 @@ const PlayGame = () => {
         // Listen for question results
         socketClient.onQuestionResults((data: { leaderboard: any[] }) => {
             console.log('📊 Question results:', data)
+            setLeaderboard(data.leaderboard)
             setGameState(GameState.RESULTS_READY)
         })
 
@@ -124,6 +133,7 @@ const PlayGame = () => {
             socketClient.off(SocketEvents.QUESTION_RESULTS)
             socketClient.off(SocketEvents.GAME_ENDED)
             socketClient.off(SocketEvents.ERROR)
+            socket.off('game-state-changed')
         }
     }, [sessionId, playerName, router])
 
@@ -213,6 +223,23 @@ const PlayGame = () => {
                             <div className='text-xl text-gray-600'>
                                 Time's up! No answer submitted.
                             </div>
+                        )}
+
+                        <CardHeader className='text-3xl text-center mt-10'>
+                            Scoreboard
+                        </CardHeader>
+                        {leaderboard.length === 0 ? (
+                            <p className='text-white text-xl'>No players yet...</p>
+                        ) : (
+                            leaderboard.map((player, index) => (
+                                <div key={player.id} className='flex text-black items-center justify-center gap-5 w-full max-w-2xl'>
+                                    <div className='text-2xl font-bold w-8'>{index + 1}</div>
+                                    <h3 className='text-3xl sm:text-4xl text-left flex-1'>{player.playerName}</h3>
+                                    <h3 className=' text-4xl text-center'>
+                                        {player.totalScore}
+                                    </h3>
+                                </div>
+                            ))
                         )}
                     </CardHeader>
                 </Card>

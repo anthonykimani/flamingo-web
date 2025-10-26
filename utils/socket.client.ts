@@ -1,12 +1,13 @@
 import { io, Socket } from 'socket.io-client';
 import { SocketEvents } from '@/enums/socket-events';
+import { GameState } from '@/enums/game_state';
 
 class SocketClient {
     private socket: Socket | null = null;
     private url: string;
 
     constructor() {
-        this.url = process.env.NEXT_PUBLIC_GAMESERVICE_BASE_URL??"";
+        this.url = process.env.NEXT_PUBLIC_GAMESERVICE_BASE_URL ?? "";
     }
 
     connect(): Socket {
@@ -77,6 +78,9 @@ class SocketClient {
     }
 
     // Event Listeners
+    onGameStateChanged(callback: (data: { state: GameState; gameSessionId: string }) => void) {
+        this.socket?.on('game-state-changed', callback);
+    }
     onPlayerJoined(callback: (data: any) => void) {
         this.socket?.on(SocketEvents.PLAYER_JOINED, callback);
     }
@@ -98,8 +102,8 @@ class SocketClient {
     }
 
     onQuestionStarted(callback: (data: any) => void) {
-    this.socket?.on(SocketEvents.QUESTION_STARTED, callback);
-}
+        this.socket?.on(SocketEvents.QUESTION_STARTED, callback);
+    }
 
     onNextQuestion(callback: (data: any) => void) {
         this.socket?.on(SocketEvents.NEXT_QUESTION, callback);
