@@ -57,6 +57,8 @@ interface ButtonProps extends React.ComponentProps<"button">, VariantProps<typeo
   onDelete?: (e: React.MouseEvent) => void
   leftIcon?: React.ReactNode
   centerIcon?: React.ReactNode
+  showComingSoon?: boolean
+  comingSoonText?: string
 }
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
@@ -72,6 +74,8 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     children,
     leftIcon,
     centerIcon,
+    showComingSoon = false,
+    comingSoonText = "COMING SOON",
     ...props
   }, ref) => {
     const Comp = asChild ? Slot : "button"
@@ -111,6 +115,11 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
           >
             <XCircleIcon size={24} weight="bold" />
           </button>
+        )}
+        {showComingSoon && (
+          <div className="absolute -top-2 -right-2 bg-yellow-400 text-black text-xs font-bold px-3 py-1 rounded-md border-2 border-yellow-600 shadow-lg transform whitespace-nowrap">
+            {comingSoonText}
+          </div>
         )}
       </div>
     )
