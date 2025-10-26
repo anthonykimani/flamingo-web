@@ -4,12 +4,20 @@ import React from 'react'
 import { Button } from '../ui/button'
 import { GameControllerIcon, MagicWandIcon } from '@phosphor-icons/react'
 import { useRouter } from 'next/navigation';
+import { useAppKit } from '@reown/appkit/react';
 
 const StartScreen = () => {
     const router = useRouter();
+    const { open, close } = useAppKit();
 
-    const createGame = () => {
-        router.push("/create")
+    const createGame = async () => {
+        try {
+            open()
+        } catch (error) {
+            console.error(error)
+        } finally {
+            router.push("/create")
+        }
     }
 
     return (
