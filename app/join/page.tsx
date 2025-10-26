@@ -150,14 +150,6 @@ const JoinGame = () => {
                             >
                                 Enter Game Pin
                             </Button>
-                            <Button
-                                leftIcon={<SparkleIcon size={28} color='black' />}
-                                variant="active"
-                                size="xl"
-                                onClick={() => router.push("/create")}
-                            >
-                                Create New Game
-                            </Button>
                         </div>
                         {/* Connection Status */}
                         <p className='text-white text-sm mt-4'>
