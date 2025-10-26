@@ -1,7 +1,7 @@
 'use client'
 
 import { Button } from '@/components/ui/button'
-import { Card, CardHeader } from '@/components/ui/card'
+import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { JoystickIcon, SquareIcon, StarIcon, CircleIcon, TriangleIcon, UserIcon } from '@phosphor-icons/react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import React, { useState, useEffect } from 'react'
@@ -12,10 +12,10 @@ import socketClient from '@/utils/socket.client'
 
 // Icon mapping for answers
 const ANSWER_CONFIG = [
-    { Icon: SquareIcon, color: 'bg-[#009900]' },
-    { Icon: StarIcon, color: 'bg-[#FF9700]' },
-    { Icon: TriangleIcon, color: 'bg-[#2819DB]' },
-    { Icon: CircleIcon, color: 'bg-[#F14100]' }
+    { Icon: SquareIcon, color: 'bg-[#009900]', borderColor: 'border-[#006600]' },
+    { Icon: StarIcon, color: 'bg-[#FF9700]', borderColor: 'border-[#cc7800]' },
+    { Icon: TriangleIcon, color: 'bg-[#2819DB]', borderColor: 'border-[#1a0f8a]' },
+    { Icon: CircleIcon, color: 'bg-[#F14100]', borderColor: 'border-[#b33000]' }
 ]
 
 const GamePage = () => {
@@ -264,8 +264,8 @@ const GamePage = () => {
 
     // Show question screen
     return (
-        <div className='game-pin-background h-screen bg-no-repeat bg-cover flex justify-around'>
-            <div className='w-full md:w-1/2 flex flex-col justify-center gap-10 p-4'>
+        <div className='game-pin-background h-full md:h-screen bg-no-repeat bg-cover flex justify-around'>
+            <div className='w-full flex flex-col justify-center gap-10 px-4'>
                 {/* Connection Status */}
                 <div className='absolute top-4 right-4'>
                     <span className='text-white text-sm'>
@@ -280,43 +280,40 @@ const GamePage = () => {
                     </CardHeader>
                 </Card>
 
-                {/* Timer and Answers Count */}
-                <div className='flex justify-between items-center'>
-                    <div className='border-2 border-black p-5 font-[Oi] text-white text-3xl rounded-full bg-[#F24E1E]'>
-                        {timeLeft}
-                    </div>
-                    <Button variant="active" size="xl">
-                        {answersReceived} Answers
-                    </Button>
-                </div>
-
                 {/* Answer Options */}
-                <div className='grid grid-cols-2 gap-2'>
+                <div className='grid grid-cols-1 sm:grid-cols-2 gap-4'>
                     {currentQuestion.answers.map((answer, index) => {
-                        const { Icon, color } = ANSWER_CONFIG[index % ANSWER_CONFIG.length]
+                        const { Icon, color, borderColor } = ANSWER_CONFIG[index % ANSWER_CONFIG.length]
                         return (
-                            <Button
+                            <Card
                                 key={answer.id}
-                                leftIcon={<Icon size={32} color="white" weight="fill" />}
-                                variant="active"
-                                className={`${color} text-2xl text-white transition-all`}
-                                size="gameanswer"
-                                disabled
+                                className={`${color} ${borderColor} border-2 border-b-[6px] border-r-[6px] cursor-default h-[150px] flex items-center justify-center relative`}
                             >
-                                {answer.answer}
-                            </Button>
+                                <div className="absolute left-6 top-1/2 -translate-y-1/2">
+                                    <Icon size={48} color="white" weight="fill" />
+                                </div>
+                                <CardContent className="flex items-center justify-center w-full pl-20 pr-6">
+                                    <p className="text-4xl font-bold text-white text-center line-clamp-3 overflow-hidden break-words">
+                                        {answer.answer}
+                                    </p>
+                                </CardContent>
+                            </Card>
                         )
                     })}
                 </div>
 
-                {/* Progress and Controls */}
-                <div className='flex flex-col md:flex-row justify-between items-center mt-4 gap-2'>
-                    <div className='text-white text-lg font-semibold'>
+                {/* Timer and Answers Count */}
+                <div className='flex justify-between items-center'>
+                    <div
+                        className='flex items-center text-white text-xl'>
+                        <div className='border-2 border-black p-5 font-[Oi] text-white text-3xl rounded-full bg-[#F24E1E]'>
+                            {timeLeft}
+                        </div>
+                        <p className='ml-2'>seconds remaining</p>
+                    </div>
+                    <Button variant="active" size="xl">
                         Question {currentQuestionIndex + 1} of {quizData.questions.length}
-                    </div>
-                    <div className='text-white text-sm'>
-                        Game State: {gameState}
-                    </div>
+                    </Button>
                 </div>
 
                 {/* Players Who Answered (Real-time) */}
@@ -324,7 +321,7 @@ const GamePage = () => {
                     <Card>
                         <CardHeader>
                             <p className='text-sm text-gray-600'>Players who answered:</p>
-                            <div className='flex flex-wrap gap-2 mt-2'>
+                            <div className='flex flex-wrap gap-2 '>
                                 {Array.from(playersAnswered).map((playerName) => (
                                     <span
                                         key={playerName}
@@ -337,17 +334,6 @@ const GamePage = () => {
                         </CardHeader>
                     </Card>
                 )}
-
-                {/* Timer Status */}
-                <Card>
-                    <CardHeader className='text-center'>
-                        <p className='text-sm text-gray-600'>
-                            {timeLeft > 0
-                                ? `Waiting for answers... ${timeLeft}s remaining`
-                                : 'Calculating results...'}
-                        </p>
-                    </CardHeader>
-                </Card>
             </div>
         </div>
     )
