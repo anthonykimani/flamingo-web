@@ -18,7 +18,7 @@ if (!projectId) {
 const metadata = {
   name: 'Flamingo',
   description: 'A real-time multiplayer quiz game similar to Kahoot',
-  url: 'https://playflamingo.xyz/', 
+  url: 'https://www.playflamingo.xyz/', 
   icons: ['https://avatars.githubusercontent.com/u/179229932']
 }
 
