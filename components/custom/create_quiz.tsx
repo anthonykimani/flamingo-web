@@ -244,7 +244,7 @@ const CreateQuiz = ({ onSave }: { onSave: (gameSession: any) => void }) => {
                         leftIcon={<XIcon size={24} color='white' />}
                         variant="destructive"
                         size="xl"
-                        onClick={() => router.push('/')}
+                        onClick={() => router.back()}
                     >
                         Cancel
                     </Button>

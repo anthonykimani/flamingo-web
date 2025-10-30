@@ -1,3 +1,5 @@
+'use client'
+
 import GenerateQuiz from '@/components/custom/generate_quiz'
 import React from 'react'
 
