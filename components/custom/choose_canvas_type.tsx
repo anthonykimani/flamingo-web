@@ -48,7 +48,6 @@ const ChooseCanvasType = ({ onSelect }: { onSelect: () => void }) => {
                 </Card>
 
             </div>
-            <Button variant={"active"} className='bg-black/10 text-white' size={"xl"} >Create your Quiz</Button>
         </div>
     )
 }

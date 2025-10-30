@@ -3,6 +3,7 @@
 import ChooseCanvasType from '@/components/custom/choose_canvas_type';
 import ChooseGameType from '@/components/custom/choose_game_type'
 import CreateQuiz from '@/components/custom/create_quiz';
+import NavigationBar from '@/components/navigation/navigation-bar';
 import { CreateGameStep } from '@/enums/create_game_step';
 import { useRouter } from 'next/navigation';
 import React, { useState } from 'react'
@@ -42,7 +43,8 @@ const GameType = () => {
         )
       case CreateGameStep.GAMECANVAS:
         return (
-          <div className='canvas-type-background h-screen bg-no-repeat bg-cover flex justify-center items-center p-3'>
+          <div className='canvas-type-background h-screen bg-no-repeat bg-cover flex flex-col justify-around p-3'>
+            <NavigationBar />
             <ChooseCanvasType onSelect={handleNextStep} />
           </div>
         )
