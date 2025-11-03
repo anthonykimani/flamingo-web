@@ -12,13 +12,15 @@ import socketClient from '@/utils/socket.client'
 import { IGameSession } from '@/interfaces/IGame'
 import { SocketEvents } from '@/enums/socket-events'
 import { PLAYER_COLORS } from '@/lib/constant'
+import { useAppKitAccount } from '@reown/appkit/react'
 
 
 const LobbyPage = () => {
     const [players, setPlayers] = useState<IPlayer[]>([])
     const [gameSession, setGameSession] = useState<IGameSession | null>(null)
     const [loading, setLoading] = useState(true)
-    const [isConnected, setIsConnected] = useState(false)
+    const [isSocketConnected, setIsSocketConnected] = useState(false)
+    const { isConnected, address } = useAppKitAccount()
 
     const router = useRouter()
     const searchParams = useSearchParams()
@@ -59,23 +61,29 @@ const LobbyPage = () => {
 
         fetchGameSession()
 
+        if (!address) {
+            console.log('Wallet connection lost. Please return to start.')
+            setTimeout(() => router.push('/'), 2000)
+            return
+        }
+
         // Connect to WebSocket
         const socket = socketClient.connect()
 
         socket.on('connect', () => {
             console.log('✅ Connected to WebSocket')
-            setIsConnected(true)
+            setIsSocketConnected(true)
 
             // FIX #1: Join as Host (won't create player entity in backend)
             if (sessionId) {
                 console.log('🎮 Joining game room:', sessionId)
-                socketClient.joinGame(sessionId, isHost ? 'Host' : 'Spectator')
+                socketClient.joinGame(sessionId, isHost ? 'Host' : 'Spectator', address)
             }
         })
 
         socket.on('disconnect', () => {
             console.log('❌ Disconnected from WebSocket')
-            setIsConnected(false)
+            setIsSocketConnected(false)
         })
 
         // Listen for player joined events
@@ -168,7 +176,7 @@ const LobbyPage = () => {
         <div className="flex flex-col p-4 gap-4 game-type-background h-screen bg-no-repeat bg-cover justify-center items-center w-full">
             {/* Connection Debug Info */}
             <div className='absolute top-4 right-4 bg-black/50 text-white text-xs p-2 rounded'>
-                {isConnected ? '🟢 Connected' : '🔴 Disconnected'}
+                {isSocketConnected ? '🟢 Connected' : '🔴 Disconnected'}
                 {sessionId && <div>Room: {sessionId.slice(0, 8)}...</div>}
                 {players.length > 0 && <div>Players: {players.length}</div>}
                 {isHost && <div>👑 Host View</div>}

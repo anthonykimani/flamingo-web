@@ -11,15 +11,24 @@ import { getGameSessionByGamePin } from '@/services/quiz_service'
 import { GameState } from '@/enums/game_state'
 import socketClient from '@/utils/socket.client'
 import { SocketEvents } from '@/enums/socket-events'
+import { useAppKitAccount } from '@reown/appkit/react'
 
 const JoinGame = () => {
     const [stepper, setStepper] = useState<JoinGameStep>(JoinGameStep.CHOOSEGAMEMODE)
+    const { isConnected, address } = useAppKitAccount()
     const [gamePin, setGamePin] = useState('')
     const [nickname, setNickname] = useState('')
     const [gameSession, setGameSession] = useState<any>(null)
     const [error, setError] = useState('')
-    const [isConnected, setIsConnected] = useState(false)
+    const [isSocketConnected, setIsSocketConnected] = useState(false)
     const router = useRouter()
+
+    useEffect(() => {
+        if (!isConnected) {
+            console.log('⚠️ No wallet connected, redirecting to start')
+            router.push('/')
+        }
+    }, [isConnected, router])
 
     // Connect to WebSocket when component mounts
     useEffect(() => {
@@ -27,12 +36,12 @@ const JoinGame = () => {
 
         socket.on('connect', () => {
             console.log('🦦 Player WebSocket connected')
-            setIsConnected(true)
+            setIsSocketConnected(true)
         })
 
         socket.on('disconnect', () => {
             console.log('🦦 Player WebSocket disconnected')
-            setIsConnected(false)
+            setIsSocketConnected(false)
         })
 
         // Cleanup
@@ -102,11 +111,17 @@ const JoinGame = () => {
                     return
                 }
 
+                if (!address) {
+                    setError('Wallet connection lost. Please return to start.')
+                    setTimeout(() => router.push('/'), 2000)
+                    return
+                }
+
                 try {
                     setError('')
 
                     // Join game via WebSocket
-                    socketClient.joinGame(gameSession.id, nickname)
+                    socketClient.joinGame(gameSession.id, nickname, address)
 
                     // Listen for confirmation
                     socketClient.onJoinedGame((data) => {
@@ -133,6 +148,12 @@ const JoinGame = () => {
         }
     }
 
+    if (!address) {
+        setError('Wallet connection lost. Please return to start.')
+        setTimeout(() => router.push('/'), 2000)
+        return
+    }
+
     const renderStep = () => {
         switch (stepper) {
             case JoinGameStep.CHOOSEGAMEMODE:
@@ -153,7 +174,7 @@ const JoinGame = () => {
                         </div>
                         {/* Connection Status */}
                         <p className='text-white text-sm mt-4'>
-                            {isConnected ? '🟢 Connected' : '🔴 Connecting...'}
+                            {isSocketConnected ? '🟢 Connected' : '🔴 Connecting...'}
                         </p>
                     </div>
                 )
@@ -252,20 +273,20 @@ const JoinGame = () => {
                                     <p className='text-lg font-semibold mb-2'>
                                         See your nickname on the host's screen?
                                     </p>
-                            <p className='text-lg font-semibold mb-2'>
-                                Waiting for game to start...
-                            </p>
-                            <div className='animate-pulse text-black/80 text-sm flex items-center justify-center gap-2'>
-                                <span>⏳</span>
-                                <span>Get ready!</span>
-                            </div>
+                                    <p className='text-lg font-semibold mb-2'>
+                                        Waiting for game to start...
+                                    </p>
+                                    <div className='animate-pulse text-black/80 text-sm flex items-center justify-center gap-2'>
+                                        <span>⏳</span>
+                                        <span>Get ready!</span>
+                                    </div>
                                 </CardHeader>
                             </Card>
                         </div>
 
                         {/* Connection Status */}
                         <p className='absolute top-4 right-4 bg-black/50 text-white text-xs p-2 rounded'>
-                            {isConnected ? '🟢 Connected to game' : '🔴 Reconnecting...'}
+                            {isSocketConnected ? '🟢 Connected to game' : '🔴 Reconnecting...'}
                         </p>
                     </div>
                 )

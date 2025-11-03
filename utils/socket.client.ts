@@ -43,8 +43,8 @@ class SocketClient {
     }
 
     // Game Events
-    joinGame(gameSessionId: string, playerName: string) {
-        this.socket?.emit(SocketEvents.JOIN_GAME, { gameSessionId, playerName });
+    joinGame(gameSessionId: string, playerName: string, walletAddress: string) {
+        this.socket?.emit(SocketEvents.JOIN_GAME, { gameSessionId, playerName, walletAddress });
     }
 
     leaveGame(gameSessionId: string, playerName: string) {
@@ -87,6 +87,14 @@ class SocketClient {
 
     onJoinedGame(callback: (data: any) => void) {
         this.socket?.on(SocketEvents.JOINED_GAME, callback);
+    }
+
+    onPrizesDistributed(callback: (data: { txHash: string; winners: string[] }) => void) {
+        this.socket?.on('prizes-distributed', callback);
+    }
+
+    onPrizeDistributionFailed(callback: (data: { message: string }) => void) {
+        this.socket?.on('prize-distribution-failed', callback);
     }
 
     onPlayerLeft(callback: (data: any) => void) {
