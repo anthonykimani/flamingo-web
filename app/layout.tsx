@@ -1,8 +1,7 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
-import ContextProvider from "@/context";
-import { headers } from "next/headers";
+import PrivyProviders from "@/provider";
 
 const oldschool = localFont({
   src: [
@@ -51,15 +50,13 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const headersObj = await headers();
-  const cookies = headersObj.get('cookie')
 
   return (
     <html lang="en">
       <body
         className={`${oldschool.variable} antialiased font-poppins font-oldschool`}
       >
-        <ContextProvider cookies={cookies}>{children}</ContextProvider>
+        <PrivyProviders>{children}</PrivyProviders>
       </body>
     </html>
   );

@@ -12,10 +12,12 @@ import { GameState } from '@/enums/game_state'
 import socketClient from '@/utils/socket.client'
 import { SocketEvents } from '@/enums/socket-events'
 import { useAppKitAccount } from '@reown/appkit/react'
+import { usePrivy, useWallets } from '@privy-io/react-auth'
 
 const JoinGame = () => {
-    const [stepper, setStepper] = useState<JoinGameStep>(JoinGameStep.CHOOSEGAMEMODE)
-    const { isConnected, address } = useAppKitAccount()
+    const [stepper, setStepper] = useState<JoinGameStep>(JoinGameStep.ENTERGAMEPIN)
+    const { ready, authenticated, user } = usePrivy();
+    const { wallets } = useWallets();
     const [gamePin, setGamePin] = useState('')
     const [nickname, setNickname] = useState('')
     const [gameSession, setGameSession] = useState<any>(null)
@@ -23,12 +25,14 @@ const JoinGame = () => {
     const [isSocketConnected, setIsSocketConnected] = useState(false)
     const router = useRouter()
 
+    const embeddedWallet = wallets.find(wallet => wallet.walletClientType === 'privy');
+
     useEffect(() => {
-        if (!isConnected) {
+        if (!ready) {
             console.log('⚠️ No wallet connected, redirecting to start')
             router.push('/')
         }
-    }, [isConnected, router])
+    }, [ready, router])
 
     // Connect to WebSocket when component mounts
     useEffect(() => {
@@ -68,9 +72,6 @@ const JoinGame = () => {
 
     const handleNextStep = async () => {
         switch (stepper) {
-            case JoinGameStep.CHOOSEGAMEMODE:
-                setStepper(JoinGameStep.ENTERGAMEPIN)
-                break
             case JoinGameStep.ENTERGAMEPIN:
                 if (!gamePin.trim()) {
                     setError('Please enter a game PIN')
@@ -111,7 +112,7 @@ const JoinGame = () => {
                     return
                 }
 
-                if (!address) {
+                if (!embeddedWallet?.address) {
                     setError('Wallet connection lost. Please return to start.')
                     setTimeout(() => router.push('/'), 2000)
                     return
@@ -121,7 +122,7 @@ const JoinGame = () => {
                     setError('')
 
                     // Join game via WebSocket
-                    socketClient.joinGame(gameSession.id, nickname, address)
+                    socketClient.joinGame(gameSession.id, nickname, embeddedWallet?.address)
 
                     // Listen for confirmation
                     socketClient.onJoinedGame((data) => {
@@ -148,36 +149,8 @@ const JoinGame = () => {
         }
     }
 
-    if (!address) {
-        setError('Wallet connection lost. Please return to start.')
-        setTimeout(() => router.push('/'), 2000)
-        return
-    }
-
     const renderStep = () => {
         switch (stepper) {
-            case JoinGameStep.CHOOSEGAMEMODE:
-                return (
-                    <div className='flex flex-col start-screen-background h-screen w-screen bg-no-repeat bg-cover md:flex justify-center md:items-center p-1 sm:p-3'>
-                        <h1 className="font-[Oi] text-white [-webkit-text-stroke:2px_black] sm:[-webkit-text-stroke:3px_black] text-4xl xsm:text-6xl sm:text-8xl text-center">
-                            Flamingo
-                        </h1>
-                        <div className='flex flex-col sm:flex-row justify-center mt-4 gap-2'>
-                            <Button
-                                leftIcon={<LegoIcon size={24} weight="duotone" />}
-                                variant="active"
-                                size="xl"
-                                onClick={() => handleNextStep()}
-                            >
-                                Enter Game Pin
-                            </Button>
-                        </div>
-                        {/* Connection Status */}
-                        <p className='text-white text-sm mt-4'>
-                            {isSocketConnected ? '🟢 Connected' : '🔴 Connecting...'}
-                        </p>
-                    </div>
-                )
             case JoinGameStep.ENTERGAMEPIN:
                 return (
                     <div className='flex flex-col game-pin-background h-screen w-screen bg-no-repeat bg-cover md:flex justify-center md:items-center p-1 sm:p-3'>
