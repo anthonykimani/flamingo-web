@@ -4,36 +4,33 @@ import React, { useEffect } from 'react'
 import { Button } from '../ui/button'
 import { GameControllerIcon, MagicWandIcon } from '@phosphor-icons/react'
 import { useRouter } from 'next/navigation'
-import { useAppKitWallet } from "@reown/appkit-wallet-button/react"
-import { useAppKitAccount } from '@reown/appkit/react'
+import { useLogin, usePrivy, useWallets } from '@privy-io/react-auth'
 
 const StartScreen = () => {
   const router = useRouter()
-  const { isConnected, address } = useAppKitAccount()
 
-  const { isReady, isPending, connect } = useAppKitWallet({
-    namespace: 'eip155',
-    onSuccess(parsedCaipAddress) {
-      router.push('/create')
-    },
-    onError(error) {
-      console.error('Connection error:', error)
-      alert('Failed to connect. Please try again.')
-    },
-  })
+  const { ready, authenticated, user } = usePrivy();
+  const { wallets } = useWallets();
+  const { login } = useLogin();
+
+  // Get the embedded wallet address
+  const embeddedWallet = wallets.find(w => w.walletClientType === 'privy');
+
+  
 
   // Handle button click
-  const handleRoute = async (route:string) => {
-    if (!isReady) {
+  const handleRoute = async (route: string) => {
+    if (!ready) {
       alert('Wallet is still initializing...')
       return
     }
 
-    if (isConnected) {
+
+    if (authenticated) {
       router.push(route)
     } else {
       try {
-        await connect('google') 
+        login()
       } catch (err) {
         console.error(err)
       }
@@ -42,11 +39,11 @@ const StartScreen = () => {
 
   return (
     <div className="flex flex-col start-screen-background h-screen w-screen bg-no-repeat bg-cover">
-        {isConnected && (
-          <p className="mt-3 text-sm text-white/70">
-            Connected as <span className="font-mono">{address?.slice(0, 6)}...</span>
-          </p>
-        )}
+      {authenticated && (
+        <p className="mt-3 text-sm text-white/70">
+          Connected as <span className="font-mono">{embeddedWallet?.address}</span>
+        </p>
+      )}
       <div className="h-full flex flex-col justify-center md:items-center p-1 sm:p-3">
         <h1 className="font-[Oi] text-white [-webkit-text-stroke:2px_black] sm:[-webkit-text-stroke:3px_black] text-4xl xsm:text-6xl sm:text-8xl text-center">
           Flamingo
@@ -56,10 +53,10 @@ const StartScreen = () => {
           <Button
             variant="active"
             size="xl"
-            onClick={()=>handleRoute("/create")}
-            disabled={isPending || !isReady}
+            onClick={() => handleRoute("/create")}
+            disabled={!ready}
           >
-            {isPending ? (
+            {!ready ? (
               <span className="animate-pulse">Connecting...</span>
             ) : (
               <>
@@ -69,7 +66,7 @@ const StartScreen = () => {
             )}
           </Button>
 
-          <Button variant="active" onClick={() => handleRoute('/join')}>
+          <Button variant="active" onClick={() => handleRoute('/join')} disabled={!ready}>
             <GameControllerIcon size={32} />
             Join a Game
           </Button>

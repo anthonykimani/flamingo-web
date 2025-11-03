@@ -7,12 +7,11 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import React, { useState, useEffect } from 'react'
 import { getGameSession, getLeaderboard } from '@/services/quiz_service'
 import { IPlayer } from '@/interfaces/IQuiz'
-import { GameState } from '@/enums/game_state'
 import socketClient from '@/utils/socket.client'
 import { IGameSession } from '@/interfaces/IGame'
 import { SocketEvents } from '@/enums/socket-events'
 import { PLAYER_COLORS } from '@/lib/constant'
-import { useAppKitAccount } from '@reown/appkit/react'
+import { useWallets } from '@privy-io/react-auth'
 
 
 const LobbyPage = () => {
@@ -20,13 +19,15 @@ const LobbyPage = () => {
     const [gameSession, setGameSession] = useState<IGameSession | null>(null)
     const [loading, setLoading] = useState(true)
     const [isSocketConnected, setIsSocketConnected] = useState(false)
-    const { isConnected, address } = useAppKitAccount()
+    const { wallets } = useWallets();
 
     const router = useRouter()
     const searchParams = useSearchParams()
     const sessionId = searchParams.get('sessionId')
     const gamePin = searchParams.get('gamePin')
     const isHost = searchParams.get('host') === 'true'
+    const embeddedWallet = wallets.find(wallet => wallet.walletClientType === 'privy');
+
 
     // Helper function to refresh player list
     const refreshPlayerList = async () => {
@@ -61,7 +62,7 @@ const LobbyPage = () => {
 
         fetchGameSession()
 
-        if (!address) {
+        if (!embeddedWallet?.address) {
             console.log('Wallet connection lost. Please return to start.')
             setTimeout(() => router.push('/'), 2000)
             return
@@ -77,7 +78,7 @@ const LobbyPage = () => {
             // FIX #1: Join as Host (won't create player entity in backend)
             if (sessionId) {
                 console.log('🎮 Joining game room:', sessionId)
-                socketClient.joinGame(sessionId, isHost ? 'Host' : 'Spectator', address)
+                socketClient.joinGame(sessionId, isHost ? 'Host' : 'Spectator', embeddedWallet.address)
             }
         })
 
