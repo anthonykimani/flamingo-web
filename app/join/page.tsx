@@ -180,7 +180,7 @@ const JoinGame = () => {
                             <Button
                                 variant="active"
                                 size="xl"
-                                onClick={() => setStepper(JoinGameStep.CHOOSEGAMEMODE)}
+                                onClick={() => router.push("/")}
                             >
                                 Back
                             </Button>
