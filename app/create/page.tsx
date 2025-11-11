@@ -5,13 +5,20 @@ import ChooseGameType from '@/components/custom/choose_game_type'
 import CreateQuiz from '@/components/custom/create_quiz';
 import NavigationBar from '@/components/navigation/navigation-bar';
 import { CreateGameStep } from '@/enums/create_game_step';
+import { GameMode } from '@/enums/game_mode';
 import { useRouter } from 'next/navigation';
 import React, { useState } from 'react'
 
 const GameType = () => {
   const [stepper, setStepper] = useState<CreateGameStep>(CreateGameStep.GAMETYPE);
+  const [gameMode, setGameMode] = useState<GameMode>(GameMode.HANGOUTS);
   const [gameSession, setGameSession] = useState<any>(null)
   const router = useRouter()
+
+  const handleGameTypeSelect = (selectedMode: GameMode) => {
+    setGameMode(selectedMode);
+    setStepper(CreateGameStep.GAMECANVAS);
+  }
 
   const handleNextStep = () => {
     switch (stepper) {
@@ -38,7 +45,7 @@ const GameType = () => {
       case CreateGameStep.GAMETYPE:
         return (
           <div className='game-type-background h-screen bg-no-repeat bg-cover flex justify-center items-center p-3'>
-            <ChooseGameType onComplete={handleNextStep} />
+            <ChooseGameType onGameTypeSelect={handleGameTypeSelect} />
           </div>
         )
       case CreateGameStep.GAMECANVAS:
@@ -51,7 +58,7 @@ const GameType = () => {
       case CreateGameStep.GAMEFORM:
         return (
           <div className='quiz-form-background h-full md:h-screen w-screen bg-no-repeat bg-cover md:flex md:justify-center md:items-center p-1 sm:p-3'>
-            <CreateQuiz onSave={handleQuizSave} />
+            <CreateQuiz gameMode={gameMode} onSave={handleQuizSave} />
           </div>
         )
     }

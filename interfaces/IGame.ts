@@ -1,4 +1,5 @@
 import { GameState } from "@/enums/game_state";
+import { GameMode } from "@/enums/game_mode";
 import { IQuiz } from "./IQuiz";
 
 export interface IGameSession {
@@ -6,7 +7,11 @@ export interface IGameSession {
     gamePin: string;
     quiz: IQuiz;
     gameTitle: string;
-    entryFee: string;
+    gameMode: GameMode;
+    hasPrizes: boolean;
+    entryFee?: string;
+    prizePool?: number;
+    minPlayers: number;
     maxPlayers: number;
     status: GameState;
     isActive: boolean;
@@ -16,4 +21,14 @@ export interface IGameSession {
     createdAt: string;
     updatedAt: string;
     deleted: boolean;
+}
+
+export interface IGameConfig {
+    quizId: string;
+    gameMode: GameMode;
+    hasPrizes: boolean;
+    entryFee?: string;
+    prizePool?: number;
+    minPlayers?: number;
+    maxPlayers?: number;
 }
