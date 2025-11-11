@@ -1,13 +1,13 @@
 'use client'
 
 import GenerateQuiz from '@/components/custom/generate_quiz'
-import React from 'react'
+import React, { Suspense } from 'react'
 
 const GenerateQuizCointainer = () => {
   return (
-    <div>
+    <Suspense>
         <GenerateQuiz />
-    </div>
+    </Suspense>
   )
 }
 

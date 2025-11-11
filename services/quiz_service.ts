@@ -1,6 +1,7 @@
 import { GameState } from "@/enums/game_state";
 import { IQuiz } from "@/interfaces/IQuiz";
 import { IResponse } from "@/interfaces/IResponse";
+import { IGameConfig } from "@/interfaces/IGame";
 import { apiOptions } from "@/shared/api.config";
 import Http from "@/shared/http.config";
 
@@ -63,10 +64,15 @@ export async function getQuizById(id: string): Promise<IResponse> {
         Failed to add reward program: ${response.payload.message}`);
 }
 
-export async function createGameSession(quizId: string): Promise<IResponse> {
+export async function createGameSession(config: string | IGameConfig): Promise<IResponse> {
+    // Support both old string format and new config object for backwards compatibility
+    const requestData = typeof config === 'string'
+        ? { quizId: config }
+        : config;
+
     const response = await Http.post(
         `${apiOptions.endpoints.gameService}/games/create-session`,
-        { quizId }
+        requestData
     );
 
     if (response.payload.status === 200) {

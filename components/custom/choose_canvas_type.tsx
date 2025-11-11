@@ -5,12 +5,13 @@ import { Button } from '../ui/button'
 import { FilePlusIcon, RankingIcon, RobotIcon, StrategyIcon, UsersThreeIcon } from '@phosphor-icons/react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card'
 import { useRouter } from 'next/navigation'
+import { GameMode } from '@/enums/game_mode'
 
-const ChooseCanvasType = ({ onSelect }: { onSelect: () => void }) => {
+const ChooseCanvasType = ({ onSelect}:{ onSelect:()=> void}) => {
     const router = useRouter();
 
     const handleGenerate = () => {
-        router.push("/generate");
+        router.push(`/generate`);
     }
 
     return (
