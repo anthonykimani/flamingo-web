@@ -192,61 +192,89 @@ const PlayGame = () => {
 
     // Show results screen
     if (gameState === GameState.RESULTS_READY) {
-        return (
-            <div className='result-background flex flex-col justify-center items-center h-screen bg-no-repeat bg-cover p-4'>
-                <Card className='w-full max-w-md'>
-                    <CardHeader className='text-center'>
-                        <h2 className='text-3xl font-bold mb-4'>
+    return (
+        <div className='result-background flex flex-col justify-center items-center h-screen bg-no-repeat bg-cover py-4 px-1'>
+            <div className='w-full max-w-2xl space-y-6'>
+                {/* Answer Result Card */}
+                <Card className='bg-white/95 backdrop-blur-sm'>
+                    <CardHeader className='text-center space-y-4 py-8'>
+                        <h2 className='text-4xl font-bold'>
                             {answerResult?.isCorrect ? '✅ Correct!' : '❌ Wrong!'}
                         </h2>
+                        
                         {answerResult && (
-                            <div className='space-y-3'>
-                                <div className='text-5xl font-bold text-blue-600'>
+                            <>
+                                <div className='text-6xl font-bold text-blue-600'>
                                     +{answerResult.pointsEarned}
                                 </div>
-                                <div className='text-xl'>
-                                    Total Score: <strong>{playerScore}</strong>
-                                </div>
-                                {answerResult.currentStreak > 0 && (
-                                    <div className='text-lg text-orange-600'>
-                                        🔥 Streak: {answerResult.currentStreak}
+                                <div className='flex items-center justify-center gap-6 text-lg'>
+                                    <div className='font-semibold'>
+                                        Total: <span className='text-2xl text-blue-600'>{playerScore}</span>
                                     </div>
-                                )}
-                            </div>
+                                    {answerResult.currentStreak > 0 && (
+                                        <div className='text-orange-600 font-semibold'>
+                                            🔥 {answerResult.currentStreak}x
+                                        </div>
+                                    )}
+                                </div>
+                            </>
                         )}
+                        
                         {!answerResult && hasAnswered && (
-                            <div className='text-xl'>
-                                Answer recorded! Waiting for results...
+                            <div className='text-xl text-gray-600'>
+                                Answer recorded! Calculating results...
                             </div>
                         )}
+                        
                         {!hasAnswered && (
                             <div className='text-xl text-gray-600'>
-                                Time's up! No answer submitted.
+                                Time's up!
                             </div>
-                        )}
-
-                        <CardHeader className='text-3xl text-center mt-10'>
-                            Scoreboard
-                        </CardHeader>
-                        {leaderboard.length === 0 ? (
-                            <p className='text-white text-xl'>No players yet...</p>
-                        ) : (
-                            leaderboard.map((player, index) => (
-                                <div key={player.id} className='flex text-black items-center justify-center gap-5 w-full max-w-2xl'>
-                                    <div className='text-2xl font-bold w-8'>{index + 1}</div>
-                                    <h3 className='text-3xl sm:text-4xl text-left flex-1'>{player.playerName}</h3>
-                                    <h3 className=' text-4xl text-center'>
-                                        {player.totalScore}
-                                    </h3>
-                                </div>
-                            ))
                         )}
                     </CardHeader>
                 </Card>
-            </div>
-        )
-    }
 
+                {/* Leaderboard Card */}
+                <Card className='bg-white/95 backdrop-blur-sm'>
+                    <CardHeader className='py-6'>
+                        <h3 className='text-2xl font-bold text-center mb-6'>Leaderboard</h3>
+                        <div className='space-y-3'>
+                            {leaderboard.length === 0 ? (
+                                <p className='text-center text-gray-500'>Loading scores...</p>
+                            ) : (
+                                leaderboard.map((player, index) => (
+                                    <div 
+                                        key={player.id} 
+                                        className={`
+                                            flex items-center gap-4 p-4 rounded-lg
+                                            ${player.playerName === playerName 
+                                                ? 'bg-blue-100 border-2 border-blue-400' 
+                                                : 'bg-slate-50'
+                                            }
+                                        `}
+                                    >
+                                        <div className='text-2xl font-bold w-8 text-center'>
+                                            {index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : index + 1}
+                                        </div>
+                                        <h3 className='text-xl font-semibold flex-1 truncate'>
+                                            {player.playerName}
+                                            {player.playerName === playerName && (
+                                                <span className='text-sm text-blue-600 ml-2'>(You)</span>
+                                            )}
+                                        </h3>
+                                        <div className='text-2xl font-bold text-slate-700'>
+                                            {player.totalScore}
+                                        </div>
+                                    </div>
+                                ))
+                            )}
+                        </div>
+                    </CardHeader>
+                </Card>
+            </div>
+        </div>
+    )
+}
     // Show question
     if (question && gameState === GameState.IN_PROGRESS) {
         return (
@@ -272,7 +300,7 @@ const PlayGame = () => {
                 </Card>
 
                 {/* Answers Grid */}
-                <div className='grid grid-cols-2 gap-4'>
+                <div className='grid grid-cols-1 sm:grid-cols-2 gap-4'>
                     {question.answers?.map((answer, index) => {
                         const { Icon, color, borderColor } = ANSWER_CONFIG[index % ANSWER_CONFIG.length]
                         const isSelected = selectedAnswer === answer.id
@@ -282,17 +310,18 @@ const PlayGame = () => {
                                 key={answer.id}
                                 onClick={() => handleAnswerSelect(answer)}
                                 disabled={hasAnswered}
-                                centerIcon={<Icon size={64} color="white" weight="fill" />}
+                                leftIcon={<Icon size={32} color="white" weight="fill" />}
                                 className={`
-                    ${color} 
-                    border-2 ${borderColor} border-b-[6px] border-r-[6px]
-                    ${isSelected ? 'ring-4 ring-white' : ''}
-                    ${hasAnswered ? 'opacity-50 cursor-not-allowed active:border-b-[6px] active:border-r-[6px]' : 'hover:scale-105 active:border-b-2 active:border-r-2'}
-                    h-32 text-white transition-all
-                `}
+                                    ${color} 
+                                    border-2 ${borderColor} border-b-[6px] border-r-[6px]
+                                    ${isSelected ? 'ring-4 ring-white' : ''}
+                                    ${hasAnswered ? 'opacity-50 cursor-not-allowed active:border-b-[6px] active:border-r-[6px]' : 'hover:scale-105 active:border-b-2 active:border-r-2'}
+                                    min-h-[80px] sm:min-h-[100px] text-white text-lg sm:text-xl font-bold transition-all text-left
+                                `}
                                 variant="active"
                                 size="xl"
                             >
+                                {answer.answer}
                             </Button>
                         )
                     })}

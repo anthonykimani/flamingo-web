@@ -1,9 +1,9 @@
 'use client'
 
 import React, { useState } from 'react'
-import { Card, CardHeader } from '../ui/card'
+import { Card, CardHeader, CardContent } from '../ui/card'
 import { Button } from '../ui/button'
-import { JoystickIcon, UserIcon, XIcon, CoinsIcon } from '@phosphor-icons/react'
+import { JoystickIcon, UserIcon, XIcon, CoinsIcon, SparkleIcon, LightningIcon, UsersIcon } from '@phosphor-icons/react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Input } from '../ui/input'
 import { addAgentQuiz, createGameSession } from '@/services/quiz_service'
@@ -59,7 +59,7 @@ const GenerateQuiz = () => {
                 hasPrizes,
                 ...(hasPrizes && {
                     prizePool: parseFloat(prizePool),
-                    minPlayers: 3 
+                    minPlayers: 3
                 })
             };
 
@@ -77,124 +77,203 @@ const GenerateQuiz = () => {
 
     }
 
-    return (
-        <div className='game-pin-background h-screen bg-no-repeat bg-cover flex flex-col justify-center p-2'>
-            <div className='flex flex-row justify-between sm:items-center'>
-                <NavigationBar />
-                {/* <div className='flex flex-col items-center gap-2 animate-fadeIn'>
-                    <Card className={`active:border-b-6 active:border-r-6 active:border-t-2 active:border-l-2  text-white p-6`}>
-                        <CardHeader className='justify-center items-center'>
-                            <UserIcon size={32} weight='fill' />
-                        </CardHeader>
-                    </Card>
-                    <p className='text-lg text-white text-center font-bold truncate w-full'>
-                        {isConnected }
-                    </p>
-                </div> */}
-            </div>
-            <div className='flex flex-col justify-around items-center p-2 h-full gap-4'>
-                <h1 className="hidden sm:flex font-[Oi] text-white [-webkit-text-stroke:2px_black] sm:[-webkit-text-stroke:3px_black] text-4xl xsm:text-6xl sm:text-8xl text-center">
-                    Flamingo
-                </h1>
+    // Get game mode details
+    const getGameModeDetails = () => {
+        switch (gameMode) {
+            case GameMode.HANGOUTS:
+                return {
+                    icon: <UsersIcon size={32} weight="duotone" className="text-slate-700" />,
+                    title: 'Hangouts',
+                    description: 'Casual play with friends. Optional prizes & flexible settings.'
+                }
+            case GameMode.TEAM_BUILDING:
+                return {
+                    icon: <UsersIcon size={32} weight="duotone" className="text-slate-700" />,
+                    title: 'Team Building',
+                    description: 'Collaborative gameplay perfect for team bonding.'
+                }
+            case GameMode.DEGEN_PVP:
+                return {
+                    icon: <LightningIcon size={32} weight="duotone" className="text-slate-700" />,
+                    title: 'Degen PvP',
+                    description: 'High-stakes competitive gameplay with crypto prizes.'
+                }
+            default:
+                return {
+                    icon: <UsersIcon size={32} weight="duotone" />,
+                    title: 'Unknown',
+                    description: ''
+                }
+        }
+    }
 
-                <div className='w-full sm:w-2/3 flex flex-col gap-4'>
+    const gameModeDetails = getGameModeDetails();
+
+    return (
+        <div className='game-pin-background h-screen bg-no-repeat bg-cover flex flex-col p-2 overflow-y-auto'>
+            <div className='flex flex-row justify-between sm:items-center mb-4'>
+                <NavigationBar />
+            </div>
+
+            <div className='flex flex-col justify-center items-center p-2 flex-1 gap-6 max-w-4xl mx-auto w-full'>
+                {/* Header */}
+                <div className='text-center space-y-2'>
+                    <h1 className="font-[Oi] text-white [-webkit-text-stroke:2px_black] sm:[-webkit-text-stroke:3px_black] text-5xl sm:text-7xl">
+                        Create Your Game
+                    </h1>
+                    <p className='text-white text-lg sm:text-xl font-semibold drop-shadow-lg'>
+                        Let AI generate your perfect quiz
+                    </p>
+                </div>
+
+                <div className='w-full flex flex-col gap-4'>
+                    {/* Combined Game Mode & Prize Info Card */}
+                    <Card className='bg-white/95 backdrop-blur-sm shadow-lg hover:shadow-xl transition-all'>
+                        <CardContent className='p-3 space-y-4'>
+                            {/* Game Mode Section */}
+                            <div className='flex items-start gap-4'>
+                                <div className='p-3 bg-slate-100 rounded-xl border-2 border-slate-300'>
+                                    {gameModeDetails.icon}
+                                </div>
+                                <div className='flex-1'>
+                                    <div className='flex items-center gap-2 mb-1 flex-wrap'>
+                                        <Label className='text-xl font-bold'>Game Mode</Label>
+                                        <span className='px-3 py-1 rounded-full text-xs font-bold bg-slate-100 border-2 border-slate-300'>
+                                            {gameModeDetails.title}
+                                        </span>
+                                    </div>
+                                    <p className='text-sm text-slate-600 font-medium'>
+                                        {gameModeDetails.description}
+                                    </p>
+                                </div>
+                            </div>
+
+                            {/* Divider */}
+                            <div className='border-t-2 border-slate-200' />
+
+                            {/* Prize Info Section */}
+                            <div className='flex items-center gap-3'>
+                                <div className='p-2 bg-slate-100 rounded-lg border-2 border-slate-300'>
+                                    <CoinsIcon size={24} weight="duotone" className='text-slate-700' />
+                                </div>
+                                <div className='flex-1'>
+                                    <p className='text-sm font-semibold text-slate-800'>
+                                        {gameMode === GameMode.DEGEN_PVP
+                                            ? '🔥 This mode includes prizes by default'
+                                            : gameMode === GameMode.HANGOUTS
+                                                ? '💰 Optional prize pool available below'
+                                                : '🚧 Prize functionality coming soon for this mode'
+                                        }
+                                    </p>
+                                    {gameMode === GameMode.DEGEN_PVP && (
+                                        <p className='text-xs text-slate-600 mt-1'>
+                                            Minimum 3 players required to start
+                                        </p>
+                                    )}
+                                </div>
+                            </div>
+                        </CardContent>
+                    </Card>
+
+                    {/* AI Prompt Input */}
                     <Input
                         className='w-full'
                         variant="generate"
-                        placeholder='Generate Game with AI (e.g., "Create a 10-question quiz about World History")'
+                        placeholder='Describe your quiz (e.g., "10 questions about Space Exploration" or "Fun trivia about 90s Pop Culture")'
                         value={prompt}
                         onChange={handlePromptChange}
                     />
 
-                    {/* Game Mode Display */}
-                    <Card className='bg-white/90 p-4'>
-                        <div className='flex items-center justify-between'>
-                            <div>
-                                <Label className='text-lg font-semibold'>Game Mode</Label>
-                                <p className='text-sm text-gray-600'>
-                                    {gameMode === GameMode.HANGOUTS && 'Hangouts - Casual play with flexible settings'}
-                                    {gameMode === GameMode.TEAM_BUILDING && 'Team Building - Collaborative gameplay'}
-                                    {gameMode === GameMode.DEGEN_PVP && 'Degen PvP - Competitive with prizes'}
-                                </p>
-                            </div>
-                        </div>
-                    </Card>
 
-                    {/* Prize Configuration - Only for Hangouts mode */}
+                    {/* Prize Configuration - Only for Hangouts */}
                     {gameMode === GameMode.HANGOUTS && (
-                        <Card className='bg-white/90 p-4'>
-                            <div className='flex flex-col gap-4'>
-                                <div className='flex items-center justify-between'>
-                                    <div className='flex items-center gap-2'>
-                                        <CoinsIcon size={24} />
-                                        <Label htmlFor='prizes-toggle' className='text-lg font-semibold cursor-pointer'>
-                                            Enable Prizes/Payouts
-                                        </Label>
-                                    </div>
-                                    <Switch
-                                        id='prizes-toggle'
-                                        checked={hasPrizes}
-                                        onCheckedChange={setHasPrizes}
-                                    />
-                                </div>
-
-                                {hasPrizes && (
-                                    <div className='flex flex-col gap-2 animate-fadeIn'>
-                                        <Label htmlFor='prize-pool' className='text-sm'>
-                                            Prize Pool Amount (ETH)
-                                        </Label>
-                                        <Input
-                                            id='prize-pool'
-                                            type='number'
-                                            step='0.01'
-                                            min='0'
-                                            placeholder='0.1'
-                                            value={prizePool}
-                                            onChange={(e) => setPrizePool(e.target.value)}
-                                            className='w-full'
+                        <Card className='bg-white/95 backdrop-blur-sm shadow-lg hover:shadow-xl transition-all'>
+                            <CardContent className='p-6'>
+                                <div className='flex flex-col gap-4'>
+                                    <div className='flex items-center justify-between'>
+                                        <div className='flex items-center gap-3'>
+                                            <div className='p-2 bg-yellow-100 rounded-lg'>
+                                                <CoinsIcon size={28} weight="duotone" className='text-yellow-600' />
+                                            </div>
+                                            <div>
+                                                <Label htmlFor='prizes-toggle' className='text-lg font-bold cursor-pointer block'>
+                                                    Prize Pool
+                                                </Label>
+                                                <p className='text-xs text-slate-600'>
+                                                    Add crypto rewards to make it interesting
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <Switch
+                                            id='prizes-toggle'
+                                            checked={hasPrizes}
+                                            onCheckedChange={setHasPrizes}
                                         />
-                                        <p className='text-xs text-gray-600'>
-                                            ⚠️ Enabling prizes requires a minimum of 3 players to start the game.
-                                        </p>
                                     </div>
-                                )}
-                            </div>
-                        </Card>
-                    )}
 
-                    {/* Other game modes show prize info */}
-                    {gameMode !== GameMode.HANGOUTS && (
-                        <Card className='bg-blue-50 p-4 border-blue-200'>
-                            <div className='flex items-center gap-2'>
-                                <CoinsIcon size={24} className='text-blue-600' />
-                                <p className='text-sm text-blue-800'>
-                                    {gameMode === GameMode.DEGEN_PVP
-                                        ? 'This mode includes prizes by default. Min 3 players required.'
-                                        : 'This mode will include prizes in future updates.'
-                                    }
-                                </p>
-                            </div>
+                                    {hasPrizes && (
+                                        <div className='flex flex-col gap-3 pt-4 border-t-2 border-slate-200 animate-in fade-in slide-in-from-top-2 duration-300'>
+                                            <Label htmlFor='prize-pool' className='text-sm font-semibold text-slate-900'>
+                                                Prize Pool Amount (ETH)
+                                            </Label>
+                                            <div className='relative'>
+                                                <Input
+                                                    id='prize-pool'
+                                                    type='number'
+                                                    step='0.01'
+                                                    min='0'
+                                                    placeholder='0.1'
+                                                    value={prizePool}
+                                                    onChange={(e) => setPrizePool(e.target.value)}
+                                                    className='w-full pl-12 text-lg font-semibold'
+                                                />
+                                                <CoinsIcon
+                                                    size={24}
+                                                    className='absolute left-3 top-1/2 -translate-y-1/2 text-yellow-600'
+                                                    weight="duotone"
+                                                />
+                                            </div>
+                                            <div className='bg-amber-50 border-2 border-amber-200 rounded-lg p-3'>
+                                                <p className='text-xs text-amber-800 font-medium flex items-center gap-2'>
+                                                    <span className='text-lg'>⚠️</span>
+                                                    <span>Minimum 3 players required when prizes are enabled</span>
+                                                </p>
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            </CardContent>
                         </Card>
                     )}
                 </div>
 
-                <div className='flex flex-col xsm:flex-row justify-end mt-4 gap-2'>
+                {/* Action Buttons */}
+                <div className='flex flex-col xsm:flex-row justify-center items-center mt-6 gap-3 w-full sm:w-auto'>
                     <Button
                         leftIcon={<XIcon size={24} color='white' />}
                         variant="destructive"
                         size="xl"
                         onClick={() => router.push('/')}
+                        className='w-full sm:w-auto'
                     >
                         Cancel
                     </Button>
                     <Button
-                        leftIcon={<JoystickIcon size={28} />}
+                        leftIcon={isSubmitting ? null : <JoystickIcon size={28} />}
                         variant="active"
                         size="xl"
                         onClick={handleSubmit}
                         disabled={isSubmitting || !prompt.trim()}
+                        className='w-full sm:w-auto relative overflow-hidden'
                     >
-                        {isSubmitting ? 'Generating Quiz...' : 'Save & Continue'}
+                        {isSubmitting ? (
+                            <span className='flex items-center gap-2'>
+                                <span className='animate-spin'>⚡</span>
+                                Generating Quiz...
+                            </span>
+                        ) : (
+                            'Create Game'
+                        )}
                     </Button>
                 </div>
             </div>

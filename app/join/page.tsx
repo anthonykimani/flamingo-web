@@ -13,6 +13,7 @@ import socketClient from '@/utils/socket.client'
 import { SocketEvents } from '@/enums/socket-events'
 import { useAppKitAccount } from '@reown/appkit/react'
 import { usePrivy, useWallets } from '@privy-io/react-auth'
+import NavigationBar from '@/components/navigation/navigation-bar'
 
 const JoinGame = () => {
     const [stepper, setStepper] = useState<JoinGameStep>(JoinGameStep.ENTERGAMEPIN)
@@ -77,25 +78,7 @@ const JoinGame = () => {
                     setError('Please enter a game PIN')
                     return
                 }
-                try {
-                    setError('')
-                    const response = await getGameSessionByGamePin(gamePin)
-                    console.log('Game session:', response.payload)
 
-                    // Check if game is in correct state
-                    if (response.payload.status !== GameState.WAITING && response.payload.status !== GameState.CREATED) {
-                        setError('Game has already started or ended')
-                        return
-                    }
-
-                    setGameSession(response.payload)
-                    setStepper(JoinGameStep.ENTERNICKNAME)
-                } catch (err) {
-                    console.error('Join game error:', err)
-                    setError('Invalid game PIN or game not found')
-                }
-                break
-            case JoinGameStep.ENTERNICKNAME:
                 if (!nickname.trim()) {
                     setError('Please enter a nickname')
                     return
@@ -118,11 +101,22 @@ const JoinGame = () => {
                     return
                 }
 
+
                 try {
                     setError('')
+                    const response = await getGameSessionByGamePin(gamePin)
+                    console.log('Game session:', response.payload)
+
+                    // Check if game is in correct state
+                    if (response.payload.status !== GameState.WAITING && response.payload.status !== GameState.CREATED) {
+                        setError('Game has already started or ended')
+                        return
+                    }
+
+                    setGameSession(response.payload)
 
                     // Join game via WebSocket
-                    socketClient.joinGame(gameSession.id, nickname, embeddedWallet?.address)
+                    socketClient.joinGame(response.payload.id, nickname, embeddedWallet?.address)
 
                     // Listen for confirmation
                     socketClient.onJoinedGame((data) => {
@@ -141,9 +135,10 @@ const JoinGame = () => {
                         setError(data.message)
                     })
 
+
                 } catch (err) {
                     console.error('Add player error:', err)
-                    setError('Failed to join game. This nickname might already be taken.')
+                    setError('Invalid game PIN or game not found or Failed to join game. This nickname might already be taken.')
                 }
                 break
         }
@@ -153,74 +148,46 @@ const JoinGame = () => {
         switch (stepper) {
             case JoinGameStep.ENTERGAMEPIN:
                 return (
-                    <div className='flex flex-col game-pin-background h-screen w-screen bg-no-repeat bg-cover md:flex justify-center md:items-center p-1 sm:p-3'>
-                        <h1 className="font-[Oi] text-white [-webkit-text-stroke:2px_black] sm:[-webkit-text-stroke:3px_black] text-4xl xsm:text-6xl sm:text-8xl text-center">
-                            Flamingo
-                        </h1>
-                        <div className='flex flex-col justify-end mt-4 gap-2'>
-                            <Input
-                                name='gamepin'
-                                variant="default"
-                                placeholder='Enter Game Pin'
-                                value={gamePin}
-                                onChange={(e) => setGamePin(e.target.value)}
-                                maxLength={6}
-                                autoFocus
-                            />
-                            {error && <p className='text-red-500 text-center font-semibold bg-white/90 p-2 rounded'>{error}</p>}
-                            <Button
-                                variant="active"
-                                size="xl"
-                                className='bg-[#FF00B7] text-white'
-                                onClick={() => handleNextStep()}
-                                disabled={!gamePin.trim()}
-                            >
-                                Join Game
-                            </Button>
-                            <Button
-                                variant="active"
-                                size="xl"
-                                onClick={() => router.push("/")}
-                            >
-                                Back
-                            </Button>
-                        </div>
-                    </div>
-                )
-            case JoinGameStep.ENTERNICKNAME:
-                return (
-                    <div className='flex flex-col start-screen-background h-screen w-screen bg-no-repeat bg-cover md:flex justify-center md:items-center p-1 sm:p-3'>
-                        <h1 className="font-[Oi] text-white [-webkit-text-stroke:2px_black] sm:[-webkit-text-stroke:3px_black] text-4xl xsm:text-6xl sm:text-8xl text-center">
-                            Flamingo
-                        </h1>
-                        <div className='flex flex-col justify-end mt-4 gap-2'>
-                            <Input
-                                name='nickname'
-                                variant="default"
-                                placeholder='Choose Nickname'
-                                value={nickname}
-                                onChange={(e) => setNickname(e.target.value)}
-                                maxLength={20}
-                                autoFocus
-                            />
-                            {error && <p className='text-red-500 text-center font-semibold bg-white/90 p-2 rounded'>{error}</p>}
-                            <Button
-                                leftIcon={<SparkleIcon size={28} color='white' />}
-                                variant="active"
-                                className='bg-[#FF9700] text-white'
-                                size="xl"
-                                onClick={() => handleNextStep()}
-                                disabled={!nickname.trim()}
-                            >
-                                Ok, LFG!
-                            </Button>
-                            <Button
-                                variant="active"
-                                size="xl"
-                                onClick={() => setStepper(JoinGameStep.ENTERGAMEPIN)}
-                            >
-                                Back
-                            </Button>
+                    <div className='game-pin-background h-screen bg-no-repeat bg-cover flex flex-col justify-center p-2'>
+                        <div className='flex flex-col h-screen justify-around'>
+                            <div className='flex flex-row justify-between sm:items-center'>
+                                <NavigationBar />
+                            </div>
+                            <div className="h-full flex flex-col justify-center md:items-center p-1 sm:p-3">
+                                <h1 className="font-[Oi] text-white [-webkit-text-stroke:2px_black] sm:[-webkit-text-stroke:3px_black] text-4xl xsm:text-6xl sm:text-8xl text-center">
+                                    Flamingo
+                                </h1>
+                                <div className='flex flex-col justify-end mt-4 gap-2'>
+                                    <Input
+                                        name='gamepin'
+                                        variant="default"
+                                        placeholder='Enter Game Pin'
+                                        value={gamePin}
+                                        onChange={(e) => setGamePin(e.target.value)}
+                                        maxLength={6}
+                                        autoFocus
+                                    />
+                                    {error && <p className='text-red-500 text-center font-semibold bg-white/90 p-2 rounded'>{error}</p>}
+                                    <Input
+                                        name='nickname'
+                                        variant="default"
+                                        placeholder='Choose Nickname'
+                                        value={nickname}
+                                        onChange={(e) => setNickname(e.target.value)}
+                                        maxLength={20}
+                                        autoFocus
+                                    />
+                                    <Button
+                                        variant="active"
+                                        size="xl"
+                                        className='bg-[#FF00B7] text-white'
+                                        onClick={() => handleNextStep()}
+                                        disabled={!gamePin.trim()}
+                                    >
+                                        Join Game
+                                    </Button>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 )

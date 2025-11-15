@@ -18,10 +18,10 @@ const ANSWER_ICONS = [circleAnswer, starAnswer, triangleAnswer, squareAnswer]
 
 interface CreateQuizProps {
     onSave: (gameSession: any) => void;
-    gameMode?: GameMode;
+    gameMode: GameMode;
 }
 
-const CreateQuiz = ({ onSave, gameMode = GameMode.HANGOUTS }: CreateQuizProps) => {
+const CreateQuiz = ({ onSave, gameMode }: CreateQuizProps) => {
     const [quizData, setQuizData] = useState<IQuiz>({
         title: '',
         questions: [
