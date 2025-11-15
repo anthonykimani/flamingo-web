@@ -232,32 +232,44 @@ const GamePage = () => {
 
     // Show result screen
     if (gameState === GameState.RESULTS_READY || gameState === GameState.PAYOUT) {
-        return (
-            <div className='result-background h-screen bg-no-repeat bg-cover flex flex-col justify-around py-8 px-2'>
-                <Card>
-                    <CardHeader className='text-3xl text-center'>
-                        Scoreboard
+    return (
+        <div className='result-background h-screen bg-no-repeat bg-cover flex flex-col justify-center items-center p-4'>
+            <div className='w-full max-w-3xl space-y-6'>
+                {/* Leaderboard Card */}
+                <Card className='bg-white/95 backdrop-blur-sm'>
+                    <CardHeader className='py-6'>
+                        <h3 className='text-3xl font-bold text-center mb-6'>Scoreboard</h3>
+                        <div className='space-y-3 max-h-[60vh] overflow-y-auto pr-2'>
+                            {leaderboard.length === 0 ? (
+                                <p className='text-center text-gray-500 py-8'>Loading scores...</p>
+                            ) : (
+                                leaderboard.map((player, index) => (
+                                    <div 
+                                        key={player.id} 
+                                        className='flex items-center gap-4 p-4 rounded-lg bg-slate-50'
+                                    >
+                                        <div className='text-2xl font-bold w-10 text-center'>
+                                            {index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : index + 1}
+                                        </div>
+                                        <div className='flex items-center gap-3 flex-1'>
+                                            <h3 className='text-xl font-semibold truncate'>
+                                                {player.playerName}
+                                            </h3>
+                                        </div>
+                                        <div className='text-3xl font-bold text-slate-700'>
+                                            {player.totalScore}
+                                        </div>
+                                    </div>
+                                ))
+                            )}
+                        </div>
                     </CardHeader>
                 </Card>
 
-                <Card className='flex flex-col items-center gap-3 max-h-96 overflow-y-auto px-2'>
-                    {leaderboard.length === 0 ? (
-                        <p className='text-white text-xl'>No players yet...</p>
-                    ) : (
-                        leaderboard.map((player, index) => (
-                            <div key={player.id} className='flex text-black items-center justify-center gap-5 w-full max-w-2xl'>
-                                <div className='text-2xl font-bold w-8'>{index + 1}</div>
-                                <h3 className='text-3xl sm:text-4xl text-left flex-1'>{player.playerName}</h3>
-                                <h3 className=' text-4xl text-center'>
-                                    {player.totalScore}
-                                </h3>
-                            </div>
-                        ))
-                    )}
-                </Card>
-
+                {/* Next Button */}
                 <div className='flex justify-center'>
                     <Button
+                        leftIcon={<JoystickIcon size={28} />}
                         variant="active"
                         size="xl"
                         onClick={handleNextQuestion}
@@ -269,8 +281,9 @@ const GamePage = () => {
                     </Button>
                 </div>
             </div>
-        )
-    }
+        </div>
+    )
+}
 
     // Show question screen
     return (

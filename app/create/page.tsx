@@ -44,7 +44,8 @@ const GameType = () => {
     switch (stepper) {
       case CreateGameStep.GAMETYPE:
         return (
-          <div className='game-type-background h-screen bg-no-repeat bg-cover flex justify-center items-center p-3'>
+          <div className='game-type-background h-screen bg-no-repeat bg-cover flex flex-col justify-around p-3'>
+            <NavigationBar />
             <ChooseGameType onGameTypeSelect={handleGameTypeSelect} />
           </div>
         )
@@ -52,12 +53,13 @@ const GameType = () => {
         return (
           <div className='canvas-type-background h-screen bg-no-repeat bg-cover flex flex-col justify-around p-3'>
             <NavigationBar />
-            <ChooseCanvasType onSelect={handleNextStep} />
+            <ChooseCanvasType  gameMode={gameMode} onSelect={handleNextStep} />
           </div>
         )
       case CreateGameStep.GAMEFORM:
         return (
           <div className='quiz-form-background h-full md:h-screen w-screen bg-no-repeat bg-cover md:flex md:justify-center md:items-center p-1 sm:p-3'>
+            <NavigationBar />
             <CreateQuiz gameMode={gameMode} onSave={handleQuizSave} />
           </div>
         )

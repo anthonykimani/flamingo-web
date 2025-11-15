@@ -2,9 +2,12 @@
 
 import React, { useEffect } from 'react'
 import { Button } from '../ui/button'
-import { GameControllerIcon, MagicWandIcon } from '@phosphor-icons/react'
+import { GameControllerIcon, MagicWandIcon, UserIcon } from '@phosphor-icons/react'
 import { useRouter } from 'next/navigation'
 import { useLogin, usePrivy, useWallets } from '@privy-io/react-auth'
+import { Card, CardHeader } from '../ui/card'
+import { PLAYER_COLORS } from '@/lib/constant'
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '../ui/dialog'
 
 const StartScreen = () => {
   const router = useRouter()
@@ -16,7 +19,7 @@ const StartScreen = () => {
   // Get the embedded wallet address
   const embeddedWallet = wallets.find(w => w.walletClientType === 'privy');
 
-  
+
 
   // Handle button click
   const handleRoute = async (route: string) => {
@@ -40,9 +43,37 @@ const StartScreen = () => {
   return (
     <div className="flex flex-col start-screen-background h-screen w-screen bg-no-repeat bg-cover">
       {authenticated && (
-        <p className="mt-3 text-sm text-white/70">
-          Connected as <span className="font-mono">{embeddedWallet?.address}</span>
-        </p>
+        <div>
+          <div className='flex items-start justify-start gap-2 animate-fadeIn cursor-pointer p-1 sm:p-3'>
+            <Dialog>
+              <DialogTrigger asChild>
+                <button className="flex items-center rounded-lg border-2 border-slate-800 border-b-[6px] border-r-[6px] active:border-b-2 active:border-r-2 bg-white hover:bg-white/90 transition-all cursor-pointer p-2">
+                <UserIcon size={32} weight='regular' color='black' />
+                <p className=''>{embeddedWallet?.address.slice(0,7)}...{embeddedWallet?.address.slice(-4)}</p>
+              </button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>User Profile</DialogTitle>
+                  <DialogDescription>
+                    View and manage your profile settings
+                  </DialogDescription>
+                </DialogHeader>
+                {/* Add your dialog content here */}
+                <div className="py-4">
+                  {/* Your profile content */}
+                </div>
+                <DialogFooter>
+                  {/* Optional footer buttons */}
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+            {/* <p className='text-lg text-white text-center font-bold truncate w-full flex flex-col items-start justify-center'>
+              {embeddedWallet?.address}
+            </p> */}
+          </div>
+        </div>
+
       )}
       <div className="h-full flex flex-col justify-center md:items-center p-1 sm:p-3">
         <h1 className="font-[Oi] text-white [-webkit-text-stroke:2px_black] sm:[-webkit-text-stroke:3px_black] text-4xl xsm:text-6xl sm:text-8xl text-center">

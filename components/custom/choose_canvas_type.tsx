@@ -7,11 +7,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui
 import { useRouter } from 'next/navigation'
 import { GameMode } from '@/enums/game_mode'
 
-const ChooseCanvasType = ({ onSelect}:{ onSelect:()=> void}) => {
+const ChooseCanvasType = ({ gameMode, onSelect}:{ gameMode: GameMode, onSelect:()=> void}) => {
     const router = useRouter();
 
     const handleGenerate = () => {
-        router.push(`/generate`);
+        router.push(`/generate?gameMode=${gameMode}`);
     }
 
     return (
