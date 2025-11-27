@@ -8,10 +8,12 @@ import { useLogin, usePrivy, useWallets } from '@privy-io/react-auth'
 import { useConnect } from "wagmi";
 import { injected } from "@wagmi/connectors";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '../ui/dialog'
+import { useMiniPayInjector } from '@/hooks/use-minipay-injector'
 
 const StartScreen = () => {
   const router = useRouter()
-  const { connect, isSuccess, data, isPending } = useConnect();
+  // const { connect, isSuccess, data, isPending } = useConnect();
+  const { address, getUserAddress } = useMiniPayInjector()
 
   // const { ready, authenticated, user } = usePrivy();
   // const { wallets } = useWallets();
@@ -19,14 +21,6 @@ const StartScreen = () => {
 
   // Get the embedded wallet address
   // const embeddedWallet = wallets.find(w => w.walletClientType === 'privy');
-
-  useEffect(() => {
-    if (window.ethereum?.isMiniPay) {
-      // MiniPay is already injected – just “connect”
-      connect({ connector: injected() });
-    }
-  }, [connect]);
-
 
   // Handle button click
   const handleRoute = async (route: string) => {
@@ -36,7 +30,7 @@ const StartScreen = () => {
     // }
 
 
-    if (isSuccess) {
+    if (address !== null) {
       router.push(route)
     } else {
       try {
@@ -50,14 +44,14 @@ const StartScreen = () => {
 
   return (
     <div className="flex flex-col start-screen-background h-screen w-screen bg-no-repeat bg-cover">
-      {isSuccess && (
+      {address && (
         <div>
           <div className='flex items-start justify-start gap-2 animate-fadeIn cursor-pointer p-1 sm:p-3'>
             <Dialog>
               <DialogTrigger asChild>
                 <button className="flex items-center rounded-lg border-2 border-slate-800 border-b-[6px] border-r-[6px] active:border-b-2 active:border-r-2 bg-white hover:bg-white/90 transition-all cursor-pointer p-2">
                 <UserIcon size={32} weight='regular' color='black' />
-                <p className=''>{data?.accounts[0] as `0x${string}`}</p>
+                <p className=''>{address as `0x${string}`}</p>
               </button>
               </DialogTrigger>
               <DialogContent>
@@ -93,9 +87,9 @@ const StartScreen = () => {
             variant="active"
             size="xl"
             onClick={() => handleRoute("/create")}
-            disabled={isPending}
+            disabled={!!address}
           >
-            {isPending ? (
+            {address ? (
               <span className="animate-pulse">Connecting...</span>
             ) : (
               <>
@@ -105,7 +99,7 @@ const StartScreen = () => {
             )}
           </Button>
 
-          <Button variant="active" onClick={() => handleRoute('/join')} disabled={isPending}>
+          <Button variant="active" onClick={() => handleRoute('/join')} disabled={!!address}>
             <GameControllerIcon size={32} />
             Join a Game
           </Button>

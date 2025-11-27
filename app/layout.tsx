@@ -5,6 +5,7 @@ import PrivyProviders from "@/provider";
 import { PostHogProvider } from "@/provider/posthog";
 import AppKitContextProvider from "@/provider/appkit";
 import { headers } from "next/headers";
+import { RainbowKitProviderContainer } from "@/provider/rainbow";
 
 const oldschool = localFont({
   src: [
@@ -61,11 +62,13 @@ export default async function RootLayout({
         className={`${oldschool.variable} antialiased font-poppins font-oldschool`}
       >
         {/* <PrivyProviders> */}
-        <AppKitContextProvider cookies={cookies}>
+        {/* <AppKitContextProvider cookies={cookies}> */}
+        <RainbowKitProviderContainer>
           <PostHogProvider>
             {children}
           </PostHogProvider>
-        </AppKitContextProvider>
+        </RainbowKitProviderContainer>
+        {/* </AppKitContextProvider> */}
 
         {/* </PrivyProviders> */}
       </body>

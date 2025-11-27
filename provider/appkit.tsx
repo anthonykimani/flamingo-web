@@ -3,7 +3,7 @@
 import React, { type ReactNode } from 'react'
 import { createAppKit } from '@reown/appkit/react'
 import { WagmiAdapter } from '@reown/appkit-adapter-wagmi'
-import { optimism, base, lisk, celo } from '@reown/appkit/networks'
+import { optimism, base, lisk, celo, celoSepolia } from '@reown/appkit/networks'
 import { http } from 'viem'
 import { cookieStorage, cookieToInitialState, createStorage, WagmiProvider, type Config } from 'wagmi'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
@@ -40,8 +40,8 @@ export const wagmiConfig = wagmiAdapter.wagmiConfig
 createAppKit({
   projectId,
   adapters: [wagmiAdapter],
-  networks: [optimism, base, lisk, celo],
-  defaultNetwork: celo,
+  networks: [optimism, base, lisk, celo, celoSepolia],
+  defaultNetwork: celoSepolia,
   metadata: {
     name: 'Flamingo',
     description: 'A real-time multiplayer quiz game similar to Kahoot',
