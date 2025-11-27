@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
 import PrivyProviders from "@/provider";
+import { PostHogProvider } from "@/provider/posthog";
 
 const oldschool = localFont({
   src: [
@@ -56,7 +57,11 @@ export default async function RootLayout({
       <body
         className={`${oldschool.variable} antialiased font-poppins font-oldschool`}
       >
-        <PrivyProviders>{children}</PrivyProviders>
+        <PrivyProviders>
+          <PostHogProvider>
+            {children}
+          </PostHogProvider>
+        </PrivyProviders>
       </body>
     </html>
   );
