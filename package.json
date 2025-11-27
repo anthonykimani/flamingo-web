@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@base-org/account": "^2.5.0",
     "@hookform/resolvers": "^5.2.2",
     "@openai/agents": "^0.1.10",
     "@phosphor-icons/react": "^2.1.10",

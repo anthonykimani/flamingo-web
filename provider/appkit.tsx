@@ -29,6 +29,7 @@ const wagmiAdapter = new WagmiAdapter({
     [optimism.id]: http("https://mainnet.optimism.io"),
     [base.id]: http("https://mainnet.base.org"),
     [lisk.id]: http('https://rpc.api.lisk.com'),
+    [celo.id]: http("https://forno.celo.org")
   }
 
 })
