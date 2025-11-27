@@ -5,35 +5,43 @@ import { Button } from '../ui/button'
 import { GameControllerIcon, MagicWandIcon, UserIcon } from '@phosphor-icons/react'
 import { useRouter } from 'next/navigation'
 import { useLogin, usePrivy, useWallets } from '@privy-io/react-auth'
-import { Card, CardHeader } from '../ui/card'
-import { PLAYER_COLORS } from '@/lib/constant'
+import { useConnect } from "wagmi";
+import { injected } from "@wagmi/connectors";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '../ui/dialog'
 
 const StartScreen = () => {
   const router = useRouter()
+  const { connect, isSuccess, data, isPending } = useConnect();
 
-  const { ready, authenticated, user } = usePrivy();
-  const { wallets } = useWallets();
-  const { login } = useLogin();
+  // const { ready, authenticated, user } = usePrivy();
+  // const { wallets } = useWallets();
+  // const { login } = useLogin();
 
   // Get the embedded wallet address
-  const embeddedWallet = wallets.find(w => w.walletClientType === 'privy');
+  // const embeddedWallet = wallets.find(w => w.walletClientType === 'privy');
 
+  useEffect(() => {
+    if (window.ethereum?.isMiniPay) {
+      // MiniPay is already injected – just “connect”
+      connect({ connector: injected() });
+    }
+  }, [connect]);
 
 
   // Handle button click
   const handleRoute = async (route: string) => {
-    if (!ready) {
-      alert('Wallet is still initializing...')
-      return
-    }
+    // if (!ready) {
+    //   alert('Wallet is still initializing...')
+    //   return
+    // }
 
 
-    if (authenticated) {
+    if (isSuccess) {
       router.push(route)
     } else {
       try {
-        login()
+        // login()
+
       } catch (err) {
         console.error(err)
       }
@@ -42,14 +50,14 @@ const StartScreen = () => {
 
   return (
     <div className="flex flex-col start-screen-background h-screen w-screen bg-no-repeat bg-cover">
-      {authenticated && (
+      {isSuccess && (
         <div>
           <div className='flex items-start justify-start gap-2 animate-fadeIn cursor-pointer p-1 sm:p-3'>
             <Dialog>
               <DialogTrigger asChild>
                 <button className="flex items-center rounded-lg border-2 border-slate-800 border-b-[6px] border-r-[6px] active:border-b-2 active:border-r-2 bg-white hover:bg-white/90 transition-all cursor-pointer p-2">
                 <UserIcon size={32} weight='regular' color='black' />
-                <p className=''>{embeddedWallet?.address.slice(0,7)}...{embeddedWallet?.address.slice(-4)}</p>
+                <p className=''>{data?.accounts[0] as `0x${string}`}</p>
               </button>
               </DialogTrigger>
               <DialogContent>
@@ -85,9 +93,9 @@ const StartScreen = () => {
             variant="active"
             size="xl"
             onClick={() => handleRoute("/create")}
-            disabled={!ready}
+            disabled={isPending}
           >
-            {!ready ? (
+            {isPending ? (
               <span className="animate-pulse">Connecting...</span>
             ) : (
               <>
@@ -97,7 +105,7 @@ const StartScreen = () => {
             )}
           </Button>
 
-          <Button variant="active" onClick={() => handleRoute('/join')} disabled={!ready}>
+          <Button variant="active" onClick={() => handleRoute('/join')} disabled={isPending}>
             <GameControllerIcon size={32} />
             Join a Game
           </Button>
