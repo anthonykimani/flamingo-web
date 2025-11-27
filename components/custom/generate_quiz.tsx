@@ -70,7 +70,7 @@ const GenerateQuiz = () => {
             router.push(`/lobby?sessionId=${sessionResponse.payload.id}&gamePin=${sessionResponse.payload.gamePin}&host=true`)
         } catch (error) {
             console.error('Failed to create quiz/session:', error)
-            alert('Failed to create game. Please try again.')
+            alert(error)
         } finally {
             setIsSubmitting(false);
         }

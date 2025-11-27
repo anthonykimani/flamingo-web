@@ -4,6 +4,7 @@ import { IResponse } from "@/interfaces/IResponse";
 import { IGameConfig } from "@/interfaces/IGame";
 import { apiOptions } from "@/shared/api.config";
 import Http from "@/shared/http.config";
+import posthog from "posthog-js";
 
 
 export async function addQuiz(gameData: IQuiz): Promise<IResponse> {
@@ -31,6 +32,9 @@ export async function addAgentQuiz(prompt: string): Promise<IResponse> {
         "prompt": prompt
     }
     );
+
+    console.log("AgentQuiz Response:", response)
+    posthog.capture('agentquiz response', response)
 
     if (response.payload.status == 200) {
         return {
