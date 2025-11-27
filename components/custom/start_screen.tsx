@@ -51,7 +51,7 @@ const StartScreen = () => {
               <DialogTrigger asChild>
                 <button className="flex items-center rounded-lg border-2 border-slate-800 border-b-[6px] border-r-[6px] active:border-b-2 active:border-r-2 bg-white hover:bg-white/90 transition-all cursor-pointer p-2">
                 <UserIcon size={32} weight='regular' color='black' />
-                <p className=''>{address as `0x${string}`}</p>
+                <p className=''>{address.slice(0,7) as `0x${string}`}...{address.slice(-4) as `0x${string}`}</p>
               </button>
               </DialogTrigger>
               <DialogContent>
@@ -87,9 +87,9 @@ const StartScreen = () => {
             variant="active"
             size="xl"
             onClick={() => handleRoute("/create")}
-            disabled={!!address}
+            disabled={!address}
           >
-            {address ? (
+            {!address ? (
               <span className="animate-pulse">Connecting...</span>
             ) : (
               <>
@@ -99,7 +99,7 @@ const StartScreen = () => {
             )}
           </Button>
 
-          <Button variant="active" onClick={() => handleRoute('/join')} disabled={!!address}>
+          <Button variant="active" onClick={() => handleRoute('/join')} disabled={!address}>
             <GameControllerIcon size={32} />
             Join a Game
           </Button>
