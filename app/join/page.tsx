@@ -9,10 +9,19 @@ import { useRouter } from 'next/navigation'
 import React, { useState, useEffect } from 'react'
 import { getGameSessionByGamePin } from '@/services/quiz_service'
 import { GameState } from '@/enums/game_state'
-import socketClient from '@/utils/socket.client'
+import socketClient from '@/utils/socket/socket.client'
 import { SocketEvents } from '@/enums/socket-events'
 import NavigationBar from '@/components/navigation/navigation-bar'
-import { useAccount } from 'wagmi'
+import { useAccount, useWriteContract } from 'wagmi'
+import { config } from '@/provider/rainbow'
+import { flamingoEscrowABI } from '@/utils/abi/flamingo-escrow'
+import { ERC20ABI } from '@/utils/abi/ERC20'
+import { keccak256, stringToHex, toHex } from 'viem'
+
+const {
+    FLAMINGO_ESCROW_ADDRESS,
+    USDC_ADDRESS
+} = process.env
 
 const JoinGame = () => {
     const [stepper, setStepper] = useState<JoinGameStep>(JoinGameStep.ENTERGAMEPIN)
@@ -23,6 +32,7 @@ const JoinGame = () => {
     const [error, setError] = useState('')
     const [isSocketConnected, setIsSocketConnected] = useState(false)
     const router = useRouter()
+    const { writeContractAsync } = useWriteContract()
 
     // Connect to WebSocket when component mounts
     useEffect(() => {
@@ -103,6 +113,37 @@ const JoinGame = () => {
                     }
 
                     setGameSession(response.payload)
+                    const amount = BigInt(1_000);
+
+                    try {
+                        console.log('🟡 Approving USDC...')
+                        const approveUSDC = writeContractAsync({
+                            abi: ERC20ABI,
+                            address: USDC_ADDRESS as `0x${string}`,
+                            functionName: 'approve',
+                            args: [FLAMINGO_ESCROW_ADDRESS as `0x${string}`, amount],
+                        })
+                        console.log(`✅ USDC approved ${approveUSDC}`)
+                    } catch (err) {
+                        console.error('Approval failed:', err)
+                        setError('USDC approval failed. Please try again.')
+                        return
+                    }
+
+                    try {
+                        console.log('🟡 Depositing USDC...')
+                        const depositUSDC = await writeContractAsync({
+                            abi: flamingoEscrowABI,
+                            address: FLAMINGO_ESCROW_ADDRESS as `0x${string}`,
+                            functionName: 'deposit',
+                            args: [ keccak256(stringToHex(response.payload.id)), amount],
+                        })
+                        console.log(`✅ Deposit successful ${depositUSDC}`)
+                    } catch (err) {
+                        console.error('Deposit failed:', err)
+                        setError('Deposit failed. Make sure you approved the transaction.')
+                        return
+                    }
 
                     // Join game via WebSocket
                     socketClient.joinGame(response.payload.id, nickname, address as `0x${string}`)
