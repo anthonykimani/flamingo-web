@@ -1,4 +1,4 @@
-import GamePage from '@/components/custom/game_controller'
+import GamePage from '@/components/pages/game_controller'
 import React, { Suspense } from 'react'
 
 const GameContainter = () => {

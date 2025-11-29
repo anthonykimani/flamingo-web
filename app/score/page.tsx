@@ -1,4 +1,4 @@
-import ScoreBoardPage from '@/components/custom/score_board'
+import ScoreBoardPage from '@/components/pages/score_board'
 import React, { Suspense } from 'react'
 
 const ScoreBoardContainer = () => {

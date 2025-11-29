@@ -11,7 +11,7 @@ import socketClient from '@/utils/socket.client'
 import { IGameSession } from '@/interfaces/IGame'
 import { SocketEvents } from '@/enums/socket-events'
 import { PLAYER_COLORS } from '@/lib/constant'
-import { useMiniPayInjector } from '@/hooks/use-minipay-injector'
+import { useAccount } from 'wagmi'
 
 
 const LobbyPage = () => {
@@ -19,7 +19,7 @@ const LobbyPage = () => {
     const [gameSession, setGameSession] = useState<IGameSession | null>(null)
     const [loading, setLoading] = useState(true)
     const [isSocketConnected, setIsSocketConnected] = useState(false)
-    const { address } = useMiniPayInjector()
+    const { address, isConnected } = useAccount();
     const router = useRouter()
     const searchParams = useSearchParams()
     const sessionId = searchParams.get('sessionId')

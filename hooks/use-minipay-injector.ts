@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback } from "react";
 import {
   createPublicClient,
   createWalletClient,
@@ -12,31 +12,21 @@ import posthog from "posthog-js";
 
 export function useMiniPayInjector() {
   const [address, setAddress] = useState<string | null>(null);
-  const [walletClient, setWalletClient] = useState<any>(null);
 
-  // instantiate once on mount
-  useEffect(() => {
-    if (typeof window === "undefined" || !window.ethereum) return;
-    const client = createWalletClient({
-      transport: custom(window.ethereum),
-      chain: celo,
-    });
-    setWalletClient(client);
-
-    // grab the address
-    client.getAddresses().then(([addr]) => setAddress(addr)).catch(console.error);
+  const setUserAddress = useCallback((addr: string | null) => {
+    setAddress(addr);
+    if (addr) posthog.identify(addr);
   }, []);
 
   const getUserAddress = async () => {
     if (typeof window !== "undefined" && window.ethereum) {
-      let walletClient = createWalletClient({
+      const walletClient = createWalletClient({
         transport: custom(window.ethereum),
         chain: celo,
       });
 
-      let [address] = await walletClient.getAddresses();
-      setAddress(address);
-      posthog.identify(address)
+      const [addr] = await walletClient.getAddresses();
+      setUserAddress(addr);
     }
   };
 
@@ -45,9 +35,10 @@ export function useMiniPayInjector() {
     transport: http(),
   });
 
-
   return {
     address,
-    getUserAddress
+    setUserAddress, 
+    getUserAddress,
+    publicClient,
   };
 }

@@ -9,18 +9,18 @@ import {
 } from '@rainbow-me/rainbowkit';
 import { WagmiProvider, createConfig, http } from 'wagmi';
 import { celo, celoAlfajores } from 'wagmi/chains';
-import { injectedWallet } from '@rainbow-me/rainbowkit/wallets';
+import { injectedWallet, rainbowWallet } from '@rainbow-me/rainbowkit/wallets';
 
 const connectors = connectorsForWallets(
     [
         {
             groupName: 'Recommended',
-            wallets: [injectedWallet],
+            wallets: [injectedWallet, rainbowWallet],
         },
     ],
     {
         appName: 'Flamingo',
-        projectId: process.env.WC_PROJECT_ID ?? "",
+        projectId: process.env.NEXT_PUBLIC_PROJECT_ID??"",
     }
 );
 

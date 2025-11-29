@@ -1,4 +1,4 @@
-import GamePin from '@/components/custom/game_pin'
+import GamePin from '@/components/pages/game_pin'
 import React, { Suspense } from 'react'
 
 const GameLobby = () => {
