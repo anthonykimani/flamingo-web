@@ -7,7 +7,7 @@ import {
   custom,
   http
 } from "viem";
-import { celo } from "viem/chains";
+import { celo, celoSepolia } from "viem/chains";
 import posthog from "posthog-js";
 
 export function useMiniPayInjector() {
@@ -22,7 +22,7 @@ export function useMiniPayInjector() {
     if (typeof window !== "undefined" && window.ethereum) {
       const walletClient = createWalletClient({
         transport: custom(window.ethereum),
-        chain: celo,
+        chain: celoSepolia,
       });
 
       const [addr] = await walletClient.getAddresses();
@@ -31,7 +31,7 @@ export function useMiniPayInjector() {
   };
 
   const publicClient = createPublicClient({
-    chain: celo,
+    chain: celoSepolia,
     transport: http(),
   });
 
