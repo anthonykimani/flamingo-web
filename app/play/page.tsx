@@ -1,4 +1,4 @@
-import PlayGame from '@/components/custom/play_game'
+import PlayGame from '@/components/pages/play_game'
 import React, { Suspense } from 'react'
 
 const PlayGameContainer = () => {

@@ -3,6 +3,9 @@ import localFont from "next/font/local";
 import "./globals.css";
 import PrivyProviders from "@/provider";
 import { PostHogProvider } from "@/provider/posthog";
+import AppKitContextProvider from "@/provider/appkit";
+import { headers } from "next/headers";
+import { RainbowKitProviderContainer } from "@/provider/rainbow";
 
 const oldschool = localFont({
   src: [
@@ -51,17 +54,23 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const cookies = (await headers()).get('cookie')
 
   return (
     <html lang="en">
       <body
         className={`${oldschool.variable} antialiased font-poppins font-oldschool`}
       >
-        <PrivyProviders>
+        {/* <PrivyProviders> */}
+        {/* <AppKitContextProvider cookies={cookies}> */}
+        <RainbowKitProviderContainer>
           <PostHogProvider>
             {children}
           </PostHogProvider>
-        </PrivyProviders>
+        </RainbowKitProviderContainer>
+        {/* </AppKitContextProvider> */}
+
+        {/* </PrivyProviders> */}
       </body>
     </html>
   );

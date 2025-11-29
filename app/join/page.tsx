@@ -11,29 +11,18 @@ import { getGameSessionByGamePin } from '@/services/quiz_service'
 import { GameState } from '@/enums/game_state'
 import socketClient from '@/utils/socket.client'
 import { SocketEvents } from '@/enums/socket-events'
-import { useAppKitAccount } from '@reown/appkit/react'
-import { usePrivy, useWallets } from '@privy-io/react-auth'
 import NavigationBar from '@/components/navigation/navigation-bar'
+import { useAccount } from 'wagmi'
 
 const JoinGame = () => {
     const [stepper, setStepper] = useState<JoinGameStep>(JoinGameStep.ENTERGAMEPIN)
-    const { ready, authenticated, user } = usePrivy();
-    const { wallets } = useWallets();
+    const { address, isConnected } = useAccount();
     const [gamePin, setGamePin] = useState('')
     const [nickname, setNickname] = useState('')
     const [gameSession, setGameSession] = useState<any>(null)
     const [error, setError] = useState('')
     const [isSocketConnected, setIsSocketConnected] = useState(false)
     const router = useRouter()
-
-    const embeddedWallet = wallets.find(wallet => wallet.walletClientType === 'privy');
-
-    useEffect(() => {
-        if (!ready) {
-            console.log('⚠️ No wallet connected, redirecting to start')
-            router.push('/')
-        }
-    }, [ready, router])
 
     // Connect to WebSocket when component mounts
     useEffect(() => {
@@ -95,7 +84,7 @@ const JoinGame = () => {
                     return
                 }
 
-                if (!embeddedWallet?.address) {
+                if (!isConnected && !address) {
                     setError('Wallet connection lost. Please return to start.')
                     setTimeout(() => router.push('/'), 2000)
                     return
@@ -116,7 +105,7 @@ const JoinGame = () => {
                     setGameSession(response.payload)
 
                     // Join game via WebSocket
-                    socketClient.joinGame(response.payload.id, nickname, embeddedWallet?.address)
+                    socketClient.joinGame(response.payload.id, nickname, address as `0x${string}`)
 
                     // Listen for confirmation
                     socketClient.onJoinedGame((data) => {
@@ -193,7 +182,7 @@ const JoinGame = () => {
                 )
             case JoinGameStep.LOBBYROOM:
                 return (
-                    <div className="flex flex-col p-2 gap-2 game-type-background h-screen w-screen bg-no-repeat bg-cover md:flex justify-center p-1 sm:p-3">
+                    <div className="flex flex-col gap-2 game-type-background h-screen w-screen bg-no-repeat bg-cover md:flex justify-center p-1 sm:p-3">
                         <h1 className="font-[Oi] text-white [-webkit-text-stroke:2px_black] sm:[-webkit-text-stroke:3px_black] text-4xl xsm:text-6xl sm:text-8xl text-center">
                             Flamingo
                         </h1>

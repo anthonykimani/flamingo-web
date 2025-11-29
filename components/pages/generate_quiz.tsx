@@ -8,7 +8,6 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { Input } from '../ui/input'
 import { addAgentQuiz, createGameSession } from '@/services/quiz_service'
 import NavigationBar from '../navigation/navigation-bar'
-import { useAppKitAccount } from '@reown/appkit/react'
 import { GameMode } from '@/enums/game_mode'
 import { Switch } from '../ui/switch'
 import { Label } from '../ui/label'
@@ -22,7 +21,6 @@ const GenerateQuiz = () => {
     const [hasPrizes, setHasPrizes] = useState(false);
     const [prizePool, setPrizePool] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const { isConnected, address } = useAppKitAccount();
 
     const handlePromptChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setPrompt(e.target.value);

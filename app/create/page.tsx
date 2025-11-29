@@ -1,8 +1,8 @@
 'use client'
 
-import ChooseCanvasType from '@/components/custom/choose_canvas_type';
-import ChooseGameType from '@/components/custom/choose_game_type'
-import CreateQuiz from '@/components/custom/create_quiz';
+import ChooseCanvasType from '@/components/pages/choose_canvas_type';
+import ChooseGameType from '@/components/pages/choose_game_type'
+import CreateQuiz from '@/components/pages/create_quiz';
 import NavigationBar from '@/components/navigation/navigation-bar';
 import { CreateGameStep } from '@/enums/create_game_step';
 import { GameMode } from '@/enums/game_mode';

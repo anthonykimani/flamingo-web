@@ -11,7 +11,7 @@ import socketClient from '@/utils/socket.client'
 import { IGameSession } from '@/interfaces/IGame'
 import { SocketEvents } from '@/enums/socket-events'
 import { PLAYER_COLORS } from '@/lib/constant'
-import { useWallets } from '@privy-io/react-auth'
+import { useAccount } from 'wagmi'
 
 
 const LobbyPage = () => {
@@ -19,14 +19,12 @@ const LobbyPage = () => {
     const [gameSession, setGameSession] = useState<IGameSession | null>(null)
     const [loading, setLoading] = useState(true)
     const [isSocketConnected, setIsSocketConnected] = useState(false)
-    const { wallets } = useWallets();
-
+    const { address, isConnected } = useAccount();
     const router = useRouter()
     const searchParams = useSearchParams()
     const sessionId = searchParams.get('sessionId')
     const gamePin = searchParams.get('gamePin')
     const isHost = searchParams.get('host') === 'true'
-    const embeddedWallet = wallets.find(wallet => wallet.walletClientType === 'privy');
 
 
     // Helper function to refresh player list
@@ -62,11 +60,6 @@ const LobbyPage = () => {
 
         fetchGameSession()
 
-        if (!embeddedWallet?.address) {
-            console.log('Wallet connection lost. Please return to start.')
-            setTimeout(() => router.push('/'), 2000)
-            return
-        }
 
         // Connect to WebSocket
         const socket = socketClient.connect()
@@ -78,7 +71,7 @@ const LobbyPage = () => {
             // FIX #1: Join as Host (won't create player entity in backend)
             if (sessionId) {
                 console.log('🎮 Joining game room:', sessionId)
-                socketClient.joinGame(sessionId, isHost ? 'Host' : 'Spectator', embeddedWallet.address)
+                socketClient.joinGame(sessionId, isHost ? 'Host' : 'Spectator', address??"")
             }
         })
 

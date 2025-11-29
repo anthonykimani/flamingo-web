@@ -260,8 +260,7 @@ Player only
 ### State Management
 ```typescript
 const [stepper, setStepper] = useState<JoinGameStep>(JoinGameStep.ENTERGAMEPIN)
-const { ready, authenticated, user } = usePrivy();
-const { wallets } = useWallets();
+const { address, getUserAddress } = useMiniPayInjector()
 const [gamePin, setGamePin] = useState('')
 const [nickname, setNickname] = useState('')
 const [gameSession, setGameSession] = useState<any>(null)

@@ -30,7 +30,7 @@ class SocketClient {
         if (!this.socket) return;
 
         this.socket.on('connect', () => {
-            console.log('✅ Connected to server:', this.socket?.id);
+            console.log('✅ Connected to server:', this.socket?.id, this.url);
         });
 
         this.socket.on('disconnect', (reason) => {
