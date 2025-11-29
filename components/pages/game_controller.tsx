@@ -8,7 +8,7 @@ import React, { useState, useEffect } from 'react'
 import { getGameSession, getGameSessionByGamePin, getQuizById } from '@/services/quiz_service'
 import { IPlayer, IQuiz } from '@/interfaces/IQuiz'
 import { GameState } from '@/enums/game_state'
-import socketClient from '@/utils/socket.client'
+import socketClient from '@/utils/socket/socket.client'
 
 // Icon mapping for answers
 const ANSWER_CONFIG = [

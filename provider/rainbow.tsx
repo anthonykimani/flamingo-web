@@ -20,11 +20,11 @@ const connectors = connectorsForWallets(
     ],
     {
         appName: 'Flamingo',
-        projectId: process.env.NEXT_PUBLIC_PROJECT_ID??"",
+        projectId: process.env.NEXT_PUBLIC_PROJECT_ID ?? "",
     }
 );
 
-const config = createConfig({
+export const config = createConfig({
     connectors,
     chains: [celo, celoSepolia],
     transports: {
