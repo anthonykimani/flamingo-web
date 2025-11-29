@@ -4,30 +4,19 @@ import React, { useEffect } from 'react'
 import { Button } from '../ui/button'
 import { GameControllerIcon, MagicWandIcon, UserIcon } from '@phosphor-icons/react'
 import { useRouter } from 'next/navigation'
-import { useLogin, usePrivy, useWallets } from '@privy-io/react-auth'
-import { useConnect } from "wagmi";
-import { injected } from "@wagmi/connectors";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '../ui/dialog'
 import { useMiniPayInjector } from '@/hooks/use-minipay-injector'
 
 const StartScreen = () => {
   const router = useRouter()
-  // const { connect, isSuccess, data, isPending } = useConnect();
   const { address, getUserAddress } = useMiniPayInjector()
-
-  // const { ready, authenticated, user } = usePrivy();
-  // const { wallets } = useWallets();
-  // const { login } = useLogin();
-
-  // Get the embedded wallet address
-  // const embeddedWallet = wallets.find(w => w.walletClientType === 'privy');
 
   // Handle button click
   const handleRoute = async (route: string) => {
-    // if (!ready) {
-    //   alert('Wallet is still initializing...')
-    //   return
-    // }
+    if (!address) {
+      alert('Wallet is still initializing...')
+      return
+    }
 
 
     if (address !== null) {
