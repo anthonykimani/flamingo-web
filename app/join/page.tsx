@@ -11,13 +11,12 @@ import { getGameSessionByGamePin } from '@/services/quiz_service'
 import { GameState } from '@/enums/game_state'
 import socketClient from '@/utils/socket.client'
 import { SocketEvents } from '@/enums/socket-events'
-import { useAppKitAccount } from '@reown/appkit/react'
 import NavigationBar from '@/components/navigation/navigation-bar'
-import { useMiniPayInjector } from '@/hooks/use-minipay-injector'
+import { useAccount } from 'wagmi'
 
 const JoinGame = () => {
     const [stepper, setStepper] = useState<JoinGameStep>(JoinGameStep.ENTERGAMEPIN)
-    const { address, getUserAddress } = useMiniPayInjector()
+    const { address, isConnected } = useAccount();
     const [gamePin, setGamePin] = useState('')
     const [nickname, setNickname] = useState('')
     const [gameSession, setGameSession] = useState<any>(null)
@@ -85,7 +84,7 @@ const JoinGame = () => {
                     return
                 }
 
-                if (!address) {
+                if (!isConnected && !address) {
                     setError('Wallet connection lost. Please return to start.')
                     setTimeout(() => router.push('/'), 2000)
                     return
@@ -106,7 +105,7 @@ const JoinGame = () => {
                     setGameSession(response.payload)
 
                     // Join game via WebSocket
-                    socketClient.joinGame(response.payload.id, nickname, address)
+                    socketClient.joinGame(response.payload.id, nickname, address as `0x${string}`)
 
                     // Listen for confirmation
                     socketClient.onJoinedGame((data) => {

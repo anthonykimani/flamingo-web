@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import { Button } from '../ui/button'
 import { GameControllerIcon, MagicWandIcon } from '@phosphor-icons/react'
 import { useRouter } from 'next/navigation'
@@ -10,6 +10,10 @@ import { useAccount } from 'wagmi'
 const StartScreen = () => {
   const router = useRouter()
   const { address, isConnected } = useAccount();
+
+  //prevent hydration mismatch
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), [])
 
   // Handle button click
   const handleRoute = (route: string) => {
@@ -24,7 +28,7 @@ const StartScreen = () => {
     <div className="flex flex-col start-screen-background h-screen w-screen bg-no-repeat bg-cover">
       <div>
         <div className='flex items-start justify-start gap-2 animate-fadeIn cursor-pointer p-1 sm:p-3'>
-          <ConnectWalletButton />
+          {mounted && <ConnectWalletButton />}
         </div>
       </div>
 
@@ -33,28 +37,32 @@ const StartScreen = () => {
           Flamingo
         </h1>
 
-        <div className="flex flex-col sm:flex-row justify-center mt-4 gap-2">
-          <Button
-            variant="active"
-            size="xl"
-            onClick={() => handleRoute("/create")}
-            disabled={!address}
-          >
-            {!address ? (
-              <span className="animate-pulse">Connecting...</span>
-            ) : (
-              <>
-                <MagicWandIcon size={32} />
-                Create a Game
-              </>
-            )}
-          </Button>
+        {
+          mounted && (
+            <div className="flex flex-col sm:flex-row justify-center mt-4 gap-2">
+              <Button
+                variant="active"
+                size="xl"
+                onClick={() => handleRoute("/create")}
+                disabled={!isConnected}
+              >
+                {!isConnected ? (
+                  <span className="animate-pulse">Connecting...</span>
+                ) : (
+                  <>
+                    <MagicWandIcon size={32} />
+                    Create a Game
+                  </>
+                )}
+              </Button>
 
-          <Button variant="active" onClick={() => handleRoute('/join')} disabled={!address}>
-            <GameControllerIcon size={32} />
-            Join a Game
-          </Button>
-        </div>
+              <Button variant="active" onClick={() => handleRoute('/join')} disabled={!isConnected}>
+                <GameControllerIcon size={32} />
+                Join a Game
+              </Button>
+            </div>
+          )
+        }
       </div>
     </div>
   )
