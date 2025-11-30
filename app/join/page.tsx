@@ -18,10 +18,6 @@ import { flamingoEscrowABI } from '@/utils/abi/flamingo-escrow'
 import { ERC20ABI } from '@/utils/abi/ERC20'
 import { keccak256, stringToHex, toHex } from 'viem'
 
-const {
-    FLAMINGO_ESCROW_ADDRESS,
-    USDC_ADDRESS
-} = process.env
 
 const JoinGame = () => {
     const [stepper, setStepper] = useState<JoinGameStep>(JoinGameStep.ENTERGAMEPIN)
@@ -115,13 +111,19 @@ const JoinGame = () => {
                     setGameSession(response.payload)
                     const amount = BigInt(1_000);
 
+                    console.log(process.env.NEXT_PUBLIC_FLAMINGO_ESCROW_ADDRESS)
+                    console.log(process.env.NEXT_PUBLIC_USDC_ADDRESS)
+
+                    console.log(process.env.NEXT_PUBLIC_FLAMINGO_ESCROW_ADDRESS as `0x${string}`)
+                    console.log(process.env.NEXT_PUBLIC_USDC_ADDRESS as `0x${string}`)
+
                     try {
                         console.log('🟡 Approving USDC...')
-                        const approveUSDC = writeContractAsync({
+                        const approveUSDC = await writeContractAsync({
                             abi: ERC20ABI,
-                            address: USDC_ADDRESS as `0x${string}`,
+                            address: process.env.NEXT_PUBLIC_USDC_ADDRESS as `0x${string}`,
                             functionName: 'approve',
-                            args: [FLAMINGO_ESCROW_ADDRESS as `0x${string}`, amount],
+                            args: [process.env.NEXT_PUBLIC_FLAMINGO_ESCROW_ADDRESS as `0x${string}`, amount],
                         })
                         console.log(`✅ USDC approved ${approveUSDC}`)
                     } catch (err) {
@@ -134,9 +136,9 @@ const JoinGame = () => {
                         console.log('🟡 Depositing USDC...')
                         const depositUSDC = await writeContractAsync({
                             abi: flamingoEscrowABI,
-                            address: FLAMINGO_ESCROW_ADDRESS as `0x${string}`,
+                            address: process.env.NEXT_PUBLIC_FLAMINGO_ESCROW_ADDRESS as `0x${string}`,
                             functionName: 'deposit',
-                            args: [ keccak256(stringToHex(response.payload.id)), amount],
+                            args: [keccak256(stringToHex(response.payload.id)), amount],
                         })
                         console.log(`✅ Deposit successful ${depositUSDC}`)
                     } catch (err) {
