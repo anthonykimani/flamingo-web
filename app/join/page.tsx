@@ -19,7 +19,7 @@ import { ERC20ABI } from '@/utils/abi/ERC20'
 import { keccak256, stringToHex, toHex } from 'viem'
 
 const {
-    FLAMINGO_ESCROW_ADDRESS,
+    NEXT_PUBLIC_FLAMINGO_ESCROW_ADDRESS,
     USDC_ADDRESS
 } = process.env
 
@@ -121,7 +121,7 @@ const JoinGame = () => {
                             abi: ERC20ABI,
                             address: USDC_ADDRESS as `0x${string}`,
                             functionName: 'approve',
-                            args: [FLAMINGO_ESCROW_ADDRESS as `0x${string}`, amount],
+                            args: [NEXT_PUBLIC_FLAMINGO_ESCROW_ADDRESS as `0x${string}`, amount],
                         })
                         console.log(`✅ USDC approved ${approveUSDC}`)
                     } catch (err) {
@@ -134,7 +134,7 @@ const JoinGame = () => {
                         console.log('🟡 Depositing USDC...')
                         const depositUSDC = await writeContractAsync({
                             abi: flamingoEscrowABI,
-                            address: FLAMINGO_ESCROW_ADDRESS as `0x${string}`,
+                            address: NEXT_PUBLIC_FLAMINGO_ESCROW_ADDRESS as `0x${string}`,
                             functionName: 'deposit',
                             args: [ keccak256(stringToHex(response.payload.id)), amount],
                         })
