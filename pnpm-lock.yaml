@@ -11,6 +11,9 @@ importers:
       '@base-org/account':
         specifier: ^2.5.0
         version: 2.5.0(@types/react@19.1.6)(bufferutil@4.0.9)(fastestsmallesttextencoderdecoder@1.0.22)(react@19.1.0)(typescript@5.8.3)(use-sync-external-store@1.4.0(react@19.1.0))(utf-8-validate@5.0.10)(ws@8.18.3(bufferutil@4.0.9)(utf-8-validate@5.0.10))(zod@3.25.76)
+      '@celo/abis':
+        specifier: ^14.0.1
+        version: 14.0.1
       '@hookform/resolvers':
         specifier: ^5.2.2
         version: 5.2.2(react-hook-form@7.63.0(react@19.1.0))
@@ -236,6 +239,9 @@ packages:
 
   '@base-org/account@2.5.0':
     resolution: {integrity: sha512-cXFL3CHRHwgZ0NPhIeDRatwqaOiVP+EdwZj3qzflj8zQ9OWycybpJoiQ3DEDX8BHKbMZr9e2DzswS+fyal2iNA==}
+
+  '@celo/abis@14.0.1':
+    resolution: {integrity: sha512-O9NpfpvPxfTEtUd6ekcwDYuXp1PxSoXC/cVgdqo41qyuAAgr/DhQQBMf2xnYrYzJqV5AwYaT+8o5NmutPXONPA==}
 
   '@coinbase/cdp-sdk@1.38.6':
     resolution: {integrity: sha512-l9gGGZqhCryuD3nfqB4Y+i8kfBtsnPJoKB5jxx5lKgXhVJw7/BPhgscKkVhP81115Srq3bFegD1IBwUkJ0JFMw==}
@@ -4843,6 +4849,8 @@ snapshots:
       - utf-8-validate
       - ws
       - zod
+
+  '@celo/abis@14.0.1': {}
 
   '@coinbase/cdp-sdk@1.38.6(bufferutil@4.0.9)(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)(utf-8-validate@5.0.10)(ws@8.18.3(bufferutil@4.0.9)(utf-8-validate@5.0.10))':
     dependencies:
