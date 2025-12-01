@@ -150,7 +150,7 @@ const JoinGame = () => {
                             approveHash = await walletClient.sendTransaction({
                                 to: process.env.NEXT_PUBLIC_USDC_ADDRESS as `0x${string}`,
                                 data: approveData,
-                                account: address as `0x${string}`,
+                                account:null,
                             })
 
                             console.log("✅ Approval tx sent via MiniPay:", approveHash)
@@ -221,7 +221,7 @@ const JoinGame = () => {
                             depositHash = await walletClient.sendTransaction({
                                 to: process.env.NEXT_PUBLIC_FLAMINGO_ESCROW_ADDRESS as `0x${string}`,
                                 data: depositData,
-                                account: address as `0x${string}`,
+                                account:null,
                             })
 
                             console.log("✅ Deposit tx sent via MiniPay:", depositHash)
