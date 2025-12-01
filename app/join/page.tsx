@@ -16,11 +16,27 @@ import { useAccount, useWriteContract } from 'wagmi'
 import { config } from '@/provider/rainbow'
 import { flamingoEscrowABI } from '@/utils/abi/flamingo-escrow'
 import { ERC20ABI } from '@/utils/abi/ERC20'
-import { keccak256, maxUint256, stringToHex, toHex } from 'viem'
+import { keccak256, maxUint256, stringToHex, createWalletClient, custom, encodeFunctionData } from 'viem'
 import posthog from 'posthog-js'
 import { celoSepolia } from 'viem/chains'
 import { waitForTransactionReceipt } from '@wagmi/core'
 
+// Helper to detect MiniPay
+const isMiniPay = () => {
+  return typeof window !== 'undefined' && 
+         window.ethereum && 
+         (window.ethereum as any).isMiniPay === true
+}
+
+// Helper to get wallet client for MiniPay
+const getWalletClient = () => {
+  if (!isMiniPay() || !window.ethereum) return null
+  
+  return createWalletClient({
+    chain: celoSepolia,
+    transport: custom(window.ethereum)
+  })
+}
 
 const JoinGame = () => {
     const [stepper, setStepper] = useState<JoinGameStep>(JoinGameStep.ENTERGAMEPIN)
@@ -30,10 +46,10 @@ const JoinGame = () => {
     const [gameSession, setGameSession] = useState<any>(null)
     const [error, setError] = useState('')
     const [isSocketConnected, setIsSocketConnected] = useState(false)
+    const [isSubmitting, setIsSubmitting] = useState(false)
     const router = useRouter()
     const { writeContractAsync } = useWriteContract()
 
-    // Connect to WebSocket when component mounts
     useEffect(() => {
         const socket = socketClient.connect()
 
@@ -47,20 +63,14 @@ const JoinGame = () => {
             setIsSocketConnected(false)
         })
 
-        // Cleanup
-        return () => {
-            // Don't disconnect - other pages need the connection
-        }
+        return () => {}
     }, [])
 
-    // Listen for game start in lobby room
     useEffect(() => {
         if (stepper !== JoinGameStep.LOBBYROOM || !gameSession?.id) return
 
-        // Listen for game started event via WebSocket
         socketClient.onGameStarted((data) => {
             console.log('🚀 Game started via WebSocket:', data)
-            // Navigate to play page with playerName
             router.push(`/play?sessionId=${gameSession.id}&playerName=${nickname}&gamePin=${gameSession.gamePin}`)
         })
 
@@ -82,7 +92,6 @@ const JoinGame = () => {
                     return
                 }
 
-                // Validate nickname
                 if (nickname.length < 2) {
                     setError('Nickname must be at least 2 characters')
                     return
@@ -99,115 +108,183 @@ const JoinGame = () => {
                     return
                 }
 
-
+                setIsSubmitting(true)
                 try {
                     setError('')
                     const response = await getGameSessionByGamePin(gamePin)
                     console.log('Game session:', response.payload)
 
-                    // Check if game is in correct state
                     if (response.payload.status !== GameState.WAITING && response.payload.status !== GameState.CREATED) {
                         setError('Game has already started or ended')
+                        setIsSubmitting(false)
                         return
                     }
 
                     setGameSession(response.payload)
-                    const amount = BigInt(1_000);
+                    
+                    console.log("ESCROW:", process.env.NEXT_PUBLIC_FLAMINGO_ESCROW_ADDRESS)
+                    console.log("USDC:", process.env.NEXT_PUBLIC_USDC_ADDRESS)
+                    console.log("User:", address)
+                    console.log("Is MiniPay:", isMiniPay())
 
-                    console.log(process.env.NEXT_PUBLIC_FLAMINGO_ESCROW_ADDRESS)
-                    console.log(process.env.NEXT_PUBLIC_USDC_ADDRESS)
-
-                    console.log(process.env.NEXT_PUBLIC_FLAMINGO_ESCROW_ADDRESS as `0x${string}`)
-                    console.log(process.env.NEXT_PUBLIC_USDC_ADDRESS as `0x${string}`)
-
-                    // Approval flow
+                    // APPROVAL FLOW
                     try {
                         console.log('🟡 Approving USDC...')
-                        const approveUSDC = await writeContractAsync({
-                            abi: ERC20ABI,
-                            address: process.env.NEXT_PUBLIC_USDC_ADDRESS as `0x${string}`,
-                            functionName: 'approve',
-                            args: [process.env.NEXT_PUBLIC_FLAMINGO_ESCROW_ADDRESS as `0x${string}`, maxUint256],
-                        })
+                        
+                        let approveHash: string | undefined
+                        
+                        if (isMiniPay()) {
+                            // MiniPay: Use sendTransaction
+                            const walletClient = getWalletClient()
+                            if (!walletClient) throw new Error('MiniPay wallet not available')
 
-                        const transactionReceipt = await waitForTransactionReceipt(config,{
+                            const approveData = encodeFunctionData({
+                                abi: ERC20ABI,
+                                functionName: 'approve',
+                                args: [
+                                    process.env.NEXT_PUBLIC_FLAMINGO_ESCROW_ADDRESS as `0x${string}`, 
+                                    maxUint256
+                                ],
+                            })
+
+                            approveHash = await walletClient.sendTransaction({
+                                to: process.env.NEXT_PUBLIC_USDC_ADDRESS as `0x${string}`,
+                                data: approveData,
+                                account: address as `0x${string}`,
+                            })
+                            
+                            console.log("✅ Approval tx sent via MiniPay:", approveHash)
+                        } else {
+                            // Browser: Use writeContractAsync
+                            approveHash = await writeContractAsync({
+                                abi: ERC20ABI,
+                                address: process.env.NEXT_PUBLIC_USDC_ADDRESS as `0x${string}`,
+                                functionName: 'approve',
+                                args: [process.env.NEXT_PUBLIC_FLAMINGO_ESCROW_ADDRESS as `0x${string}`, maxUint256],
+                                account: address,
+                                chainId: celoSepolia.id,
+                            })
+                            
+                            console.log("✅ Approval tx sent via writeContractAsync:", approveHash)
+                        }
+
+                        // Wait for confirmation (both paths)
+                        const transactionReceipt = await waitForTransactionReceipt(config, {
                             chainId: celoSepolia.id,
-                            hash: approveUSDC
+                            hash: approveHash as `0x${string}`
                         })
 
-                        console.log(`✅ USDC approved & confirmed: ${approveUSDC}`)
+                        console.log(`✅ USDC approved & confirmed: ${approveHash}`)
                         posthog?.capture('usdc_approval_success', {
                             gameId: response.payload.id,
-                            txHash: approveUSDC,
-                            receipt: transactionReceipt
+                            txHash: approveHash,
+                            receipt: transactionReceipt,
+                            wallet: isMiniPay() ? 'minipay' : 'browser'
                         })
 
                     } catch (err) {
                         console.error('❌ Approval failed:', err)
                         posthog?.capture('usdc_approval_failed', {
                             gameId: response.payload.id,
-                            error: err
+                            error: err,
+                            wallet: isMiniPay() ? 'minipay' : 'browser'
                         })
-                        setError(`USDC approval failed.${err} `)
+                        setError(`USDC approval failed: ${err instanceof Error ? err.message : err}`)
+                        setIsSubmitting(false)
                         return
                     }
 
-                    // Deposit flow
+                    // DEPOSIT FLOW
                     try {
                         console.log('🟡 Depositing USDC...')
                         posthog?.capture('deposit_started', {
                             gameId: response.payload.id,
-                            amount: amount.toString()
+                            wallet: isMiniPay() ? 'minipay' : 'browser'
                         })
 
-                        const depositUSDC = await writeContractAsync({
-                            abi: flamingoEscrowABI,
-                            address: process.env.NEXT_PUBLIC_FLAMINGO_ESCROW_ADDRESS as `0x${string} `,
-                            functionName: 'deposit',
-                            args: [keccak256(stringToHex(response.payload.id)), amount],
-                        })
+                        let depositHash: string | undefined
+                        
+                        if (isMiniPay()) {
+                            // MiniPay: Use sendTransaction
+                            const walletClient = getWalletClient()
+                            if (!walletClient) throw new Error('MiniPay wallet not available')
 
-                        console.log(`✅ Deposit successful ${depositUSDC} `)
+                            const depositData = encodeFunctionData({
+                                abi: flamingoEscrowABI,
+                                functionName: 'deposit',
+                                args: [keccak256(stringToHex(response.payload.id)), BigInt(1_000)],
+                            })
+
+                            depositHash = await walletClient.sendTransaction({
+                                to: process.env.NEXT_PUBLIC_FLAMINGO_ESCROW_ADDRESS as `0x${string}`,
+                                data: depositData,
+                                account: address as `0x${string}`,
+                            })
+                            
+                            console.log("✅ Deposit tx sent via MiniPay:", depositHash)
+                        } else {
+                            // Browser: Use writeContractAsync
+                            depositHash = await writeContractAsync({
+                                abi: flamingoEscrowABI,
+                                address: process.env.NEXT_PUBLIC_FLAMINGO_ESCROW_ADDRESS as `0x${string}`,
+                                functionName: 'deposit',
+                                args: [keccak256(stringToHex(response.payload.id)), BigInt(1_000)],
+                                account: address,
+                                chainId: celoSepolia.id,
+                            })
+                            
+                            console.log("✅ Deposit tx sent via writeContractAsync:", depositHash)
+                        }
+
+                        // Wait for confirmation
+                        await waitForTransactionReceipt(config, {
+                            chainId: celoSepolia.id,
+                            hash: depositHash as `0x${string}`
+                        })
+                        
+                        console.log(`✅ Deposit successful: ${depositHash}`)
                         posthog?.capture('deposit_success', {
                             gameId: response.payload.id,
-                            txHash: depositUSDC,
-                            status: true
+                            txHash: depositHash,
+                            status: true,
+                            wallet: isMiniPay() ? 'minipay' : 'browser'
                         })
 
                     } catch (err) {
                         console.error('❌ Deposit failed:', err)
                         posthog?.capture('deposit_failed', {
                             gameId: response.payload.id,
-                            error: err
+                            error: err,
+                            wallet: isMiniPay() ? 'minipay' : 'browser'
                         })
-                        setError(`Deposit failed.Make sure you approved the transaction.${err} `)
+                        setError(`Deposit failed: ${err instanceof Error ? err.message : err}`)
+                        setIsSubmitting(false)
                         return
                     }
 
                     // Join game via WebSocket
-                    socketClient.joinGame(response.payload.id, nickname, address as `0x${string} `)
+                    socketClient.joinGame(response.payload.id, nickname, address as `0x${string}`)
 
-                    // Listen for confirmation
                     socketClient.onJoinedGame((data) => {
                         console.log('✅ Joined game via WebSocket:', data)
-
                         if (data.success) {
                             setStepper(JoinGameStep.LOBBYROOM)
                         } else {
                             setError('Failed to join game')
                         }
+                        setIsSubmitting(false)
                     })
 
-                    // Listen for errors
                     socketClient.onError((data) => {
                         console.error('❌ Join error:', data.message)
                         setError(data.message)
+                        setIsSubmitting(false)
                     })
-
 
                 } catch (err) {
                     console.error('Add player error:', err)
-                    setError('Invalid game PIN or game not found or Failed to join game. This nickname might already be taken.')
+                    setError('Invalid game PIN or game not found')
+                    setIsSubmitting(false)
                 }
                 break
         }
@@ -251,9 +328,9 @@ const JoinGame = () => {
                                         size="xl"
                                         className='bg-[#FF00B7] text-white'
                                         onClick={() => handleNextStep()}
-                                        disabled={!gamePin.trim()}
+                                        disabled={!gamePin.trim() || isSubmitting}
                                     >
-                                        Join Game
+                                        {isSubmitting ? 'Processing...' : 'Join Game'}
                                     </Button>
                                 </div>
                             </div>
@@ -293,7 +370,6 @@ const JoinGame = () => {
                             </Card>
                         </div>
 
-                        {/* Connection Status */}
                         <p className='absolute top-4 right-4 bg-black/50 text-white text-xs p-2 rounded'>
                             {isSocketConnected ? '🟢 Connected to game' : '🔴 Reconnecting...'}
                         </p>
