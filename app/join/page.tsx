@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardHeader } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { JoinGameStep } from '@/enums/join_game_step'
-import { LegoIcon, SparkleIcon, UserIcon } from '@phosphor-icons/react'
+import { UserIcon } from '@phosphor-icons/react'
 import { useRouter } from 'next/navigation'
 import React, { useState, useEffect } from 'react'
 import { getGameSessionByGamePin } from '@/services/quiz_service'
@@ -16,7 +16,7 @@ import { useAccount, useWriteContract } from 'wagmi'
 import { config } from '@/provider/rainbow'
 import { flamingoEscrowABI } from '@/utils/abi/flamingo-escrow'
 import { ERC20ABI } from '@/utils/abi/ERC20'
-import { keccak256, stringToHex, toHex } from 'viem'
+import { keccak256, maxUint256, stringToHex, toHex } from 'viem'
 import posthog from 'posthog-js'
 import { celoSepolia } from 'viem/chains'
 import { waitForTransactionReceipt } from '@wagmi/core'
@@ -127,10 +127,10 @@ const JoinGame = () => {
                             abi: ERC20ABI,
                             address: process.env.NEXT_PUBLIC_USDC_ADDRESS as `0x${string}`,
                             functionName: 'approve',
-                            args: [process.env.NEXT_PUBLIC_FLAMINGO_ESCROW_ADDRESS as `0x${string}`, amount],
+                            args: [process.env.NEXT_PUBLIC_FLAMINGO_ESCROW_ADDRESS as `0x${string}`, maxUint256],
                         })
 
-                        const transactionReceipt = waitForTransactionReceipt(config,{
+                        const transactionReceipt = await waitForTransactionReceipt(config,{
                             chainId: celoSepolia.id,
                             hash: approveUSDC
                         })
