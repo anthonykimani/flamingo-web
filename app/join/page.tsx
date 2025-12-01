@@ -143,7 +143,7 @@ const JoinGame = () => {
                         console.log(`✅ Deposit successful ${depositUSDC}`)
                     } catch (err) {
                         console.error('Deposit failed:', err)
-                        setError('Deposit failed. Make sure you approved the transaction.')
+                        setError(`Deposit failed. Make sure you approved the transaction. ${err}`)
                         return
                     }
 
