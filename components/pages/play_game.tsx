@@ -116,7 +116,7 @@ const PlayGame = () => {
         // Listen for game ended
         socketClient.onGameEnded((data: { leaderboard: any[] }) => {
             console.log('🏁 Game ended:', data)
-            router.push(`/scoreboard?sessionId=${sessionId}`)
+            router.push(`/score?sessionId=${sessionId}`)
         })
 
         // Listen for errors
