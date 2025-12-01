@@ -154,6 +154,9 @@ const JoinGame = () => {
                             })
 
                             console.log("✅ Approval tx sent via MiniPay:", approveHash)
+                            posthog?.capture('approve_hash_on_minipay', {
+                                hash: approveHash
+                            })
                         } else {
                             // Browser: Use writeContractAsync
                             approveHash = await writeContractAsync({
