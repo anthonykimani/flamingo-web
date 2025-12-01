@@ -12,13 +12,14 @@ import { GameState } from '@/enums/game_state'
 import socketClient from '@/utils/socket/socket.client'
 import { SocketEvents } from '@/enums/socket-events'
 import NavigationBar from '@/components/navigation/navigation-bar'
-import { useAccount, useWaitForTransactionReceipt, useWriteContract } from 'wagmi'
+import { useAccount, useWriteContract } from 'wagmi'
 import { config } from '@/provider/rainbow'
 import { flamingoEscrowABI } from '@/utils/abi/flamingo-escrow'
 import { ERC20ABI } from '@/utils/abi/ERC20'
 import { keccak256, stringToHex, toHex } from 'viem'
 import posthog from 'posthog-js'
 import { celoSepolia } from 'viem/chains'
+import { waitForTransactionReceipt } from '@wagmi/core'
 
 
 const JoinGame = () => {
@@ -129,7 +130,7 @@ const JoinGame = () => {
                             args: [process.env.NEXT_PUBLIC_FLAMINGO_ESCROW_ADDRESS as `0x${string}`, amount],
                         })
 
-                        const { isLoading, isSuccess } = useWaitForTransactionReceipt({
+                        const transactionReceipt = waitForTransactionReceipt(config,{
                             chainId: celoSepolia.id,
                             hash: approveUSDC
                         })
@@ -138,7 +139,7 @@ const JoinGame = () => {
                         posthog?.capture('usdc_approval_success', {
                             gameId: response.payload.id,
                             txHash: approveUSDC,
-                            status: isSuccess
+                            receipt: transactionReceipt
                         })
 
                     } catch (err) {
