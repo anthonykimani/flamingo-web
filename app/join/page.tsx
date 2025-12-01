@@ -12,7 +12,7 @@ import { GameState } from '@/enums/game_state'
 import socketClient from '@/utils/socket/socket.client'
 import { SocketEvents } from '@/enums/socket-events'
 import NavigationBar from '@/components/navigation/navigation-bar'
-import { useAccount, useWriteContract } from 'wagmi'
+import { useAccount, useSendTransaction, useWriteContract } from 'wagmi'
 import { config } from '@/provider/rainbow'
 import { flamingoEscrowABI } from '@/utils/abi/flamingo-escrow'
 import { ERC20ABI } from '@/utils/abi/ERC20'
@@ -49,6 +49,7 @@ const JoinGame = () => {
     const [isSubmitting, setIsSubmitting] = useState(false)
     const router = useRouter()
     const { writeContractAsync } = useWriteContract()
+    const { sendTransaction, data: sendTransactionDepositHash, isPending } = useSendTransaction();
 
     useEffect(() => {
         const socket = socketClient.connect()
@@ -138,25 +139,25 @@ const JoinGame = () => {
                             const walletClient = getWalletClient()
                             if (!walletClient) throw new Error('MiniPay wallet not available')
 
-                            const approveData = encodeFunctionData({
-                                abi: ERC20ABI,
-                                functionName: 'approve',
-                                args: [
-                                    process.env.NEXT_PUBLIC_FLAMINGO_ESCROW_ADDRESS as `0x${string}`,
-                                    maxUint256
-                                ],
-                            })
+                            // const approveData = encodeFunctionData({
+                            //     abi: ERC20ABI,
+                            //     functionName: 'approve',
+                            //     args: [
+                            //         process.env.NEXT_PUBLIC_FLAMINGO_ESCROW_ADDRESS as `0x${string}`,
+                            //         maxUint256
+                            //     ],
+                            // })
 
-                            approveHash = await walletClient.sendTransaction({
-                                to: process.env.NEXT_PUBLIC_USDC_ADDRESS as `0x${string}`,
-                                data: approveData,
-                                account: address as `0x${string}`,
-                            })
+                            // approveHash = await walletClient.sendTransaction({
+                            //     to: process.env.NEXT_PUBLIC_USDC_ADDRESS as `0x${string}`,
+                            //     data: approveData,
+                            //     account: address as `0x${string}`,
+                            // })
 
-                            console.log("✅ Approval tx sent via MiniPay:", approveHash)
-                            posthog?.capture('approve_hash_on_minipay', {
-                                hash: approveHash
-                            })
+                            // console.log("✅ Approval tx sent via MiniPay:", approveHash)
+                            // posthog?.capture('approve_hash_on_minipay', {
+                            //     hash: approveHash
+                            // })
                         } else {
                             // Browser: Use writeContractAsync
                             approveHash = await writeContractAsync({
@@ -217,10 +218,10 @@ const JoinGame = () => {
                                 args: [keccak256(stringToHex(response.payload.id)), BigInt(1_000)],
                             })
 
-                            depositHash = await walletClient.sendTransaction({
-                                to: process.env.NEXT_PUBLIC_FLAMINGO_ESCROW_ADDRESS as `0x${string}`,
-                                data: depositData,
+                            sendTransaction({
                                 account: address as `0x${string}`,
+                                to: process.env.NEXT_PUBLIC_FLAMINGO_ESCROW_ADDRESS as `0x${string}`,
+                                data: depositData
                             })
 
                             console.log("✅ Deposit tx sent via MiniPay:", depositHash)
@@ -249,7 +250,7 @@ const JoinGame = () => {
                         console.log(`✅ Deposit successful: ${depositHash}`)
                         posthog?.capture('deposit_success', {
                             gameId: response.payload.id,
-                            txHash: depositHash,
+                            txHash: depositHash || sendTransactionDepositHash,
                             status: true,
                             wallet: isMiniPay() ? 'minipay' : 'browser'
                         })
