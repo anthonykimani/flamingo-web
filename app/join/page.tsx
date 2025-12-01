@@ -12,11 +12,13 @@ import { GameState } from '@/enums/game_state'
 import socketClient from '@/utils/socket/socket.client'
 import { SocketEvents } from '@/enums/socket-events'
 import NavigationBar from '@/components/navigation/navigation-bar'
-import { useAccount, useWriteContract } from 'wagmi'
+import { useAccount, useWaitForTransactionReceipt, useWriteContract } from 'wagmi'
 import { config } from '@/provider/rainbow'
 import { flamingoEscrowABI } from '@/utils/abi/flamingo-escrow'
 import { ERC20ABI } from '@/utils/abi/ERC20'
 import { keccak256, stringToHex, toHex } from 'viem'
+import posthog from 'posthog-js'
+import { celoSepolia } from 'viem/chains'
 
 
 const JoinGame = () => {
@@ -117,6 +119,7 @@ const JoinGame = () => {
                     console.log(process.env.NEXT_PUBLIC_FLAMINGO_ESCROW_ADDRESS as `0x${string}`)
                     console.log(process.env.NEXT_PUBLIC_USDC_ADDRESS as `0x${string}`)
 
+                    // Approval flow
                     try {
                         console.log('🟡 Approving USDC...')
                         const approveUSDC = await writeContractAsync({
@@ -125,30 +128,63 @@ const JoinGame = () => {
                             functionName: 'approve',
                             args: [process.env.NEXT_PUBLIC_FLAMINGO_ESCROW_ADDRESS as `0x${string}`, amount],
                         })
-                        console.log(`✅ USDC approved ${approveUSDC}`)
+
+                        const { isLoading, isSuccess } = useWaitForTransactionReceipt({
+                            chainId: celoSepolia.id,
+                            hash: approveUSDC
+                        })
+
+                        console.log(`✅ USDC approved & confirmed: ${approveUSDC}`)
+                        posthog?.capture('usdc_approval_success', {
+                            gameId: response.payload.id,
+                            txHash: approveUSDC,
+                            status: isSuccess
+                        })
+
                     } catch (err) {
-                        console.error('Approval failed:', err)
-                        setError(`USDC approval failed. ${err}`)
+                        console.error('❌ Approval failed:', err)
+                        posthog?.capture('usdc_approval_failed', {
+                            gameId: response.payload.id,
+                            error: err
+                        })
+                        setError(`USDC approval failed.${err} `)
                         return
                     }
 
+                    // Deposit flow
                     try {
                         console.log('🟡 Depositing USDC...')
+                        posthog?.capture('deposit_started', {
+                            gameId: response.payload.id,
+                            amount: amount.toString()
+                        })
+
                         const depositUSDC = await writeContractAsync({
                             abi: flamingoEscrowABI,
-                            address: process.env.NEXT_PUBLIC_FLAMINGO_ESCROW_ADDRESS as `0x${string}`,
+                            address: process.env.NEXT_PUBLIC_FLAMINGO_ESCROW_ADDRESS as `0x${string} `,
                             functionName: 'deposit',
                             args: [keccak256(stringToHex(response.payload.id)), amount],
                         })
-                        console.log(`✅ Deposit successful ${depositUSDC}`)
+
+                        console.log(`✅ Deposit successful ${depositUSDC} `)
+                        posthog?.capture('deposit_success', {
+                            gameId: response.payload.id,
+                            txHash: depositUSDC,
+                            status: true
+                        })
+
                     } catch (err) {
-                        console.error('Deposit failed:', err)
-                        setError(`Deposit failed. Make sure you approved the transaction. ${err}`)
+                        console.error('❌ Deposit failed:', err)
+                        posthog?.capture('deposit_failed', {
+                            gameId: response.payload.id,
+                            error: err
+                        })
+                        setError(`Deposit failed.Make sure you approved the transaction.${err} `)
                         return
                     }
 
                     // Join game via WebSocket
-                    socketClient.joinGame(response.payload.id, nickname, address as `0x${string}`)
+                    socketClient.joinGame(response.payload.id, nickname, address as `0x${string} `)
 
                     // Listen for confirmation
                     socketClient.onJoinedGame((data) => {
