@@ -23,19 +23,19 @@ import { waitForTransactionReceipt } from '@wagmi/core'
 
 // Helper to detect MiniPay
 const isMiniPay = () => {
-  return typeof window !== 'undefined' && 
-         window.ethereum && 
-         (window.ethereum as any).isMiniPay === true
+    return typeof window !== 'undefined' &&
+        window.ethereum &&
+        (window.ethereum as any).isMiniPay === true
 }
 
 // Helper to get wallet client for MiniPay
 const getWalletClient = () => {
-  if (!isMiniPay() || !window.ethereum) return null
-  
-  return createWalletClient({
-    chain: celoSepolia,
-    transport: custom(window.ethereum)
-  })
+    if (!isMiniPay() || !window.ethereum) return null
+
+    return createWalletClient({
+        chain: celoSepolia,
+        transport: custom(window.ethereum)
+    })
 }
 
 const JoinGame = () => {
@@ -63,7 +63,7 @@ const JoinGame = () => {
             setIsSocketConnected(false)
         })
 
-        return () => {}
+        return () => { }
     }, [])
 
     useEffect(() => {
@@ -121,7 +121,7 @@ const JoinGame = () => {
                     }
 
                     setGameSession(response.payload)
-                    
+
                     console.log("ESCROW:", process.env.NEXT_PUBLIC_FLAMINGO_ESCROW_ADDRESS)
                     console.log("USDC:", process.env.NEXT_PUBLIC_USDC_ADDRESS)
                     console.log("User:", address)
@@ -130,9 +130,9 @@ const JoinGame = () => {
                     // APPROVAL FLOW
                     try {
                         console.log('🟡 Approving USDC...')
-                        
+
                         let approveHash: string | undefined
-                        
+
                         if (isMiniPay()) {
                             // MiniPay: Use sendTransaction
                             const walletClient = getWalletClient()
@@ -142,7 +142,7 @@ const JoinGame = () => {
                                 abi: ERC20ABI,
                                 functionName: 'approve',
                                 args: [
-                                    process.env.NEXT_PUBLIC_FLAMINGO_ESCROW_ADDRESS as `0x${string}`, 
+                                    process.env.NEXT_PUBLIC_FLAMINGO_ESCROW_ADDRESS as `0x${string}`,
                                     maxUint256
                                 ],
                             })
@@ -152,7 +152,7 @@ const JoinGame = () => {
                                 data: approveData,
                                 account: address as `0x${string}`,
                             })
-                            
+
                             console.log("✅ Approval tx sent via MiniPay:", approveHash)
                         } else {
                             // Browser: Use writeContractAsync
@@ -164,7 +164,7 @@ const JoinGame = () => {
                                 account: address,
                                 chainId: celoSepolia.id,
                             })
-                            
+
                             console.log("✅ Approval tx sent via writeContractAsync:", approveHash)
                         }
 
@@ -203,7 +203,7 @@ const JoinGame = () => {
                         })
 
                         let depositHash: string | undefined
-                        
+
                         if (isMiniPay()) {
                             // MiniPay: Use sendTransaction
                             const walletClient = getWalletClient()
@@ -220,8 +220,9 @@ const JoinGame = () => {
                                 data: depositData,
                                 account: address as `0x${string}`,
                             })
-                            
+
                             console.log("✅ Deposit tx sent via MiniPay:", depositHash)
+                            posthog?.capture("deposit_via_minipay", { hash: depositHash })
                         } else {
                             // Browser: Use writeContractAsync
                             depositHash = await writeContractAsync({
@@ -232,16 +233,17 @@ const JoinGame = () => {
                                 account: address,
                                 chainId: celoSepolia.id,
                             })
-                            
+
                             console.log("✅ Deposit tx sent via writeContractAsync:", depositHash)
+                            posthog?.capture("deposit_via_browser", { hash: depositHash })
                         }
 
                         // Wait for confirmation
-                        await waitForTransactionReceipt(config, {
-                            chainId: celoSepolia.id,
-                            hash: depositHash as `0x${string}`
-                        })
-                        
+                        // await waitForTransactionReceipt(config, {
+                        //     chainId: celoSepolia.id,
+                        //     hash: depositHash as `0x${string}`
+                        // })
+
                         console.log(`✅ Deposit successful: ${depositHash}`)
                         posthog?.capture('deposit_success', {
                             gameId: response.payload.id,
