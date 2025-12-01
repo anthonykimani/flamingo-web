@@ -172,16 +172,15 @@ const JoinGame = () => {
                         }
 
                         // Wait for confirmation (both paths)
-                        const transactionReceipt = await waitForTransactionReceipt(config, {
-                            chainId: celoSepolia.id,
-                            hash: approveHash as `0x${string}`
-                        })
+                        // const transactionReceipt = await waitForTransactionReceipt(config, {
+                        //     hash: approveHash as `0x${string}`
+                        // })
 
                         console.log(`✅ USDC approved & confirmed: ${approveHash}`)
                         posthog?.capture('usdc_approval_success', {
                             gameId: response.payload.id,
                             txHash: approveHash,
-                            receipt: transactionReceipt,
+                            // receipt: transactionReceipt,
                             wallet: isMiniPay() ? 'minipay' : 'browser'
                         })
 
