@@ -128,7 +128,7 @@ const JoinGame = () => {
                         console.log(`✅ USDC approved ${approveUSDC}`)
                     } catch (err) {
                         console.error('Approval failed:', err)
-                        setError('USDC approval failed. Please try again.')
+                        setError(`USDC approval failed. ${err}`)
                         return
                     }
 
