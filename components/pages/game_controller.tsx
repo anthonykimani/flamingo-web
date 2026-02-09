@@ -1,15 +1,10 @@
 'use client'
 
+import { CountdownScreen } from '@/components/game/CountdownScreen'
+import { LeaderboardCard } from '@/components/game/LeaderboardCard'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
-import {
-  JoystickIcon,
-  SquareIcon,
-  StarIcon,
-  CircleIcon,
-  TriangleIcon,
-  UserIcon,
-} from '@phosphor-icons/react'
+import { JoystickIcon, SquareIcon, StarIcon, CircleIcon, TriangleIcon } from '@phosphor-icons/react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import React, { useState, useEffect } from 'react'
 import { getGameSession, getGameSessionByGamePin, getQuizById } from '@/services/quiz_service'
@@ -224,14 +219,7 @@ const GamePage = () => {
 
   // Show countdown screen before question starts
   if (countdown !== null && countdown > 0) {
-    return (
-      <div className="game-pin-background flex h-screen items-center justify-center bg-cover bg-no-repeat">
-        <div className="text-center">
-          <div className="mb-4 animate-pulse text-9xl font-bold text-white">{countdown}</div>
-          <p className="text-2xl text-white">Get Ready!</p>
-        </div>
-      </div>
-    )
+    return <CountdownScreen countdown={countdown} />
   }
 
   // Show result screen
@@ -239,32 +227,11 @@ const GamePage = () => {
     return (
       <div className="result-background flex h-screen flex-col items-center justify-center bg-cover bg-no-repeat p-4">
         <div className="w-full max-w-3xl space-y-6">
-          {/* Leaderboard Card */}
-          <Card className="bg-white/95 backdrop-blur-sm">
-            <CardHeader className="py-6">
-              <h3 className="mb-6 text-center text-3xl font-bold">Scoreboard</h3>
-              <div className="max-h-[60vh] space-y-3 overflow-y-auto pr-2">
-                {leaderboard.length === 0 ? (
-                  <p className="py-8 text-center text-gray-500">Loading scores...</p>
-                ) : (
-                  leaderboard.map((player, index) => (
-                    <div
-                      key={player.id}
-                      className="flex items-center gap-4 rounded-lg bg-slate-50 p-4"
-                    >
-                      <div className="w-10 text-center text-2xl font-bold">
-                        {index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : index + 1}
-                      </div>
-                      <div className="flex flex-1 items-center gap-3">
-                        <h3 className="truncate text-xl font-semibold">{player.playerName}</h3>
-                      </div>
-                      <div className="text-3xl font-bold text-slate-700">{player.totalScore}</div>
-                    </div>
-                  ))
-                )}
-              </div>
-            </CardHeader>
-          </Card>
+          <LeaderboardCard
+            title="Scoreboard"
+            leaderboard={leaderboard}
+            maxHeightClassName="max-h-[60vh] overflow-y-auto pr-2"
+          />
 
           {/* Next Button */}
           <div className="flex justify-center">

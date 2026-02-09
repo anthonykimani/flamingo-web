@@ -1,5 +1,7 @@
 'use client'
 
+import { CountdownScreen } from '@/components/game/CountdownScreen'
+import { LeaderboardCard } from '@/components/game/LeaderboardCard'
 import { Button } from '@/components/ui/button'
 import { Card, CardHeader } from '@/components/ui/card'
 import { GameState } from '@/enums/game_state'
@@ -163,14 +165,7 @@ const PlayGame = () => {
 
   // FIX #2: Show countdown UI (like GamePage)
   if (countdown !== null && gameState === GameState.COUNTDOWN) {
-    return (
-      <div className="game-pin-background flex h-screen items-center justify-center bg-cover bg-no-repeat">
-        <div className="text-center">
-          <div className="animate-pulse text-9xl font-bold text-white">{countdown}</div>
-          <p className="mt-4 text-2xl text-white">Get Ready!</p>
-        </div>
-      </div>
-    )
+    return <CountdownScreen countdown={countdown} />
   }
 
   // FIX #4: Only show waiting screen for WAITING state, and make it clearer
@@ -230,39 +225,10 @@ const PlayGame = () => {
             </CardHeader>
           </Card>
 
-          {/* Leaderboard Card */}
-          <Card className="bg-white/95 backdrop-blur-sm">
-            <CardHeader className="py-6">
-              <h3 className="mb-6 text-center text-2xl font-bold">Leaderboard</h3>
-              <div className="space-y-3">
-                {leaderboard.length === 0 ? (
-                  <p className="text-center text-gray-500">Loading scores...</p>
-                ) : (
-                  leaderboard.map((player, index) => (
-                    <div
-                      key={player.id}
-                      className={`flex items-center gap-4 rounded-lg p-4 ${
-                        player.playerName === playerName
-                          ? 'border-2 border-blue-400 bg-blue-100'
-                          : 'bg-slate-50'
-                      } `}
-                    >
-                      <div className="w-8 text-center text-2xl font-bold">
-                        {index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : index + 1}
-                      </div>
-                      <h3 className="flex-1 truncate text-xl font-semibold">
-                        {player.playerName}
-                        {player.playerName === playerName && (
-                          <span className="ml-2 text-sm text-blue-600">(You)</span>
-                        )}
-                      </h3>
-                      <div className="text-2xl font-bold text-slate-700">{player.totalScore}</div>
-                    </div>
-                  ))
-                )}
-              </div>
-            </CardHeader>
-          </Card>
+          <LeaderboardCard
+            leaderboard={leaderboard}
+            highlightPlayerName={playerName ?? undefined}
+          />
         </div>
       </div>
     )
