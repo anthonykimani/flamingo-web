@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardHeader } from '@/components/ui/card'
 import { UserIcon } from '@phosphor-icons/react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import React, { useState, useEffect } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import { getGameSession, getLeaderboard } from '@/services/quiz_service'
 import { IPlayer } from '@/interfaces/IQuiz'
 import socketClient from '@/utils/socket/socket.client'
@@ -26,7 +26,7 @@ const LobbyPage = () => {
   const isHost = searchParams.get('host') === 'true'
 
   // Helper function to refresh player list
-  const refreshPlayerList = async () => {
+  const refreshPlayerList = useCallback(async () => {
     if (!sessionId) return
     try {
       const leaderboardResponse = await getLeaderboard(sessionId)
@@ -34,7 +34,7 @@ const LobbyPage = () => {
     } catch (error) {
       console.error('Failed to refresh player list:', error)
     }
-  }
+  }, [sessionId])
 
   useEffect(() => {
     if (!sessionId) return
@@ -123,7 +123,7 @@ const LobbyPage = () => {
       socketClient.off(SocketEvents.ERROR)
       // Don't disconnect, other pages need the connection
     }
-  }, [sessionId, gamePin, isHost, router])
+  }, [address, gamePin, isHost, refreshPlayerList, router, sessionId])
 
   const handleStartGame = async () => {
     if (!sessionId || !gameSession) return
