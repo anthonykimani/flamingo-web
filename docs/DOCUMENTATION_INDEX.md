@@ -15,6 +15,7 @@ This documentation system provides complete coverage of the Flamingo Web multipl
 ## Quick Start
 
 ### For AI Coding Agents
+
 1. Read [Project Overview](./architecture/01-project-overview.md) first
 2. Review [Technology Stack](./architecture/02-technology-stack.md)
 3. Study [Game Flow](./architecture/04-game-flow.md) for business logic
@@ -22,6 +23,7 @@ This documentation system provides complete coverage of the Flamingo Web multipl
 5. Follow [Coding Standards](./guides/01-coding-standards.md) for consistency
 
 ### For Human Developers
+
 1. Start with main [README](./README.md)
 2. Review [Project Structure](./PROJECT_STRUCTURE.md)
 3. Read [Quick Reference](./QUICK_REFERENCE.md) for common tasks
@@ -63,13 +65,16 @@ docs/
 ## Core Documentation
 
 ### 1. Main Overview
+
 **[README.md](./README.md)**
+
 - Documentation structure overview
 - Quick navigation guide
 - How to use this documentation
 - Version information
 
 **[PROJECT_STRUCTURE.md](./PROJECT_STRUCTURE.md)**
+
 - Complete directory tree
 - File count summary
 - Module dependencies
@@ -77,6 +82,7 @@ docs/
 - Naming conventions
 
 **[QUICK_REFERENCE.md](./QUICK_REFERENCE.md)**
+
 - Common imports
 - Socket.IO patterns
 - API calls
@@ -90,7 +96,9 @@ docs/
 ## Architecture Documentation
 
 ### 2. Project Overview
+
 **[architecture/01-project-overview.md](./architecture/01-project-overview.md)**
+
 - Application summary
 - Core purpose and features
 - User roles (Host/Player)
@@ -99,6 +107,7 @@ docs/
 - Architecture patterns
 
 **Key Topics:**
+
 - Quiz creation and management
 - Real-time multiplayer gameplay
 - Web3 wallet integration
@@ -108,7 +117,9 @@ docs/
 ---
 
 ### 3. Technology Stack
+
 **[architecture/02-technology-stack.md](./architecture/02-technology-stack.md)**
+
 - Core frameworks (Next.js 15, React 19, TypeScript 5)
 - Styling (TailwindCSS 4, Radix UI, shadcn/ui)
 - Real-time communication (Socket.IO 4.8.1)
@@ -118,6 +129,7 @@ docs/
 - All 34+ dependencies with versions
 
 **Key Topics:**
+
 - Framework versions and compatibility
 - Library purposes and features
 - Configuration files
@@ -127,7 +139,9 @@ docs/
 ---
 
 ### 4. Game Flow & State Management
+
 **[architecture/04-game-flow.md](./architecture/04-game-flow.md)**
+
 - Complete game state lifecycle
 - Host flow (Quiz creation → Lobby → Game → Scores)
 - Player flow (Join → Lobby → Play → Scores)
@@ -136,6 +150,7 @@ docs/
 - Error handling patterns
 
 **Key Topics:**
+
 - State transitions (CREATED → WAITING → IN_PROGRESS → COMPLETED)
 - Question flow with timers
 - Answer submission
@@ -147,7 +162,9 @@ docs/
 ## Component Documentation
 
 ### 5. App Routes & Pages
+
 **[components/01-app-routes.md](./components/01-app-routes.md)**
+
 - All 8 Next.js App Router pages
 - Route purposes and user types
 - URL parameters
@@ -156,6 +173,7 @@ docs/
 - Common patterns
 
 **Pages Documented:**
+
 - `/` - Home/Landing
 - `/create` - Quiz creation
 - `/generate` - AI generation
@@ -170,7 +188,9 @@ docs/
 ## Service Documentation
 
 ### 6. API Services
+
 **[services/01-api-services.md](./services/01-api-services.md)**
+
 - Complete API service layer
 - 13 service functions documented
 - Request/response patterns
@@ -178,6 +198,7 @@ docs/
 - Usage examples
 
 **Functions Documented:**
+
 - Quiz management (`addQuiz`, `getQuizById`, `addAgentQuiz`)
 - Game sessions (`createGameSession`, `getGameSession`, `joinGame`)
 - Game state (`startGame`, `updateGame`)
@@ -188,7 +209,9 @@ docs/
 ---
 
 ### 7. Socket.IO Client
+
 **[services/02-socket-client.md](./services/02-socket-client.md)**
+
 - Socket.IO singleton pattern
 - Connection management
 - All emit events (7 events)
@@ -197,6 +220,7 @@ docs/
 - Cleanup best practices
 
 **Events Documented:**
+
 - Game flow (join, start, end)
 - Player events (joined, left, disconnected)
 - Question flow (started, submit, results)
@@ -208,13 +232,16 @@ docs/
 ## Type System Documentation
 
 ### 8. TypeScript Interfaces
+
 **[types/01-interfaces.md](./types/01-interfaces.md)**
+
 - All interface definitions
 - Usage examples
 - Type guards
 - Extension patterns
 
 **Interfaces Documented:**
+
 - `IQuiz` - Quiz structure
 - `IQuestion` - Question data
 - `IAnswer` - Answer options
@@ -225,13 +252,16 @@ docs/
 ---
 
 ### 9. Enumerations
+
 **[types/02-enums.md](./types/02-enums.md)**
+
 - All enum definitions
 - State explanations
 - Transition diagrams
 - Usage patterns
 
 **Enums Documented:**
+
 - `GameState` (8 states)
 - `SocketEvents` (20+ events)
 - `JoinGameStep` (3 steps)
@@ -242,7 +272,9 @@ docs/
 ## Development Guides
 
 ### 10. Coding Standards
+
 **[guides/01-coding-standards.md](./guides/01-coding-standards.md)**
+
 - TypeScript guidelines
 - React component patterns
 - State management best practices
@@ -254,6 +286,7 @@ docs/
 - Git commit guidelines
 
 **Key Topics:**
+
 - Strict TypeScript usage
 - Component structure
 - Hook patterns
@@ -266,25 +299,25 @@ docs/
 
 ### Documentation Metrics
 
-| Metric | Value |
-|--------|-------|
-| **Total Documents** | 12 files |
-| **Total Words** | ~35,000+ |
-| **Total Lines** | ~3,500+ |
-| **Code Examples** | 200+ |
-| **Diagrams** | 10+ |
-| **Coverage** | 100% core features |
+| Metric              | Value              |
+| ------------------- | ------------------ |
+| **Total Documents** | 12 files           |
+| **Total Words**     | ~35,000+           |
+| **Total Lines**     | ~3,500+            |
+| **Code Examples**   | 200+               |
+| **Diagrams**        | 10+                |
+| **Coverage**        | 100% core features |
 
 ### Topics Covered
 
-| Category | Count |
-|----------|-------|
-| **Pages Documented** | 8 routes |
-| **Services Documented** | 13 functions |
-| **Socket Events** | 23 events |
-| **Interfaces** | 7 types |
-| **Enums** | 4 enums |
-| **Components** | 60+ components |
+| Category                | Count          |
+| ----------------------- | -------------- |
+| **Pages Documented**    | 8 routes       |
+| **Services Documented** | 13 functions   |
+| **Socket Events**       | 23 events      |
+| **Interfaces**          | 7 types        |
+| **Enums**               | 4 enums        |
+| **Components**          | 60+ components |
 
 ---
 
@@ -293,6 +326,7 @@ docs/
 ### Reading Paths
 
 #### Path 1: Understanding Architecture
+
 ```
 README.md
   ↓
@@ -304,6 +338,7 @@ README.md
 ```
 
 #### Path 2: Building Features
+
 ```
 01-coding-standards.md
   ↓
@@ -317,6 +352,7 @@ README.md
 ```
 
 #### Path 3: Quick Development
+
 ```
 QUICK_REFERENCE.md
   ↓
@@ -330,34 +366,41 @@ QUICK_REFERENCE.md
 ### By Topic
 
 **Game States:**
+
 - [Game Flow](./architecture/04-game-flow.md#game-state-lifecycle)
 - [GameState Enum](./types/02-enums.md#gamestate-enum)
 
 **Socket Events:**
+
 - [Socket Client](./services/02-socket-client.md)
 - [SocketEvents Enum](./types/02-enums.md#socketevents-enum)
 
 **API Calls:**
+
 - [API Services](./services/01-api-services.md)
 - [Error Handling](./guides/01-coding-standards.md#error-handling)
 
 **Components:**
+
 - [App Routes](./components/01-app-routes.md)
 - [Component Structure](./guides/01-coding-standards.md#component-structure)
 
 **Types:**
+
 - [Interfaces](./types/01-interfaces.md)
 - [Enums](./types/02-enums.md)
 
 ### By User Role
 
 **For Hosts:**
+
 - [Create Page](./components/01-app-routes.md#2-create-quiz-page-create)
 - [Lobby Page](./components/01-app-routes.md#4-lobby-page-lobby)
 - [Game Controller](./components/01-app-routes.md#5-game-controller-page-game)
 - [Host Flow](./architecture/04-game-flow.md#host-flow)
 
 **For Players:**
+
 - [Join Page](./components/01-app-routes.md#6-join-game-page-join)
 - [Play Page](./components/01-app-routes.md#7-play-game-page-play)
 - [Player Flow](./architecture/04-game-flow.md#player-flow)
@@ -369,6 +412,7 @@ QUICK_REFERENCE.md
 ### Updating Documentation
 
 **When to Update:**
+
 - New features added
 - API changes
 - State flow modifications
@@ -376,6 +420,7 @@ QUICK_REFERENCE.md
 - Architecture changes
 
 **How to Update:**
+
 1. Locate relevant document
 2. Update content
 3. Update "Last Updated" date
@@ -426,22 +471,27 @@ QUICK_REFERENCE.md
 ### For Questions About:
 
 **Architecture:**
+
 - Review [Project Overview](./architecture/01-project-overview.md)
 - Check [Game Flow](./architecture/04-game-flow.md)
 
 **Code Patterns:**
+
 - See [Quick Reference](./QUICK_REFERENCE.md)
 - Read [Coding Standards](./guides/01-coding-standards.md)
 
 **APIs:**
+
 - Check [API Services](./services/01-api-services.md)
 - Review [Socket Client](./services/02-socket-client.md)
 
 **Types:**
+
 - See [Interfaces](./types/01-interfaces.md)
 - Check [Enums](./types/02-enums.md)
 
 ### External Resources
+
 - Main Project README: `../README.md`
 - Next.js Docs: https://nextjs.org/docs
 - Socket.IO Docs: https://socket.io/docs
@@ -452,6 +502,7 @@ QUICK_REFERENCE.md
 ## Future Documentation
 
 ### Planned Topics
+
 - [ ] UI Components detailed guide
 - [ ] Custom Components API reference
 - [ ] Web3 integration patterns
@@ -467,15 +518,16 @@ QUICK_REFERENCE.md
 
 ## Version History
 
-| Version | Date | Changes |
-|---------|------|---------|
-| 1.0.0 | 2025-11-05 | Initial comprehensive documentation |
+| Version | Date       | Changes                             |
+| ------- | ---------- | ----------------------------------- |
+| 1.0.0   | 2025-11-05 | Initial comprehensive documentation |
 
 ---
 
 ## Document Status
 
 ✅ **Complete:**
+
 - Project overview
 - Technology stack
 - Game flow
@@ -489,6 +541,7 @@ QUICK_REFERENCE.md
 - Project structure
 
 ⏳ **Planned:**
+
 - UI components guide
 - Web3 integration details
 - Testing guide

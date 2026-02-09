@@ -1,16 +1,16 @@
-import axios from "axios";
-import { IResponse } from "../interfaces/IResponse";
-import { apiOptions } from "./api.config";
+import axios from 'axios'
+import { IResponse } from '../interfaces/IResponse'
+import { apiOptions } from './api.config'
 
 interface Params {
-  headers: any;
+  headers: any
 }
 
 const getHttpConfig = (): Params => ({
   headers: {
-    Authorization: `Bearer ${localStorage.getItem('token')}`
+    Authorization: `Bearer ${localStorage.getItem('token')}`,
   },
-});
+})
 
 const Http = {
   /**
@@ -20,26 +20,26 @@ const Http = {
    * @returns Promise<IResponse>
    */
   post: async function (url: string, data: any): Promise<IResponse> {
-    const httpConfig = getHttpConfig(); 
+    const httpConfig = getHttpConfig()
     try {
       let response = await axios({
         url: `${url}`,
         data,
-        method: "post",
-      });
+        method: 'post',
+      })
 
       return {
         payload: response.data,
         status: response.status,
         message: response.statusText,
-      };
+      }
     } catch (er) {
-      console.log(er);
+      console.log(er)
       return {
         payload: undefined,
         status: 512,
         message: er,
-      };
+      }
     }
   },
 
@@ -50,24 +50,24 @@ const Http = {
    * @returns Promise<IResponse>
    */
   get: async function (url: string): Promise<IResponse> {
-    const httpConfig = getHttpConfig(); 
+    const httpConfig = getHttpConfig()
     try {
       let response = await axios({
         url: `${url}`,
-        method: "get",
-      });
+        method: 'get',
+      })
 
       return {
         payload: response.data,
         status: response.status,
         message: response.statusText,
-      };
+      }
     } catch (er) {
       return {
         payload: undefined,
         status: 512,
         message: er,
-      };
+      }
     }
   },
 
@@ -78,31 +78,31 @@ const Http = {
    * @returns Promise<IResponse>
    */
   delete: async function (url: string, data: any): Promise<IResponse> {
-    const httpConfig = getHttpConfig(); 
+    const httpConfig = getHttpConfig()
     try {
       let response = await axios({
         url: `${url}`,
         data,
-        method: "delete",
-      });
+        method: 'delete',
+      })
 
       return {
         payload: response.data,
         status: response.status,
         message: response.statusText,
-      };
+      }
     } catch (er) {
       return {
         payload: undefined,
         status: 512,
         message: er,
-      };
+      }
     }
   },
 
   /**
    * sets Bearer token
-   * @param token 
+   * @param token
    */
   setToken: (token: string) => {
     localStorage.setItem('token', token)
@@ -110,11 +110,11 @@ const Http = {
 
   /**
    * Deletes Bearer token
-   * 
+   *
    */
   deleteToken: () => {
     localStorage.removeItem('token')
-  }
+  },
 
   //TODO: implement methods
   //UPDATE
@@ -125,6 +125,6 @@ const Http = {
   //     setNetInfo(state);
   //   });
   // };
-};
+}
 
-export default Http;
+export default Http

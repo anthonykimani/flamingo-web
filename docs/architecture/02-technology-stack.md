@@ -3,9 +3,11 @@
 ## Core Framework
 
 ### Next.js 15.3.3
+
 **Purpose:** React framework with App Router
 
 **Key Features Used:**
+
 - App Router for file-based routing
 - Server Components for optimal performance
 - API routes (future implementation)
@@ -17,9 +19,11 @@
 ---
 
 ### React 19.0.0
+
 **Purpose:** UI library
 
 **Features Used:**
+
 - Functional components with hooks
 - Context API via providers
 - Server and Client Components
@@ -28,11 +32,13 @@
 ---
 
 ### TypeScript 5.x
+
 **Purpose:** Type safety and developer experience
 
 **Configuration:** [tsconfig.json](../../tsconfig.json)
 
 **Settings:**
+
 - Strict mode enabled
 - ES2017 target
 - Path aliases (`@/*`)
@@ -43,9 +49,11 @@
 ## Styling
 
 ### TailwindCSS 4.x
+
 **Purpose:** Utility-first CSS framework
 
 **Features:**
+
 - Responsive design utilities
 - Custom theme configuration
 - JIT compilation
@@ -54,15 +62,18 @@
 **Configuration:** [tailwind.config.ts](../../tailwind.config.ts)
 
 **Plugins:**
+
 - `@tailwindcss/postcss` - PostCSS integration
 - `tailwind-text-stroke` - Text stroke utilities
 
 ---
 
 ### Radix UI 1.x
+
 **Purpose:** Headless accessible components
 
 **Components Used:**
+
 - Accordion, Alert Dialog, Avatar
 - Button, Card, Carousel
 - Checkbox, Collapsible, Command
@@ -75,6 +86,7 @@
 - Tabs, Toast, Tooltip
 
 **Benefits:**
+
 - WAI-ARIA compliant
 - Keyboard navigation
 - Focus management
@@ -83,6 +95,7 @@
 ---
 
 ### shadcn/ui
+
 **Purpose:** Pre-styled Radix UI components
 
 **Installation:** Via CLI
@@ -95,24 +108,29 @@
 ## Icons
 
 ### Phosphor Icons 2.1.10
+
 **Purpose:** Primary icon library
 
 **Usage:**
+
 ```typescript
-import { UserIcon, SparkleIcon, LegoIcon } from '@phosphor-icons/react';
+import { UserIcon, SparkleIcon, LegoIcon } from '@phosphor-icons/react'
 ```
 
 **Variants:**
+
 - Regular, Thin, Light, Bold, Fill, Duotone
 
 ---
 
 ### Lucide React 0.511.0
+
 **Purpose:** Secondary icon library
 
 **Usage:**
+
 ```typescript
-import { Check, ChevronDown, X } from 'lucide-react';
+import { Check, ChevronDown, X } from 'lucide-react'
 ```
 
 ---
@@ -120,9 +138,11 @@ import { Check, ChevronDown, X } from 'lucide-react';
 ## Real-Time Communication
 
 ### Socket.IO Client 4.8.1
+
 **Purpose:** WebSocket communication
 
 **Configuration:**
+
 ```typescript
 {
   transports: ['websocket', 'polling'],
@@ -139,15 +159,18 @@ import { Check, ChevronDown, X } from 'lucide-react';
 ## Web3 Integration
 
 ### Privy 3.5.0
+
 **Purpose:** Embedded wallet and authentication
 
 **Features:**
+
 - Embedded wallet creation
 - Social login integration
 - Wallet management
 - Session handling
 
 **Configuration:**
+
 ```typescript
 NEXT_PUBLIC_PRIVY_APP_ID
 NEXT_PUBLIC_PRIVY_CLIENT_ID
@@ -158,30 +181,36 @@ NEXT_PUBLIC_PRIVY_CLIENT_ID
 ---
 
 ### Reown AppKit 1.8.11
+
 **Purpose:** External wallet connection (formerly WalletConnect)
 
 **Features:**
+
 - Multi-wallet support
 - Chain switching
 - Transaction signing
 - Wallet modal UI
 
 **Packages:**
+
 - `@reown/appkit` - Core SDK
 - `@reown/appkit-adapter-wagmi` - Wagmi integration
 
 ---
 
 ### Wagmi 2.18.2
+
 **Purpose:** React hooks for Ethereum
 
 **Features:**
+
 - Account management
 - Network switching
 - Contract interactions
 - Transaction handling
 
 **Related:**
+
 - `wagmi` - Core hooks
 - `@wagmi/core` 2.22.1 - Core functionality
 - `@wagmi/connectors` 6.2.2 - Wallet connectors
@@ -189,9 +218,11 @@ NEXT_PUBLIC_PRIVY_CLIENT_ID
 ---
 
 ### Viem 2.38.4
+
 **Purpose:** TypeScript Ethereum library
 
 **Features:**
+
 - Type-safe contract interactions
 - ABI encoding/decoding
 - Transaction building
@@ -202,17 +233,20 @@ NEXT_PUBLIC_PRIVY_CLIENT_ID
 ## State Management
 
 ### TanStack React Query 5.90.5
+
 **Purpose:** Server state management and caching
 
 **Features:**
+
 - Data fetching
 - Cache management
 - Background refetching
 - Optimistic updates
 
 **Usage:**
+
 ```typescript
-import { useQuery, useMutation } from '@tanstack/react-query';
+import { useQuery, useMutation } from '@tanstack/react-query'
 ```
 
 ---
@@ -220,9 +254,11 @@ import { useQuery, useMutation } from '@tanstack/react-query';
 ## Form Management
 
 ### React Hook Form 7.63.0
+
 **Purpose:** Form state and validation
 
 **Features:**
+
 - Performant form handling
 - Built-in validation
 - Field arrays support
@@ -231,18 +267,21 @@ import { useQuery, useMutation } from '@tanstack/react-query';
 ---
 
 ### Zod 3.25.76
+
 **Purpose:** Schema validation
 
 **Features:**
+
 - Runtime type checking
 - Schema composition
 - Error messages
 - TypeScript integration
 
 **Usage:**
+
 ```typescript
-import * as z from 'zod';
-import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod'
+import { zodResolver } from '@hookform/resolvers/zod'
 ```
 
 ---
@@ -250,9 +289,11 @@ import { zodResolver } from '@hookform/resolvers/zod';
 ## HTTP Client
 
 ### Axios 1.12.2
+
 **Purpose:** HTTP requests
 
 **Features:**
+
 - Request/response interceptors
 - Automatic JSON transformation
 - Error handling
@@ -265,28 +306,32 @@ import { zodResolver } from '@hookform/resolvers/zod';
 ## UI Utilities
 
 ### class-variance-authority 0.7.1
+
 **Purpose:** Component variant system
 
 **Usage:**
+
 ```typescript
-import { cva } from 'class-variance-authority';
+import { cva } from 'class-variance-authority'
 
 const buttonVariants = cva('button-base', {
   variants: {
     variant: {
       default: 'bg-primary',
-      secondary: 'bg-secondary'
-    }
-  }
-});
+      secondary: 'bg-secondary',
+    },
+  },
+})
 ```
 
 ---
 
 ### clsx 2.1.1
+
 **Purpose:** Conditional className utility
 
 **Usage:**
+
 ```typescript
 import clsx from 'clsx';
 
@@ -300,9 +345,11 @@ className={clsx(
 ---
 
 ### cmdk 1.1.1
+
 **Purpose:** Command menu component
 
 **Features:**
+
 - Keyboard navigation
 - Search/filter
 - Command palette UI
@@ -312,9 +359,11 @@ className={clsx(
 ## UI Components
 
 ### embla-carousel-react 8.6.0
+
 **Purpose:** Carousel/slider component
 
 **Features:**
+
 - Touch/swipe support
 - Responsive
 - Customizable
@@ -322,9 +371,11 @@ className={clsx(
 ---
 
 ### input-otp 1.4.2
+
 **Purpose:** OTP input component
 
 **Features:**
+
 - Numeric input
 - Auto-focus
 - Paste support
@@ -332,9 +383,11 @@ className={clsx(
 ---
 
 ### recharts 2.15.4
+
 **Purpose:** Charting library
 
 **Features:**
+
 - Responsive charts
 - Various chart types
 - Animation support
@@ -342,22 +395,26 @@ className={clsx(
 ---
 
 ### sonner 2.0.7
+
 **Purpose:** Toast notifications
 
 **Usage:**
-```typescript
-import { toast } from 'sonner';
 
-toast.success('Success message');
-toast.error('Error message');
+```typescript
+import { toast } from 'sonner'
+
+toast.success('Success message')
+toast.error('Error message')
 ```
 
 ---
 
 ### vaul 1.1.2
+
 **Purpose:** Drawer component
 
 **Features:**
+
 - Bottom sheet drawer
 - Swipe to dismiss
 - Snap points
@@ -367,18 +424,21 @@ toast.error('Error message');
 ## Theme Management
 
 ### next-themes 0.4.6
+
 **Purpose:** Dark mode and theme switching
 
 **Features:**
+
 - System preference detection
 - Theme persistence
 - No flash on load
 
 **Usage:**
-```typescript
-import { useTheme } from 'next-themes';
 
-const { theme, setTheme } = useTheme();
+```typescript
+import { useTheme } from 'next-themes'
+
+const { theme, setTheme } = useTheme()
 ```
 
 ---
@@ -386,6 +446,7 @@ const { theme, setTheme } = useTheme();
 ## Development Tools
 
 ### TailwindCSS PostCSS 4.x
+
 **Purpose:** CSS processing
 
 **Configuration:** [postcss.config.mjs](../../postcss.config.mjs)
@@ -393,9 +454,11 @@ const { theme, setTheme } = useTheme();
 ---
 
 ### Turbopack
+
 **Purpose:** Fast development builds
 
 **Enabled in:** `package.json` dev script
+
 ```json
 "dev": "next dev --turbopack"
 ```
@@ -407,17 +470,20 @@ const { theme, setTheme } = useTheme();
 ### Required Variables
 
 **API Configuration:**
+
 ```bash
 NEXT_PUBLIC_GAMESERVICE_BASE_URL=http://localhost:3077
 ```
 
 **Privy Authentication:**
+
 ```bash
 NEXT_PUBLIC_PRIVY_APP_ID=your_app_id
 NEXT_PUBLIC_PRIVY_CLIENT_ID=your_client_id
 ```
 
 **Pimlico (Account Abstraction):**
+
 ```bash
 NEXT_PUBLIC_PIMLICO_API_KEY=your_api_key
 ```
@@ -444,10 +510,12 @@ NEXT_PUBLIC_PIMLICO_API_KEY=your_api_key
 ## Version Compatibility
 
 ### Node.js
+
 **Required:** 18.x or higher
 **Recommended:** 20.x LTS
 
 ### npm/yarn/pnpm
+
 **npm:** 9.x+
 **yarn:** 1.22.x+
 **pnpm:** 8.x+
@@ -457,12 +525,14 @@ NEXT_PUBLIC_PIMLICO_API_KEY=your_api_key
 ## Browser Support
 
 ### Supported Browsers
+
 - Chrome 90+
 - Firefox 88+
 - Safari 14+
 - Edge 90+
 
 ### Mobile Browsers
+
 - iOS Safari 14+
 - Chrome Mobile 90+
 - Samsung Internet 14+
@@ -472,18 +542,20 @@ NEXT_PUBLIC_PIMLICO_API_KEY=your_api_key
 ## Build Configuration
 
 ### Next.js Config
+
 ```typescript
 // next.config.ts
-import type { NextConfig } from "next";
+import type { NextConfig } from 'next'
 
 const nextConfig: NextConfig = {
   // Minimal configuration - uses Next.js 15 defaults
-};
+}
 
-export default nextConfig;
+export default nextConfig
 ```
 
 ### TypeScript Config
+
 ```json
 {
   "compilerOptions": {
@@ -512,9 +584,11 @@ export default nextConfig;
 ## Dependency Management
 
 ### Production Dependencies: 34 packages
+
 ### Dev Dependencies: 3 packages
 
 ### Update Strategy
+
 - Minor updates: Monthly
 - Security patches: Immediately
 - Major updates: After thorough testing
@@ -524,12 +598,14 @@ export default nextConfig;
 ## Performance Considerations
 
 ### Bundle Size Optimization
+
 - Next.js automatic code splitting
 - Dynamic imports for heavy components
 - Tree-shaking enabled
 - Image optimization
 
 ### Runtime Performance
+
 - React Server Components
 - Suspense boundaries
 - Lazy loading

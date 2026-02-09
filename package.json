@@ -2,11 +2,20 @@
   "name": "flamingo-web",
   "version": "0.1.0",
   "private": true,
+  "packageManager": "pnpm@9.15.5",
+  "engines": {
+    "node": ">=18"
+  },
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "lint:fix": "next lint --fix",
+    "typecheck": "tsc --noEmit",
+    "format": "prettier . --write",
+    "format:check": "prettier . --check",
+    "check": "pnpm -s format:check && pnpm -s lint && pnpm -s typecheck && pnpm -s build"
   },
   "dependencies": {
     "@base-org/account": "^2.5.0",
@@ -39,6 +48,7 @@
     "@radix-ui/react-toggle-group": "^1.1.11",
     "@radix-ui/react-tooltip": "^1.2.8",
     "@rainbow-me/rainbowkit": "^2.2.9",
+    "@react-native-async-storage/async-storage": "1.23.1",
     "@reown/appkit": "^1.8.11",
     "@reown/appkit-adapter-wagmi": "^1.8.11",
     "@reown/appkit-wallet-button": "^1.8.11",
@@ -76,6 +86,12 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "dotenv": "^17.2.3",
+    "eslint": "8.57.0",
+    "eslint-config-next": "15.3.6",
+    "eslint-config-prettier": "9.1.0",
+    "lint-staged": "15.5.2",
+    "prettier": "3.6.2",
+    "prettier-plugin-tailwindcss": "0.6.14",
     "tailwindcss": "^4",
     "tailwindcss-text-fill-stroke": "2.0.0-beta.3",
     "tw-animate-css": "^1.3.3",

@@ -31,15 +31,18 @@ app/
 **File:** [app/layout.tsx](../../app/layout.tsx)
 
 ### Purpose
+
 Global layout that wraps all pages with common providers and styling.
 
 ### Features
+
 - Custom font loading (OldschoolGrotesk, Oi)
 - Privy authentication provider wrapper
 - Global CSS styles
 - Application metadata
 
 ### Code Structure
+
 ```typescript
 export default async function RootLayout({
   children,
@@ -57,10 +60,12 @@ export default async function RootLayout({
 ```
 
 ### Fonts Loaded
+
 - **OldschoolGrotesk**: 5 weights (Light: 200, Regular: 300, Medium: 400, Book: 500, Bold: 600)
 - **Oi**: Regular (400) - Used for title displays
 
 ### Metadata
+
 - **Title**: "Flamingo"
 - **Description**: "A real-time multiplayer quiz game similar to Kahoot"
 
@@ -71,23 +76,29 @@ export default async function RootLayout({
 **File:** [app/page.tsx](../../app/page.tsx)
 
 ### Purpose
+
 Landing page and main entry point for the application.
 
 ### User Type
+
 Both Host and Player
 
 ### Component Used
+
 - `<StartScreen />` - Main landing interface
 
 ### Features
+
 - Game mode selection (Host vs Player)
 - Navigation to Create or Join flows
 - Wallet connection prompt
 
 ### Route Parameters
+
 None
 
 ### Navigation
+
 - **To Host**: `/create` - Create a new quiz
 - **To Player**: `/join` - Join existing game
 
@@ -98,43 +109,52 @@ None
 **File:** [app/create/page.tsx](../../app/create/page.tsx)
 
 ### Purpose
+
 Multi-step quiz creation and game session setup for hosts.
 
 ### User Type
+
 Host only
 
 ### State Management
+
 ```typescript
-const [stepper, setStepper] = useState<CreateGameStep>(CreateGameStep.GAMETYPE);
+const [stepper, setStepper] = useState<CreateGameStep>(CreateGameStep.GAMETYPE)
 const [gameSession, setGameSession] = useState<any>(null)
 ```
 
 ### Flow Steps
+
 Uses `CreateGameStep` enum with 3 steps:
 
 #### Step 1: GAMETYPE
+
 - **Component**: `<ChooseGameType />`
 - **Purpose**: Select game type (Hangouts, Team Building, Degen PvP)
 - **Background**: `.game-type-background`
 
 #### Step 2: GAMECANVAS
+
 - **Component**: `<ChooseCanvasType />`
 - **Purpose**: Choose quiz creation method (Manual or AI)
 - **Background**: `.canvas-type-background`
 - **Navigation**: Includes NavigationBar
 
 #### Step 3: GAMEFORM
+
 - **Component**: `<CreateQuiz />`
 - **Purpose**: Build quiz with questions and answers
 - **Background**: `.quiz-form-background`
 - **On Save**: Creates game session and navigates to lobby
 
 ### Navigation Flow
+
 ```
 /create → Choose Type → Choose Canvas → Create Quiz → /lobby?sessionId=...&gamePin=...&host=true
 ```
 
 ### Key Functions
+
 ```typescript
 handleNextStep() // Advances to next step
 handleQuizSave(session) // Saves quiz and navigates to lobby
@@ -147,20 +167,25 @@ handleQuizSave(session) // Saves quiz and navigates to lobby
 **File:** [app/generate/page.tsx](../../app/generate/page.tsx)
 
 ### Purpose
+
 AI-powered quiz generation using prompts.
 
 ### User Type
+
 Host only
 
 ### Features
+
 - Prompt-based quiz generation
 - AI agent creates questions and answers
 - Similar result to manual creation
 
 ### Component Used
+
 - `<GenerateQuiz />` - AI generation interface
 
 ### Navigation
+
 Accessed from `/create` GAMECANVAS step when user selects AI option
 
 ---
@@ -170,12 +195,15 @@ Accessed from `/create` GAMECANVAS step when user selects AI option
 **File:** [app/lobby/page.tsx](../../app/lobby/page.tsx)
 
 ### Purpose
+
 Host waiting room where players join before game starts.
 
 ### User Type
+
 Host only
 
 ### URL Parameters
+
 ```typescript
 ?sessionId=<game-session-id>
 &gamePin=<6-digit-pin>
@@ -183,6 +211,7 @@ Host only
 ```
 
 ### Features
+
 - Display game PIN prominently
 - Real-time player list updates
 - Player join notifications via WebSocket
@@ -190,14 +219,17 @@ Host only
 - Player count display
 
 ### Socket Events
+
 - **Listen**: `player-joined` - New player added
 - **Listen**: `player-left` - Player disconnected
 - **Emit**: `start-game` - Begin game session
 
 ### Component Used
+
 - `<GamePin />` - Lobby and player management
 
 ### Navigation
+
 - **Next**: `/game?sessionId=...` - When host starts game
 
 ---
@@ -207,18 +239,22 @@ Host only
 **File:** [app/game/page.tsx](../../app/game/page.tsx)
 
 ### Purpose
+
 Host's game control interface for managing questions and viewing results.
 
 ### User Type
+
 Host only
 
 ### URL Parameters
+
 ```typescript
 ?sessionId=<game-session-id>
 &gamePin=<6-digit-pin>
 ```
 
 ### Features
+
 - Display current question to all players
 - Control question timing
 - View player answer submissions in real-time
@@ -227,6 +263,7 @@ Host only
 - End game when complete
 
 ### Socket Events
+
 - **Emit**: `next-question` - Start next question
 - **Emit**: `show-results` - Display question results
 - **Emit**: `end-game` - Finish game
@@ -234,15 +271,18 @@ Host only
 - **Listen**: `question-results` - Get answer statistics
 
 ### Component Used
+
 - `<GameController />` - Question management interface
 
 ### State Flow
+
 ```
 COUNTDOWN → Display Question → Show Timer →
 Collect Answers → Show Results → Next Question → ... → End Game
 ```
 
 ### Navigation
+
 - **Next**: `/score?sessionId=...` - After final question
 
 ---
@@ -252,12 +292,15 @@ Collect Answers → Show Results → Next Question → ... → End Game
 **File:** [app/join/page.tsx](../../app/join/page.tsx)
 
 ### Purpose
+
 Player flow for joining an active game session.
 
 ### User Type
+
 Player only
 
 ### State Management
+
 ```typescript
 const [stepper, setStepper] = useState<JoinGameStep>(JoinGameStep.ENTERGAMEPIN)
 const { address, getUserAddress } = useMiniPayInjector()
@@ -267,9 +310,11 @@ const [gameSession, setGameSession] = useState<any>(null)
 ```
 
 ### Flow Steps
+
 Uses `JoinGameStep` enum with 3 steps:
 
 #### Step 1: ENTERGAMEPIN
+
 - **Input**: 6-digit game PIN
 - **Validation**:
   - PIN must exist
@@ -278,6 +323,7 @@ Uses `JoinGameStep` enum with 3 steps:
 - **Background**: `.game-pin-background`
 
 #### Step 2: ENTERNICKNAME
+
 - **Input**: Player nickname
 - **Validation**:
   - Must be 2-20 characters
@@ -287,6 +333,7 @@ Uses `JoinGameStep` enum with 3 steps:
 - **Background**: `.start-screen-background`
 
 #### Step 3: LOBBYROOM
+
 - **Display**: Player's chosen nickname and avatar
 - **Wait**: For host to start game
 - **Status**: Connection indicator
@@ -294,6 +341,7 @@ Uses `JoinGameStep` enum with 3 steps:
 - **Auto-navigate**: To `/play` when game starts
 
 ### Socket Integration
+
 ```typescript
 // Join game
 socketClient.joinGame(gameSession.id, nickname, walletAddress)
@@ -312,6 +360,7 @@ socketClient.onGameStarted((data) => {
 ```
 
 ### Error Handling
+
 - Invalid game PIN
 - Game already started
 - Nickname too short/long
@@ -319,6 +368,7 @@ socketClient.onGameStarted((data) => {
 - Wallet connection lost
 
 ### Navigation Flow
+
 ```
 /join → Enter PIN → Enter Nickname → Lobby → Auto-navigate to /play
 ```
@@ -330,12 +380,15 @@ socketClient.onGameStarted((data) => {
 **File:** [app/play/page.tsx](../../app/play/page.tsx)
 
 ### Purpose
+
 Player's game interface for answering questions in real-time.
 
 ### User Type
+
 Player only
 
 ### URL Parameters
+
 ```typescript
 ?sessionId=<game-session-id>
 &playerName=<player-nickname>
@@ -343,6 +396,7 @@ Player only
 ```
 
 ### Features
+
 - Display current question
 - Show answer options (A, B, C, D)
 - Countdown timer
@@ -353,32 +407,37 @@ Player only
 - Track answer streaks
 
 ### Socket Events
+
 - **Listen**: `question-started` - New question broadcast
 - **Listen**: `question-results` - Answer feedback
 - **Listen**: `game-ended` - Game completed
 - **Emit**: `submit-answer` - Player's answer submission
 
 ### Answer Submission
+
 ```typescript
 socketClient.submitAnswer({
   gameSessionId: string,
   playerName: string,
   questionId: string,
   answerId: string,
-  timeToAnswer: number // milliseconds
+  timeToAnswer: number, // milliseconds
 })
 ```
 
 ### Component Used
+
 - `<PlayGame />` - Player game interface
 
 ### UI States
+
 1. **Waiting**: Between questions
 2. **Question Active**: Display question and timer
 3. **Answer Submitted**: Disable buttons, show feedback
 4. **Results**: Show correct answer and score update
 
 ### Navigation
+
 - **Next**: `/score?sessionId=...&playerName=...` - After game ends
 
 ---
@@ -388,12 +447,15 @@ socketClient.submitAnswer({
 **File:** [app/score/page.tsx](../../app/score/page.tsx)
 
 ### Purpose
+
 Final results display with rankings and statistics.
 
 ### User Type
+
 Both Host and Player (different views)
 
 ### URL Parameters
+
 ```typescript
 // Host view
 ?sessionId=<game-session-id>&host=true
@@ -403,6 +465,7 @@ Both Host and Player (different views)
 ```
 
 ### Features
+
 - Final leaderboard with rankings
 - Top 3 winners highlighted
 - Player statistics:
@@ -414,13 +477,16 @@ Both Host and Player (different views)
 - Play again button
 
 ### Socket Events
+
 - **Listen**: `prizes-distributed` - Prize payout confirmation
 - **Listen**: `prize-distribution-failed` - Error handling
 
 ### Component Used
+
 - `<ScoreBoard />` - Results display
 
 ### Data Displayed
+
 ```typescript
 {
   ranking: number,
@@ -435,6 +501,7 @@ Both Host and Player (different views)
 ```
 
 ### Navigation
+
 - **Back**: `/` - Return to home/start again
 
 ---
@@ -442,16 +509,20 @@ Both Host and Player (different views)
 ## Route Guards & Access Control
 
 ### Wallet Requirements
+
 All routes require wallet connection via Privy:
+
 - Redirects to `/` if no wallet connected
 - Checks `usePrivy()` ready state
 - Validates embedded or external wallet
 
 ### Role-Based Access
+
 - **Host Routes**: `/create`, `/generate`, `/lobby`, `/game`, `/score?host=true`
 - **Player Routes**: `/join`, `/play`, `/score?playerName=...`
 
 ### State Validation
+
 - Game session must exist
 - Game must be in appropriate state
 - Player must be registered in session
@@ -461,7 +532,9 @@ All routes require wallet connection via Privy:
 ## Common Patterns Across Routes
 
 ### Socket Connection
+
 All real-time routes establish socket connection:
+
 ```typescript
 useEffect(() => {
   const socket = socketClient.connect()
@@ -478,6 +551,7 @@ useEffect(() => {
 ```
 
 ### Error Handling
+
 ```typescript
 const [error, setError] = useState('')
 
@@ -486,14 +560,19 @@ const [error, setError] = useState('')
 ```
 
 ### Navigation with State
+
 ```typescript
 router.push(`/page?param1=value1&param2=value2`)
 ```
 
 ### Loading States
+
 Most pages include connection status indicators:
+
 ```typescript
-{isSocketConnected ? '🟢 Connected' : '🔴 Reconnecting...'}
+{
+  isSocketConnected ? '🟢 Connected' : '🔴 Reconnecting...'
+}
 ```
 
 ---
@@ -501,6 +580,7 @@ Most pages include connection status indicators:
 ## Background Classes
 
 Custom background styles used across routes:
+
 - `.start-screen-background` - Home page
 - `.game-type-background` - Game type selection
 - `.canvas-type-background` - Canvas selection
@@ -514,12 +594,14 @@ These are defined in [app/globals.css](../../app/globals.css)
 ## URL Parameter Conventions
 
 ### Standard Parameters
+
 - `sessionId`: Game session database ID
 - `gamePin`: 6-digit game PIN
 - `playerName`: Player's nickname
 - `host`: Boolean flag for host view
 
 ### Example URLs
+
 ```
 /lobby?sessionId=abc123&gamePin=123456&host=true
 /play?sessionId=abc123&playerName=Alice&gamePin=123456

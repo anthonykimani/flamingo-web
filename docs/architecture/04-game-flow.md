@@ -62,6 +62,7 @@ This document describes the complete game flow, state transitions, and interacti
 ## Host Flow
 
 ### 1. Quiz Creation
+
 **Route:** `/create`
 
 ```typescript
@@ -95,33 +96,36 @@ router.push(`/lobby?sessionId=${session.id}&gamePin=${session.gamePin}&host=true
 ---
 
 ### 2. Lobby (Waiting Room)
+
 **Route:** `/lobby`
 **State:** `GameState.WAITING`
 
 #### Setup
+
 ```typescript
 useEffect(() => {
-  const socket = socketClient.connect();
+  const socket = socketClient.connect()
 
   // Listen for players joining
   socketClient.onPlayerJoined((data) => {
-    setPlayers(prev => [...prev, data]);
-    toast.success(`${data.playerName} joined!`);
-  });
+    setPlayers((prev) => [...prev, data])
+    toast.success(`${data.playerName} joined!`)
+  })
 
   // Listen for players leaving
   socketClient.onPlayerLeft((data) => {
-    setPlayers(prev => prev.filter(p => p.playerName !== data.playerName));
-  });
+    setPlayers((prev) => prev.filter((p) => p.playerName !== data.playerName))
+  })
 
   return () => {
-    socketClient.off(SocketEvents.PLAYER_JOINED);
-    socketClient.off(SocketEvents.PLAYER_LEFT);
-  };
-}, []);
+    socketClient.off(SocketEvents.PLAYER_JOINED)
+    socketClient.off(SocketEvents.PLAYER_LEFT)
+  }
+}, [])
 ```
 
 #### UI Elements
+
 - Large game PIN display
 - QR code for mobile joining (optional)
 - Real-time player list with avatars
@@ -129,169 +133,174 @@ useEffect(() => {
 - "Start Game" button (enabled when ≥1 player)
 
 #### Starting the Game
+
 ```typescript
 const handleStartGame = async () => {
   try {
     // Update game state
-    await startGame(sessionId, GameState.IN_PROGRESS);
+    await startGame(sessionId, GameState.IN_PROGRESS)
 
     // Emit socket event
-    socketClient.startGame(sessionId);
+    socketClient.startGame(sessionId)
 
     // Navigate to game controller
-    router.push(`/game?sessionId=${sessionId}&gamePin=${gamePin}`);
+    router.push(`/game?sessionId=${sessionId}&gamePin=${gamePin}`)
   } catch (error) {
-    console.error('Start game error:', error);
-    toast.error('Failed to start game');
+    console.error('Start game error:', error)
+    toast.error('Failed to start game')
   }
-};
+}
 ```
 
 ---
 
 ### 3. Game Controller
+
 **Route:** `/game`
 **State:** `GameState.IN_PROGRESS` → `GameState.COUNTDOWN` → ... → `GameState.COMPLETED`
 
 #### Initialization
+
 ```typescript
 useEffect(() => {
   // Load game session and quiz
   const loadGame = async () => {
-    const session = await getGameSession(sessionId);
-    const quiz = await getQuizById(session.quizId);
+    const session = await getGameSession(sessionId)
+    const quiz = await getQuizById(session.quizId)
 
-    setGameSession(session);
-    setQuiz(quiz);
-    setCurrentQuestionIndex(0);
-  };
+    setGameSession(session)
+    setQuiz(quiz)
+    setCurrentQuestionIndex(0)
+  }
 
-  loadGame();
+  loadGame()
 
   // Listen for player answers
   socketClient.onPlayerAnswered((data) => {
-    setAnsweredPlayers(prev => [...prev, data.playerName]);
-  });
+    setAnsweredPlayers((prev) => [...prev, data.playerName])
+  })
 
   return () => {
-    socketClient.off(SocketEvents.PLAYER_ANSWERED);
-  };
-}, []);
+    socketClient.off(SocketEvents.PLAYER_ANSWERED)
+  }
+}, [])
 ```
 
 #### Question Flow
+
 ```typescript
 const handleStartQuestion = async (questionIndex: number) => {
   // 1. Update state to countdown
-  await updateGame(sessionId, GameState.COUNTDOWN);
+  await updateGame(sessionId, GameState.COUNTDOWN)
 
   // 2. Show countdown (3, 2, 1)
-  setCountdown(3);
+  setCountdown(3)
   const countdownInterval = setInterval(() => {
-    setCountdown(prev => {
+    setCountdown((prev) => {
       if (prev <= 1) {
-        clearInterval(countdownInterval);
-        startQuestion();
-        return 0;
+        clearInterval(countdownInterval)
+        startQuestion()
+        return 0
       }
-      return prev - 1;
-    });
-  }, 1000);
-};
+      return prev - 1
+    })
+  }, 1000)
+}
 
 const startQuestion = async () => {
   // 3. Update to in progress
-  await updateGame(sessionId, GameState.IN_PROGRESS);
+  await updateGame(sessionId, GameState.IN_PROGRESS)
 
   // 4. Broadcast question to all players
-  socketClient.nextQuestion(sessionId, currentQuestionIndex);
+  socketClient.nextQuestion(sessionId, currentQuestionIndex)
 
   // 5. Start question timer (e.g., 20 seconds)
-  setTimeRemaining(20);
+  setTimeRemaining(20)
   const questionTimer = setInterval(() => {
-    setTimeRemaining(prev => {
+    setTimeRemaining((prev) => {
       if (prev <= 1) {
-        clearInterval(questionTimer);
-        handleQuestionTimeout();
-        return 0;
+        clearInterval(questionTimer)
+        handleQuestionTimeout()
+        return 0
       }
-      return prev - 1;
-    });
-  }, 1000);
-};
+      return prev - 1
+    })
+  }, 1000)
+}
 
 const handleQuestionTimeout = async () => {
   // 6. Time's up - stop accepting answers
-  await updateGame(sessionId, GameState.TIMEOUT);
+  await updateGame(sessionId, GameState.TIMEOUT)
 
   // 7. Show results after brief delay
   setTimeout(() => {
-    handleShowResults();
-  }, 1000);
-};
+    handleShowResults()
+  }, 1000)
+}
 
 const handleShowResults = async () => {
   // 8. Update state and emit results
-  await updateGame(sessionId, GameState.RESULTS_READY);
-  socketClient.showResults(sessionId, currentQuestion.id);
+  await updateGame(sessionId, GameState.RESULTS_READY)
+  socketClient.showResults(sessionId, currentQuestion.id)
 
   // 9. Wait for results to be viewed
   setTimeout(() => {
-    handleNextQuestion();
-  }, 5000);
-};
+    handleNextQuestion()
+  }, 5000)
+}
 
 const handleNextQuestion = () => {
-  const nextIndex = currentQuestionIndex + 1;
+  const nextIndex = currentQuestionIndex + 1
 
   if (nextIndex < quiz.questions.length) {
     // More questions - continue
-    setCurrentQuestionIndex(nextIndex);
-    setAnsweredPlayers([]);
-    handleStartQuestion(nextIndex);
+    setCurrentQuestionIndex(nextIndex)
+    setAnsweredPlayers([])
+    handleStartQuestion(nextIndex)
   } else {
     // No more questions - end game
-    handleEndGame();
+    handleEndGame()
   }
-};
+}
 
 const handleEndGame = async () => {
   try {
     // Check if prizes should be distributed
     if (gameSession.prizePool && gameSession.prizePool > 0) {
-      await updateGame(sessionId, GameState.PAYOUT);
+      await updateGame(sessionId, GameState.PAYOUT)
 
       // Listen for payout completion
       socketClient.onPrizesDistributed((data) => {
-        console.log('Prizes distributed:', data.txHash);
-        completeGame();
-      });
+        console.log('Prizes distributed:', data.txHash)
+        completeGame()
+      })
 
       socketClient.onPrizeDistributionFailed((data) => {
-        console.error('Prize distribution failed:', data.message);
-        completeGame();
-      });
+        console.error('Prize distribution failed:', data.message)
+        completeGame()
+      })
     } else {
-      completeGame();
+      completeGame()
     }
   } catch (error) {
-    console.error('End game error:', error);
+    console.error('End game error:', error)
   }
-};
+}
 
 const completeGame = async () => {
   // Update final state
-  await updateGame(sessionId, GameState.COMPLETED);
+  await updateGame(sessionId, GameState.COMPLETED)
 
   // Emit end game event
-  socketClient.endGame(sessionId);
+  socketClient.endGame(sessionId)
 
   // Navigate to scores
-  router.push(`/score?sessionId=${sessionId}&host=true`);
-};
+  router.push(`/score?sessionId=${sessionId}&host=true`)
+}
 ```
 
 #### UI Elements
+
 - Current question display
 - Question number / total
 - Countdown timer (circular or linear)
@@ -304,28 +313,31 @@ const completeGame = async () => {
 ---
 
 ### 4. Scoreboard
+
 **Route:** `/score?host=true`
 **State:** `GameState.COMPLETED`
 
 #### Data Loading
+
 ```typescript
 useEffect(() => {
   const loadResults = async () => {
-    const leaderboard = await getLeaderboard(sessionId);
-    setLeaderboard(leaderboard);
-  };
+    const leaderboard = await getLeaderboard(sessionId)
+    setLeaderboard(leaderboard)
+  }
 
-  loadResults();
+  loadResults()
 
   // Listen for prize events
   socketClient.onPrizesDistributed((data) => {
-    setTxHash(data.txHash);
-    setWinners(data.winners);
-  });
-}, []);
+    setTxHash(data.txHash)
+    setWinners(data.winners)
+  })
+}, [])
 ```
 
 #### UI Elements
+
 - Final rankings (1st, 2nd, 3rd highlighted)
 - All players with scores
 - Statistics:
@@ -342,32 +354,35 @@ useEffect(() => {
 ## Player Flow
 
 ### 1. Join Game
+
 **Route:** `/join`
 
 #### Step 1: Enter Game PIN
+
 ```typescript
 JoinGameStep.ENTERGAMEPIN
 
 const handleJoinGame = async () => {
   try {
     // Validate PIN
-    const session = await getGameSessionByGamePin(gamePin);
+    const session = await getGameSessionByGamePin(gamePin)
 
     // Check game state
     if (session.status !== GameState.WAITING && session.status !== GameState.CREATED) {
-      setError('Game has already started or ended');
-      return;
+      setError('Game has already started or ended')
+      return
     }
 
-    setGameSession(session);
-    setStepper(JoinGameStep.ENTERNICKNAME);
+    setGameSession(session)
+    setStepper(JoinGameStep.ENTERNICKNAME)
   } catch (error) {
-    setError('Invalid game PIN or game not found');
+    setError('Invalid game PIN or game not found')
   }
-};
+}
 ```
 
 #### Step 2: Enter Nickname
+
 ```typescript
 JoinGameStep.ENTERNICKNAME
 
@@ -375,97 +390,103 @@ const handleSetNickname = async () => {
   try {
     // Validate nickname
     if (nickname.length < 2 || nickname.length > 20) {
-      setError('Nickname must be 2-20 characters');
-      return;
+      setError('Nickname must be 2-20 characters')
+      return
     }
 
     // Get wallet address
-    const embeddedWallet = wallets.find(w => w.walletClientType === 'privy');
+    const embeddedWallet = wallets.find((w) => w.walletClientType === 'privy')
 
     if (!embeddedWallet?.address) {
-      setError('Wallet connection lost');
-      return;
+      setError('Wallet connection lost')
+      return
     }
 
     // Join via socket
-    socketClient.joinGame(gameSession.id, nickname, embeddedWallet.address);
+    socketClient.joinGame(gameSession.id, nickname, embeddedWallet.address)
 
     // Wait for confirmation
     socketClient.onJoinedGame((data) => {
       if (data.success) {
-        setStepper(JoinGameStep.LOBBYROOM);
+        setStepper(JoinGameStep.LOBBYROOM)
       } else {
-        setError(data.message || 'Failed to join game');
+        setError(data.message || 'Failed to join game')
       }
-    });
+    })
   } catch (error) {
-    setError('Failed to join game');
+    setError('Failed to join game')
   }
-};
+}
 ```
 
 #### Step 3: Lobby Room
+
 ```typescript
 JoinGameStep.LOBBYROOM
 
 useEffect(() => {
   // Wait for game to start
   socketClient.onGameStarted((data) => {
-    router.push(`/play?sessionId=${gameSession.id}&playerName=${nickname}&gamePin=${gameSession.gamePin}`);
-  });
+    router.push(
+      `/play?sessionId=${gameSession.id}&playerName=${nickname}&gamePin=${gameSession.gamePin}`
+    )
+  })
 
   return () => {
-    socketClient.off(SocketEvents.GAME_STARTED);
-  };
-}, [gameSession, nickname]);
+    socketClient.off(SocketEvents.GAME_STARTED)
+  }
+}, [gameSession, nickname])
 ```
 
 ---
 
 ### 2. Play Game
+
 **Route:** `/play`
 
 #### Initialization
+
 ```typescript
 useEffect(() => {
-  const socket = socketClient.connect();
+  const socket = socketClient.connect()
 
   // Listen for questions
   socketClient.onQuestionStarted((data) => {
-    setCurrentQuestion(data.question);
-    setTimeRemaining(data.timeLimit);
-    setAnswerSubmitted(false);
-    setSelectedAnswer(null);
-  });
+    setCurrentQuestion(data.question)
+    setTimeRemaining(data.timeLimit)
+    setAnswerSubmitted(false)
+    setSelectedAnswer(null)
+  })
 
   // Listen for results
   socketClient.onQuestionResults((data) => {
-    setIsCorrect(data.isCorrect);
-    setCorrectAnswerId(data.correctAnswer.id);
-    setPlayerScore(data.newScore);
-    setPlayerRank(data.rank);
-    setStreak(data.streak);
-  });
+    setIsCorrect(data.isCorrect)
+    setCorrectAnswerId(data.correctAnswer.id)
+    setPlayerScore(data.newScore)
+    setPlayerRank(data.rank)
+    setStreak(data.streak)
+  })
 
   // Listen for game end
   socketClient.onGameEnded((data) => {
-    router.push(`/score?sessionId=${sessionId}&playerName=${playerName}`);
-  });
+    router.push(`/score?sessionId=${sessionId}&playerName=${playerName}`)
+  })
 
   return () => {
-    socketClient.off(SocketEvents.QUESTION_STARTED);
-    socketClient.off(SocketEvents.QUESTION_RESULTS);
-    socketClient.off(SocketEvents.GAME_ENDED);
-  };
-}, []);
+    socketClient.off(SocketEvents.QUESTION_STARTED)
+    socketClient.off(SocketEvents.QUESTION_RESULTS)
+    socketClient.off(SocketEvents.GAME_ENDED)
+  }
+}, [])
 ```
 
 #### Answer Submission
+
 ```typescript
 const handleAnswerSelect = async (answerId: string) => {
-  if (answerSubmitted) return;
+  if (answerSubmitted) return
 
-  const timeToAnswer = Date.now() - questionStartTime;
+  const timeToAnswer = Date.now() - questionStartTime
 
   try {
     // Submit via socket
@@ -474,25 +495,26 @@ const handleAnswerSelect = async (answerId: string) => {
       playerName,
       questionId: currentQuestion.id,
       answerId,
-      timeToAnswer
-    });
+      timeToAnswer,
+    })
 
     // Update local state
-    setAnswerSubmitted(true);
-    setSelectedAnswer(answerId);
+    setAnswerSubmitted(true)
+    setSelectedAnswer(answerId)
 
     // Wait for results
     socketClient.onAnswerSubmitted((data) => {
-      console.log('Answer submitted successfully');
-    });
+      console.log('Answer submitted successfully')
+    })
   } catch (error) {
-    console.error('Submit answer error:', error);
-    toast.error('Failed to submit answer');
+    console.error('Submit answer error:', error)
+    toast.error('Failed to submit answer')
   }
-};
+}
 ```
 
 #### UI States
+
 ```typescript
 const renderGameState = () => {
   if (!currentQuestion) {
@@ -547,28 +569,31 @@ const renderGameState = () => {
 ---
 
 ### 3. Final Scores
+
 **Route:** `/score?playerName=...`
 
 #### Data Loading
+
 ```typescript
 useEffect(() => {
   const loadStats = async () => {
-    const leaderboard = await getLeaderboard(sessionId);
-    const playerStats = await getPlayerStats(sessionId, playerName);
+    const leaderboard = await getLeaderboard(sessionId)
+    const playerStats = await getPlayerStats(sessionId, playerName)
 
-    setLeaderboard(leaderboard);
-    setStats(playerStats);
+    setLeaderboard(leaderboard)
+    setStats(playerStats)
 
     // Find player rank
-    const rank = leaderboard.findIndex(p => p.playerName === playerName) + 1;
-    setPlayerRank(rank);
-  };
+    const rank = leaderboard.findIndex((p) => p.playerName === playerName) + 1
+    setPlayerRank(rank)
+  }
 
-  loadStats();
-}, []);
+  loadStats()
+}, [])
 ```
 
 #### UI Elements
+
 - Player's final rank (large display if top 3)
 - Personal statistics:
   - Total score
@@ -585,32 +610,36 @@ useEffect(() => {
 ## Score Calculation
 
 ### Base Points
+
 ```typescript
-const BASE_POINTS = 1000;
+const BASE_POINTS = 1000
 ```
 
 ### Speed Bonus
+
 ```typescript
 const calculateSpeedBonus = (timeToAnswer: number, timeLimit: number): number => {
-  const timeRemaining = timeLimit - timeToAnswer;
-  const speedRatio = timeRemaining / timeLimit;
+  const timeRemaining = timeLimit - timeToAnswer
+  const speedRatio = timeRemaining / timeLimit
 
   // Bonus: 0-500 points based on speed
-  return Math.round(speedRatio * 500);
-};
+  return Math.round(speedRatio * 500)
+}
 ```
 
 ### Streak Multiplier
+
 ```typescript
 const calculateStreakMultiplier = (streak: number): number => {
-  if (streak < 2) return 1.0;
-  if (streak < 5) return 1.2;
-  if (streak < 10) return 1.5;
-  return 2.0;
-};
+  if (streak < 2) return 1.0
+  if (streak < 5) return 1.2
+  if (streak < 10) return 1.5
+  return 2.0
+}
 ```
 
 ### Final Score Calculation
+
 ```typescript
 const calculatePoints = (
   isCorrect: boolean,
@@ -618,14 +647,14 @@ const calculatePoints = (
   timeLimit: number,
   streak: number
 ): number => {
-  if (!isCorrect) return 0;
+  if (!isCorrect) return 0
 
-  const basePoints = BASE_POINTS;
-  const speedBonus = calculateSpeedBonus(timeToAnswer, timeLimit);
-  const multiplier = calculateStreakMultiplier(streak);
+  const basePoints = BASE_POINTS
+  const speedBonus = calculateSpeedBonus(timeToAnswer, timeLimit)
+  const multiplier = calculateStreakMultiplier(streak)
 
-  return Math.round((basePoints + speedBonus) * multiplier);
-};
+  return Math.round((basePoints + speedBonus) * multiplier)
+}
 ```
 
 ---
@@ -633,6 +662,7 @@ const calculatePoints = (
 ## Socket Event Flow
 
 ### Game Start Sequence
+
 ```
 Host: START_GAME (emit)
   ↓
@@ -642,6 +672,7 @@ All Players: Navigate to /play
 ```
 
 ### Question Sequence
+
 ```
 Host: NEXT_QUESTION (emit)
   ↓
@@ -662,6 +693,7 @@ All: Display results and updated scores
 ```
 
 ### Game End Sequence
+
 ```
 Host: END_GAME (emit)
   ↓
@@ -681,45 +713,48 @@ All: Navigate to /score
 ### Common Error Scenarios
 
 #### Player Can't Join
+
 ```typescript
 // Game already started
 if (session.status !== GameState.WAITING) {
-  throw new Error('Game has already started');
+  throw new Error('Game has already started')
 }
 
 // Nickname taken
-if (players.some(p => p.playerName === nickname)) {
-  throw new Error('Nickname already taken');
+if (players.some((p) => p.playerName === nickname)) {
+  throw new Error('Nickname already taken')
 }
 
 // Wallet not connected
 if (!walletAddress) {
-  throw new Error('Please connect wallet first');
+  throw new Error('Please connect wallet first')
 }
 ```
 
 #### Connection Lost
+
 ```typescript
 socket.on('disconnect', (reason) => {
-  console.warn('Disconnected:', reason);
-  setIsConnected(false);
+  console.warn('Disconnected:', reason)
+  setIsConnected(false)
 
   if (reason === 'io server disconnect') {
     // Server forcibly disconnected - reconnect manually
-    socket.connect();
+    socket.connect()
   }
   // Else: auto-reconnect enabled
-});
+})
 ```
 
 #### Answer Submission Failed
+
 ```typescript
 socketClient.onError((data) => {
   if (data.message.includes('answer')) {
-    toast.error('Failed to submit answer');
-    setAnswerSubmitted(false); // Allow retry
+    toast.error('Failed to submit answer')
+    setAnswerSubmitted(false) // Allow retry
   }
-});
+})
 ```
 
 ---

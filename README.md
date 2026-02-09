@@ -23,6 +23,7 @@ A modern, responsive Next.js frontend for a real-time multiplayer quiz game simi
 ## ✨ Features
 
 ### User Experience
+
 - 🎮 **Intuitive Game Flow** - Seamless host and player experiences
 - 📱 **Fully Responsive** - Works on mobile, tablet, and desktop
 - 🎨 **Modern UI/UX** - Clean, colorful, and engaging design
@@ -32,6 +33,7 @@ A modern, responsive Next.js frontend for a real-time multiplayer quiz game simi
 - 🎯 **Answer Feedback** - Immediate visual feedback on selections
 
 ### Game Features
+
 - 👥 **Two User Modes** - Host and Player experiences
 - 🎲 **Quiz Selection** - Browse and select from available quizzes
 - 📊 **Live Game Stats** - See who's answered and current standings
@@ -41,6 +43,7 @@ A modern, responsive Next.js frontend for a real-time multiplayer quiz game simi
 - 🎉 **Animated Results** - Engaging result screens
 
 ### Technical Features
+
 - ⚡ **Next.js 14** - App Router with Server Components
 - 🔌 **WebSocket** - Real-time bidirectional communication
 - 🎨 **TailwindCSS** - Utility-first styling
@@ -53,15 +56,15 @@ A modern, responsive Next.js frontend for a real-time multiplayer quiz game simi
 
 ## 🛠️ Tech Stack
 
-| Technology | Version | Purpose |
-|------------|---------|---------|
-| Next.js | 14.x | React framework with App Router |
-| React | 18.x | UI library |
-| TypeScript | 5.x | Type safety |
-| TailwindCSS | 3.x | Utility-first CSS |
-| Socket.IO Client | 4.x | WebSocket client |
-| Phosphor Icons | 2.x | Icon library |
-| Radix UI | 1.x | Headless UI components |
+| Technology       | Version | Purpose                         |
+| ---------------- | ------- | ------------------------------- |
+| Next.js          | 14.x    | React framework with App Router |
+| React            | 18.x    | UI library                      |
+| TypeScript       | 5.x     | Type safety                     |
+| TailwindCSS      | 3.x     | Utility-first CSS               |
+| Socket.IO Client | 4.x     | WebSocket client                |
+| Phosphor Icons   | 2.x     | Icon library                    |
+| Radix UI         | 1.x     | Headless UI components          |
 
 ---
 
@@ -133,11 +136,11 @@ NEXT_PUBLIC_MAX_PLAYERS=100
 
 ### Environment Variable Descriptions
 
-| Variable | Description | Default | Required |
-|----------|-------------|---------|----------|
-| `NEXT_PUBLIC_GAMESERVICE_BASE_URL` | Backend API URL | - | ✅ |
-| `NEXT_PUBLIC_ENABLE_AI_QUIZ` | Enable AI quiz generation | `true` | ❌ |
-| `NEXT_PUBLIC_MAX_PLAYERS` | Max players per game | `100` | ❌ |
+| Variable                           | Description               | Default | Required |
+| ---------------------------------- | ------------------------- | ------- | -------- |
+| `NEXT_PUBLIC_GAMESERVICE_BASE_URL` | Backend API URL           | -       | ✅       |
+| `NEXT_PUBLIC_ENABLE_AI_QUIZ`       | Enable AI quiz generation | `true`  | ❌       |
+| `NEXT_PUBLIC_MAX_PLAYERS`          | Max players per game      | `100`   | ❌       |
 
 **Important:** Variables prefixed with `NEXT_PUBLIC_` are exposed to the browser.
 
@@ -159,6 +162,7 @@ npm run dev -- --hostname 0.0.0.0
 ```
 
 Access the app at:
+
 - Local: `http://localhost:3001`
 - Network: `http://[your-ip]:3001`
 
@@ -247,10 +251,12 @@ quiz-game-frontend/
 ## 📄 Pages Overview
 
 ### 1. Home Page (`/`)
+
 **Route:** `/`  
 **Purpose:** Landing page with game mode selection
 
 **Features:**
+
 - Game mode selection (Hangouts, Team Building, Degen PvP)
 - "Coming Soon" badges for disabled modes
 - Navigation to create quiz or join game
@@ -260,10 +266,12 @@ quiz-game-frontend/
 ---
 
 ### 2. Create Quiz (`/create`)
+
 **Route:** `/create`  
 **Purpose:** Create and manage quizzes
 
 **Features:**
+
 - Add/edit/delete questions
 - Add 4 answer options per question
 - Mark correct answer
@@ -275,10 +283,12 @@ quiz-game-frontend/
 ---
 
 ### 3. Lobby (Host) (`/lobby`)
+
 **Route:** `/lobby?gamePin={PIN}&sessionId={ID}`  
 **Purpose:** Host's waiting room before game starts
 
 **Features:**
+
 - Display 6-digit game PIN prominently
 - Show all joined players in real-time
 - Player list with colored avatars
@@ -286,6 +296,7 @@ quiz-game-frontend/
 - Live player count
 
 **User Flow:**
+
 ```
 Host creates game → Gets PIN → Shares PIN → Waits for players → Starts game
 ```
@@ -295,10 +306,12 @@ Host creates game → Gets PIN → Shares PIN → Waits for players → Starts g
 ---
 
 ### 4. Join Game (Player) (`/join`)
+
 **Route:** `/join`  
 **Purpose:** Player entry point to join a game
 
 **Features:**
+
 - Enter game PIN
 - Enter player nickname
 - Validation (unique names, active game)
@@ -306,6 +319,7 @@ Host creates game → Gets PIN → Shares PIN → Waits for players → Starts g
 - Wait for host to start
 
 **User Flow:**
+
 ```
 Enter PIN → Enter nickname → Join → Wait in lobby → Game starts
 ```
@@ -313,6 +327,7 @@ Enter PIN → Enter nickname → Join → Wait in lobby → Game starts
 **Code Location:** `app/join/page.tsx`
 
 **States:**
+
 - `ENTERGAMEPIN`: Enter 6-digit PIN
 - `ENTERNICKNAME`: Choose nickname
 - `LOBBYROOM`: Waiting room
@@ -320,10 +335,12 @@ Enter PIN → Enter nickname → Join → Wait in lobby → Game starts
 ---
 
 ### 5. Game Controller (Host) (`/game`)
+
 **Route:** `/game?gamePin={PIN}&sessionId={ID}`  
 **Purpose:** Host's game control interface
 
 **Features:**
+
 - Display current question
 - Show all answer options with icons
 - Real-time timer countdown
@@ -333,6 +350,7 @@ Enter PIN → Enter nickname → Join → Wait in lobby → Game starts
 - View live leaderboard after each question
 
 **User Flow:**
+
 ```
 Question displayed → Timer counts down → Players answer → Results → Next question
 ```
@@ -342,10 +360,12 @@ Question displayed → Timer counts down → Players answer → Results → Next
 ---
 
 ### 6. Play Game (Player) (`/play`)
+
 **Route:** `/play?sessionId={ID}&playerName={NAME}`  
 **Purpose:** Player's game interface
 
 **Features:**
+
 - View question
 - Select answer (icon-based buttons)
 - Visual feedback on selection
@@ -355,6 +375,7 @@ Question displayed → Timer counts down → Players answer → Results → Next
 - View leaderboard after each question
 
 **User Flow:**
+
 ```
 See question → Click answer → See if correct → View leaderboard → Next question
 ```
@@ -364,10 +385,12 @@ See question → Click answer → See if correct → View leaderboard → Next q
 ---
 
 ### 7. Final Scores (Host) (`/score`)
+
 **Route:** `/score?sessionId={ID}`  
 **Purpose:** Host's final game results
 
 **Features:**
+
 - Final leaderboard
 - Top 3 podium display
 - All player rankings
@@ -379,10 +402,12 @@ See question → Click answer → See if correct → View leaderboard → Next q
 ---
 
 ### 8. Scoreboard (Player) (`/scoreboard`)
+
 **Route:** `/scoreboard?sessionId={ID}`  
 **Purpose:** Player's final results
 
 **Features:**
+
 - Final leaderboard
 - Player's final rank
 - Score summary
@@ -397,9 +422,11 @@ See question → Click answer → See if correct → View leaderboard → Next q
 ### UI Components (`components/ui/`)
 
 #### Button Component
+
 **File:** `components/ui/button.tsx`
 
 **Features:**
+
 - Multiple variants (default, active, primary, outline, destructive)
 - Multiple sizes (sm, lg, xl, gametype, gameanswer)
 - Color options (gametype, gameCanvas, gamePin, darkened)
@@ -409,6 +436,7 @@ See question → Click answer → See if correct → View leaderboard → Next q
 - 3D button effect (border styling)
 
 **Usage:**
+
 ```typescript
 import { Button } from '@/components/ui/button'
 
@@ -443,6 +471,7 @@ import { Button } from '@/components/ui/button'
 ```
 
 **Variants:**
+
 - `default`: Light gray with hover effect
 - `active`: White with bold border
 - `primary`: Sky blue primary color
@@ -450,6 +479,7 @@ import { Button } from '@/components/ui/button'
 - `destructive`: Red for destructive actions
 
 **Button Colors:**
+
 - `gametype`: Purple (#2819DB)
 - `gameCanvas`: Red (#DA0202)
 - `gamePin`: Orange (#FF9700)
@@ -459,15 +489,18 @@ import { Button } from '@/components/ui/button'
 ---
 
 #### Card Component
+
 **File:** `components/ui/card.tsx`
 
 **Features:**
+
 - Consistent styling across app
 - 3D border effect
 - Sections: Header, Content, Footer
 - Action slot for buttons
 
 **Usage:**
+
 ```typescript
 import { Card, CardHeader, CardContent } from '@/components/ui/card'
 
@@ -484,18 +517,21 @@ import { Card, CardHeader, CardContent } from '@/components/ui/card'
 ---
 
 #### Input Component
+
 **File:** `components/ui/input.tsx`
 
 **Features:**
+
 - Consistent input styling
 - Error states
 - Placeholder support
 
 **Usage:**
+
 ```typescript
 import { Input } from '@/components/ui/input'
 
-<Input 
+<Input
     placeholder="Enter game PIN"
     value={gamePin}
     onChange={(e) => setGamePin(e.target.value)}
@@ -508,38 +544,49 @@ import { Input } from '@/components/ui/input'
 ### Game Components
 
 #### Answer Icons
+
 **Icons Used:**
+
 - Triangle (Green - #009900)
 - Circle (Orange - #FF9700)
 - Square (Blue - #2819DB)
 - Star (Red - #F14100)
 
 **Configuration:**
+
 ```typescript
 const ANSWER_CONFIG = [
-    { Icon: TriangleIcon, color: 'bg-[#009900]', borderColor: 'border-[#006600]' },
-    { Icon: CircleIcon, color: 'bg-[#FF9700]', borderColor: 'border-[#cc7800]' },
-    { Icon: SquareIcon, color: 'bg-[#2819DB]', borderColor: 'border-[#1a0f8a]' },
-    { Icon: StarIcon, color: 'bg-[#F14100]', borderColor: 'border-[#b33000]' }
+  { Icon: TriangleIcon, color: 'bg-[#009900]', borderColor: 'border-[#006600]' },
+  { Icon: CircleIcon, color: 'bg-[#FF9700]', borderColor: 'border-[#cc7800]' },
+  { Icon: SquareIcon, color: 'bg-[#2819DB]', borderColor: 'border-[#1a0f8a]' },
+  { Icon: StarIcon, color: 'bg-[#F14100]', borderColor: 'border-[#b33000]' },
 ]
 ```
 
 #### Player Color System
+
 **File:** Throughout game components
 
 **Purpose:** Assign consistent colors to players
 
 **Implementation:**
+
 ```typescript
 const PLAYER_COLORS = [
-    'bg-[#F14100]', 'bg-[#2819DB]', 'bg-[#009900]', 'bg-[#FF9700]',
-    'bg-[#E950BE]', 'bg-[#DA0202]', 'bg-[#00B8D4]', 'bg-[#7B1FA2]',
+  'bg-[#F14100]',
+  'bg-[#2819DB]',
+  'bg-[#009900]',
+  'bg-[#FF9700]',
+  'bg-[#E950BE]',
+  'bg-[#DA0202]',
+  'bg-[#00B8D4]',
+  'bg-[#7B1FA2]',
 ]
 
 // Get consistent color based on player name
 const getPlayerColor = (playerName: string) => {
-    const hash = playerName.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0)
-    return PLAYER_COLORS[hash % PLAYER_COLORS.length]
+  const hash = playerName.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0)
+  return PLAYER_COLORS[hash % PLAYER_COLORS.length]
 }
 ```
 
@@ -548,74 +595,76 @@ const getPlayerColor = (playerName: string) => {
 ## 🔌 Socket.IO Integration
 
 ### SocketClient Singleton
+
 **File:** `utils/socket.client.ts`
 
 **Purpose:** Single WebSocket connection shared across the app
 
 **Implementation:**
+
 ```typescript
 class SocketClient {
     private socket: Socket | null = null;
     private url: string;
-    
+
     constructor() {
         this.url = process.env.NEXT_PUBLIC_GAMESERVICE_BASE_URL ?? "";
     }
-    
+
     connect(): Socket {
         if (this.socket?.connected) {
             return this.socket;
         }
-        
+
         this.socket = io(this.url, {
             transports: ['websocket', 'polling'],
             reconnection: true,
             reconnectionDelay: 1000,
             reconnectionAttempts: 5
         });
-        
+
         return this.socket;
     }
-    
+
     // Emit events
     joinGame(gameSessionId: string, playerName: string) {
         this.socket?.emit('join-game', { gameSessionId, playerName });
     }
-    
+
     startGame(gameSessionId: string) {
         this.socket?.emit('start-game', { gameSessionId });
     }
-    
+
     submitAnswer(data: {...}) {
         this.socket?.emit('submit-answer', data);
     }
-    
+
     nextQuestion(gameSessionId: string, questionIndex: number) {
         this.socket?.emit('next-question', { gameSessionId, questionIndex });
     }
-    
+
     // Listen to events
     onQuestionStarted(callback: (data: any) => void) {
         this.socket?.on('question-started', callback);
     }
-    
+
     onAnswerSubmitted(callback: (data: any) => void) {
         this.socket?.on('answer-submitted', callback);
     }
-    
+
     onQuestionResults(callback: (data: any) => void) {
         this.socket?.on('question-results', callback);
     }
-    
+
     onGameStateChanged(callback: (data: any) => void) {
         this.socket?.on('game-state-changed', callback);
     }
-    
+
     // Remove listeners
     off(event: string) {
         this.socket?.off(event);
     }
-    
+
     // Disconnect
     disconnect() {
         this.socket?.disconnect();
@@ -628,6 +677,7 @@ export default new SocketClient();
 ### Using Socket in Components
 
 **Pattern:**
+
 ```typescript
 import socketClient from '@/utils/socket.client'
 import { SocketEvents } from '@/enums/socket-events'
@@ -636,33 +686,33 @@ function GameComponent() {
     useEffect(() => {
         // Connect
         const socket = socketClient.connect()
-        
+
         // Sync state on mount (handles refresh)
         if (socket.connected && sessionId) {
             getGameSession(sessionId).then(response => {
                 setGameState(response.payload.status)
             })
         }
-        
+
         // Connection handlers
         socket.on('connect', () => {
             console.log('Connected')
         })
-        
+
         socket.on('disconnect', () => {
             console.log('Disconnected')
         })
-        
+
         // Game state changes
         socket.on('game-state-changed', (data) => {
             setGameState(data.state)
         })
-        
+
         // Other listeners
         socketClient.onQuestionStarted((data) => {
             setQuestion(data.question)
         })
-        
+
         // Cleanup
         return () => {
             socket.off('connect')
@@ -671,12 +721,13 @@ function GameComponent() {
             socketClient.off('question-started')
         }
     }, [sessionId])
-    
+
     return <div>...</div>
 }
 ```
 
 **Why Cleanup?**
+
 - Prevents memory leaks
 - Removes old listeners before adding new ones
 - Avoids duplicate event handlers
@@ -687,9 +738,11 @@ function GameComponent() {
 ## 🎨 Styling Guide
 
 ### TailwindCSS Configuration
+
 **File:** `global.css`
 
 **Custom Colors:**
+
 ```typescript
 colors: {
     gameBlue: '#2819DB',
@@ -701,11 +754,14 @@ colors: {
 ```
 
 ### Custom Fonts
+
 **Fonts Used:**
+
 - **Oi** - Score/points display
 - **Inter** - General UI text
 
 **Usage:**
+
 ```typescript
 // For scores
 <h1 className="font-[Oi] text-4xl">1500</h1>
@@ -719,39 +775,45 @@ colors: {
 ### Common Patterns
 
 #### 3D Button Effect
+
 ```typescript
 className="
-    bg-blue-500 
-    border-2 border-blue-700 
-    border-b-[6px] border-r-[6px] 
+    bg-blue-500
+    border-2 border-blue-700
+    border-b-[6px] border-r-[6px]
     active:border-b-2 active:border-r-2
 "
 ```
 
 #### Responsive Grid
+
 ```typescript
-className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4"
+className = 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4'
 ```
 
 #### Card with Shadow
+
 ```typescript
 className="
-    bg-white rounded-xl 
-    border-2 border-slate-800 
-    border-b-6 border-r-6 
+    bg-white rounded-xl
+    border-2 border-slate-800
+    border-b-6 border-r-6
     shadow-lg
 "
 ```
 
 #### Centered Content
+
 ```typescript
-className="flex items-center justify-center h-screen"
+className = 'flex items-center justify-center h-screen'
 ```
 
 ### Background Images
+
 **Location:** `public/images/`
 
 **Usage:**
+
 ```typescript
 <div className="game-pin-background h-screen bg-no-repeat bg-cover">
     {/* Content */}
@@ -759,13 +821,14 @@ className="flex items-center justify-center h-screen"
 ```
 
 **CSS:**
+
 ```css
 .game-pin-background {
-    background-image: url('/images/game-background.jpg');
+  background-image: url('/images/game-background.jpg');
 }
 
 .result-background {
-    background-image: url('/images/result-background.jpg');
+  background-image: url('/images/result-background.jpg');
 }
 ```
 
@@ -774,14 +837,15 @@ className="flex items-center justify-center h-screen"
 ## 🔄 Game State Flow
 
 ### Game States
+
 ```typescript
 enum GameState {
-    CREATED = "created",
-    WAITING = "waiting",
-    COUNTDOWN = "countdown",
-    IN_PROGRESS = "in_progress",
-    RESULTS_READY = "results_ready",
-    COMPLETED = "completed"
+  CREATED = 'created',
+  WAITING = 'waiting',
+  COUNTDOWN = 'countdown',
+  IN_PROGRESS = 'in_progress',
+  RESULTS_READY = 'results_ready',
+  COMPLETED = 'completed',
 }
 ```
 
@@ -826,16 +890,19 @@ HOST                    PLAYER
 ### Vercel (Recommended)
 
 #### 1. Install Vercel CLI
+
 ```bash
 npm i -g vercel
 ```
 
 #### 2. Login
+
 ```bash
 vercel login
 ```
 
 #### 3. Deploy
+
 ```bash
 # Deploy to preview
 vercel
@@ -845,23 +912,28 @@ vercel --prod
 ```
 
 #### 4. Environment Variables
+
 Add in Vercel dashboard:
+
 - `NEXT_PUBLIC_GAMESERVICE_BASE_URL`
 
 ### Manual Deployment
 
 #### Build
+
 ```bash
 npm run build
 ```
 
 #### Export Static Site (if applicable)
+
 ```bash
 npm run build
 npm run export
 ```
 
 #### Deploy `out/` folder to:
+
 - Netlify
 - GitHub Pages
 - AWS S3
@@ -870,6 +942,7 @@ npm run export
 ### Docker Deployment
 
 #### Dockerfile
+
 ```dockerfile
 FROM node:18-alpine AS builder
 
@@ -893,6 +966,7 @@ CMD ["npm", "start"]
 ```
 
 #### Build and Run
+
 ```bash
 docker build -t quiz-frontend .
 docker run -p 3001:3001 --env-file .env.local quiz-frontend
@@ -901,11 +975,13 @@ docker run -p 3001:3001 --env-file .env.local quiz-frontend
 ### Environment-Specific Builds
 
 #### Production
+
 ```bash
 NEXT_PUBLIC_GAMESERVICE_BASE_URL=https://api.yourdomain.com npm run build
 ```
 
 #### Staging
+
 ```bash
 NEXT_PUBLIC_GAMESERVICE_BASE_URL=https://staging-api.yourdomain.com npm run build
 ```
@@ -921,6 +997,7 @@ NEXT_PUBLIC_GAMESERVICE_BASE_URL=https://staging-api.yourdomain.com npm run buil
 **Problem:** Cannot connect to backend
 
 **Solution:**
+
 ```bash
 # Check environment variable
 echo $NEXT_PUBLIC_GAMESERVICE_BASE_URL
@@ -936,6 +1013,7 @@ curl http://localhost:3000/health
 **Problem:** Players see different game states
 
 **Solution:**
+
 - Ensure `game-state-changed` listener is added
 - Check browser console for WebSocket errors
 - Verify backend is broadcasting state changes
@@ -946,6 +1024,7 @@ curl http://localhost:3000/health
 **Problem:** Joined players don't appear
 
 **Solution:**
+
 ```typescript
 // Check if socket is connected
 socket.connected // should be true
@@ -962,6 +1041,7 @@ socket.listeners('player-joined') // should have listener
 **Problem:** Timer shows different values for different users
 
 **Solution:**
+
 - Timers are server-controlled
 - Clients should only display received time values
 - Don't run client-side countdown
@@ -972,6 +1052,7 @@ socket.listeners('player-joined') // should have listener
 **Problem:** Click answer but nothing happens
 
 **Solution:**
+
 ```typescript
 // Check if already answered
 hasAnswered // should be false
@@ -991,6 +1072,7 @@ socket.connected // should be true
 **Problem:** TypeScript errors during build
 
 **Solution:**
+
 ```bash
 # Clear Next.js cache
 rm -rf .next
@@ -1011,6 +1093,7 @@ npm run build
 **Problem:** React hydration mismatch
 
 **Solution:**
+
 ```typescript
 // Use client components for dynamic content
 'use client'
@@ -1089,10 +1172,10 @@ const HeavyComponent = dynamic(() => import('./HeavyComponent'), {
 ```typescript
 // Cache API responses
 const getQuizzes = async () => {
-    const res = await fetch('/api/quizzes', {
-        next: { revalidate: 3600 } // Cache for 1 hour
-    })
-    return res.json()
+  const res = await fetch('/api/quizzes', {
+    next: { revalidate: 3600 }, // Cache for 1 hour
+  })
+  return res.json()
 }
 ```
 
@@ -1103,6 +1186,7 @@ const getQuizzes = async () => {
 ### Manual Testing Checklist
 
 #### Host Flow
+
 - [ ] Create game session
 - [ ] Game PIN displayed correctly
 - [ ] Players appear in lobby
@@ -1116,6 +1200,7 @@ const getQuizzes = async () => {
 - [ ] Final scores display correctly
 
 #### Player Flow
+
 - [ ] Enter valid game PIN
 - [ ] Enter unique nickname
 - [ ] Join game successfully
@@ -1131,6 +1216,7 @@ const getQuizzes = async () => {
 - [ ] Final scores display
 
 #### Edge Cases
+
 - [ ] Invalid game PIN
 - [ ] Duplicate nickname
 - [ ] Join after game started
@@ -1184,6 +1270,7 @@ This project is licensed under the MIT License.
 ## 👥 Support
 
 For issues and questions:
+
 - Open an issue on GitHub
 - Email: support@quizgame.com
 - Documentation: https://docs.quizgame.com
@@ -1193,6 +1280,7 @@ For issues and questions:
 ## 🎯 Roadmap
 
 ### Planned Features
+
 - [ ] User authentication
 - [ ] Quiz library browsing
 - [ ] Custom quiz themes
@@ -1205,6 +1293,7 @@ For issues and questions:
 - [ ] Social sharing
 
 ### UI Improvements
+
 - [ ] Dark mode
 - [ ] Accessibility improvements
 - [ ] Animation polish
@@ -1217,12 +1306,14 @@ For issues and questions:
 ## 📚 Resources
 
 ### Documentation
+
 - [Next.js Docs](https://nextjs.org/docs)
 - [TailwindCSS Docs](https://tailwindcss.com/docs)
 - [Socket.IO Client Docs](https://socket.io/docs/v4/client-api/)
 - [TypeScript Handbook](https://www.typescriptlang.org/docs/)
 
 ### Tools
+
 - [Phosphor Icons](https://phosphoricons.com/)
 - [Radix UI](https://www.radix-ui.com/)
 - [Vercel](https://vercel.com/)

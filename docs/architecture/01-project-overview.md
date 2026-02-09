@@ -6,15 +6,15 @@
 
 ## Project Metadata
 
-| Property | Value |
-|----------|-------|
-| **Project Name** | Flamingo Web |
+| Property            | Value                                |
+| ------------------- | ------------------------------------ |
+| **Project Name**    | Flamingo Web                         |
 | **Repository Path** | `/home/priest/flamingo/flamingo-web` |
-| **Version** | 0.1.0 |
-| **Framework** | Next.js 15.3.3 |
-| **Language** | TypeScript 5.x |
-| **Runtime** | Node.js 18+ |
-| **Current Branch** | `ft-escrow-events` |
+| **Version**         | 0.1.0                                |
+| **Framework**       | Next.js 15.3.3                       |
+| **Language**        | TypeScript 5.x                       |
+| **Runtime**         | Node.js 18+                          |
+| **Current Branch**  | `ft-escrow-events`                   |
 
 ## Core Purpose
 
@@ -30,6 +30,7 @@ Flamingo Web provides an interactive quiz gaming experience with these key capab
 ## User Roles
 
 ### Host (Quiz Master)
+
 - Creates quizzes manually or via AI generation
 - Starts and controls game sessions
 - Monitors player participation in real-time
@@ -38,6 +39,7 @@ Flamingo Web provides an interactive quiz gaming experience with these key capab
 - Manages prize distribution
 
 ### Player (Participant)
+
 - Joins games using a 6-digit PIN
 - Answers questions in real-time
 - Sees immediate feedback on answers
@@ -47,12 +49,14 @@ Flamingo Web provides an interactive quiz gaming experience with these key capab
 ## Key Features
 
 ### Game Management
+
 - **Quiz Creation**: Multi-question quiz builder with multiple-choice answers
 - **AI Generation**: Prompt-based quiz generation using AI agents
 - **Game Sessions**: Create isolated game instances with unique PINs
 - **Player Management**: Track players, scores, and statistics
 
 ### Real-Time Features
+
 - **Live Updates**: Instant synchronization across all connected clients
 - **Player Tracking**: See who joins, leaves, or disconnects
 - **Answer Submission**: Real-time answer processing
@@ -60,12 +64,14 @@ Flamingo Web provides an interactive quiz gaming experience with these key capab
 - **State Synchronization**: Game state broadcast to all participants
 
 ### Web3 Integration
+
 - **Wallet Authentication**: Privy embedded wallets + external wallet support
 - **Escrow System**: Prize pools managed via smart contracts
 - **Prize Distribution**: Automated payouts to winners
 - **Transaction Tracking**: On-chain verification of prize distribution
 
 ### User Experience
+
 - **Responsive Design**: Works seamlessly on mobile, tablet, and desktop
 - **Visual Feedback**: Color-coded answer feedback (correct/incorrect)
 - **Countdown Timers**: Visual timers for answering questions
@@ -75,6 +81,7 @@ Flamingo Web provides an interactive quiz gaming experience with these key capab
 ## Technology Highlights
 
 ### Frontend Stack
+
 - **Next.js 15**: App Router with React Server Components
 - **React 19**: Latest React features and improvements
 - **TypeScript**: Full type safety with strict mode
@@ -82,17 +89,20 @@ Flamingo Web provides an interactive quiz gaming experience with these key capab
 - **Radix UI**: Accessible headless component primitives
 
 ### Real-Time Communication
+
 - **Socket.IO 4.8.1**: WebSocket-based bidirectional communication
 - **Event-Driven Architecture**: Pub/sub pattern for game events
 - **Singleton Pattern**: Single socket connection per client
 
 ### Web3 Stack
+
 - **Privy 3.5.0**: Embedded wallet management and authentication
 - **Reown (AppKit)**: External wallet connection support
 - **Wagmi 2.18.2**: React hooks for Ethereum interactions
 - **Viem 2.38.4**: TypeScript-first Ethereum library
 
 ### Data Management
+
 - **React Query 5.90.5**: Server state management and caching
 - **React Hook Form 7.63.0**: Form state management
 - **Zod 3.25.76**: Runtime type validation
@@ -100,6 +110,7 @@ Flamingo Web provides an interactive quiz gaming experience with these key capab
 ## Application Scope
 
 ### In Scope
+
 - Creating and managing quizzes
 - Hosting game sessions
 - Player participation and scoring
@@ -109,6 +120,7 @@ Flamingo Web provides an interactive quiz gaming experience with these key capab
 - Leaderboards and statistics
 
 ### Out of Scope (Current Version)
+
 - Quiz marketplace or sharing
 - User accounts and profiles (beyond wallet addresses)
 - Quiz templates or categories
@@ -119,6 +131,7 @@ Flamingo Web provides an interactive quiz gaming experience with these key capab
 ## Architecture Patterns
 
 ### Design Patterns Used
+
 1. **Singleton Pattern**: Socket client instance
 2. **Service Layer Pattern**: API abstraction via services
 3. **Compound Component Pattern**: Complex UI components
@@ -126,6 +139,7 @@ Flamingo Web provides an interactive quiz gaming experience with these key capab
 5. **Custom Hook Pattern**: Reusable stateful logic
 
 ### Code Organization
+
 - **Feature-Based Structure**: Components organized by functionality
 - **Separation of Concerns**: Clear boundaries between UI, logic, and data
 - **Type Safety**: TypeScript interfaces and enums throughout
@@ -134,6 +148,7 @@ Flamingo Web provides an interactive quiz gaming experience with these key capab
 ## Development Philosophy
 
 ### Principles
+
 1. **Type Safety First**: Leverage TypeScript for compile-time safety
 2. **Component Reusability**: Build once, use everywhere
 3. **Performance**: Optimize for fast load times and smooth interactions
@@ -141,6 +156,7 @@ Flamingo Web provides an interactive quiz gaming experience with these key capab
 5. **Mobile-First**: Design for mobile, enhance for desktop
 
 ### Best Practices
+
 - Use Next.js App Router for optimal performance
 - Implement proper error boundaries
 - Handle loading and error states explicitly
@@ -150,6 +166,7 @@ Flamingo Web provides an interactive quiz gaming experience with these key capab
 ## Project Goals
 
 ### Short-Term Goals
+
 - Stable escrow prize distribution
 - Enhanced mobile experience
 - Improved AI quiz generation
@@ -157,6 +174,7 @@ Flamingo Web provides an interactive quiz gaming experience with these key capab
 - Performance optimization
 
 ### Long-Term Vision
+
 - Quiz marketplace
 - Tournament mode
 - Team-based gameplay
@@ -165,18 +183,18 @@ Flamingo Web provides an interactive quiz gaming experience with these key capab
 
 ## File Location Reference
 
-| Concern | Location |
-|---------|----------|
-| Pages | `/app/**/*.tsx` |
-| UI Components | `/components/ui/*.tsx` |
-| Game Components | `/components/custom/*.tsx` |
-| API Services | `/services/*.ts` |
-| Socket Client | `/utils/socket.client.ts` |
+| Concern          | Location                          |
+| ---------------- | --------------------------------- |
+| Pages            | `/app/**/*.tsx`                   |
+| UI Components    | `/components/ui/*.tsx`            |
+| Game Components  | `/components/custom/*.tsx`        |
+| API Services     | `/services/*.ts`                  |
+| Socket Client    | `/utils/socket.client.ts`         |
 | Type Definitions | `/interfaces/*.ts`, `/types/*.ts` |
-| Enums | `/enums/*.ts` |
-| Custom Hooks | `/hooks/*.ts` |
-| Utilities | `/lib/*.ts` |
-| Configuration | `/*.config.ts` |
+| Enums            | `/enums/*.ts`                     |
+| Custom Hooks     | `/hooks/*.ts`                     |
+| Utilities        | `/lib/*.ts`                       |
+| Configuration    | `/*.config.ts`                    |
 
 ## Related Documentation
 

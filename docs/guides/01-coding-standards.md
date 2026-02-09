@@ -7,6 +7,7 @@ This document defines the coding standards, conventions, and best practices for 
 ## TypeScript Guidelines
 
 ### Strict Mode
+
 The project uses TypeScript strict mode. All code must be type-safe.
 
 ```json
@@ -23,22 +24,24 @@ The project uses TypeScript strict mode. All code must be type-safe.
 ### Type Annotations
 
 #### Always Annotate Function Parameters and Return Types
+
 ```typescript
 // Good
 function calculateScore(correct: number, time: number): number {
-  return correct * 100 - time;
+  return correct * 100 - time
 }
 
 // Bad
 function calculateScore(correct, time) {
-  return correct * 100 - time;
+  return correct * 100 - time
 }
 ```
 
 #### Use Interfaces for Object Types
+
 ```typescript
 // Good
-import { IQuiz } from '@/interfaces/IQuiz';
+import { IQuiz } from '@/interfaces/IQuiz'
 
 function createQuiz(quizData: IQuiz): Promise<IResponse> {
   // Implementation
@@ -51,6 +54,7 @@ function createQuiz(quizData: any): Promise<any> {
 ```
 
 #### Avoid `any` Type
+
 ```typescript
 // Good
 function handleData(data: unknown): void {
@@ -72,6 +76,7 @@ function handleData(data: any): void {
 ### Component Structure
 
 #### Functional Components with TypeScript
+
 ```typescript
 'use client' // Only if client-side features needed
 
@@ -100,6 +105,7 @@ export const QuizCard: React.FC<QuizCardProps> = ({ quiz, onSelect }) => {
 ```
 
 ### Component Organization
+
 ```
 ComponentName/
 ├── index.tsx           # Component logic
@@ -108,16 +114,17 @@ ComponentName/
 ```
 
 ### Props Interface Naming
+
 ```typescript
 // Good: ComponentNameProps
 interface GameControllerProps {
-  sessionId: string;
-  gamePin: string;
+  sessionId: string
+  gamePin: string
 }
 
 // Bad
-interface Props { }
-interface IProps { }
+interface Props {}
+interface IProps {}
 ```
 
 ---
@@ -125,6 +132,7 @@ interface IProps { }
 ## State Management
 
 ### useState
+
 ```typescript
 // Always provide type for complex state
 const [quiz, setQuiz] = useState<IQuiz | null>(null);`
@@ -139,29 +147,31 @@ const [isLoading, setIsLoading] = useState(false);
 ### useEffect
 
 #### Always Include Cleanup
+
 ```typescript
 useEffect(() => {
-  const socket = socketClient.connect();
+  const socket = socketClient.connect()
 
-  socket.on('connect', handleConnect);
+  socket.on('connect', handleConnect)
 
   return () => {
-    socket.off('connect', handleConnect);
-  };
-}, []);
+    socket.off('connect', handleConnect)
+  }
+}, [])
 ```
 
 #### Explicit Dependencies
+
 ```typescript
 // Good: All dependencies listed
 useEffect(() => {
-  fetchData(id);
-}, [id, fetchData]);
+  fetchData(id)
+}, [id, fetchData])
 
 // Bad: Missing dependencies
 useEffect(() => {
-  fetchData(id);
-}, []); // ESLint will warn
+  fetchData(id)
+}, []) // ESLint will warn
 ```
 
 ---
@@ -169,6 +179,7 @@ useEffect(() => {
 ## Naming Conventions
 
 ### Variables and Functions
+
 ```typescript
 // camelCase for variables and functions
 const gameSession = ...;
@@ -179,48 +190,53 @@ function handlePlayerJoin() { }
 ```
 
 ### Components
+
 ```typescript
 // PascalCase for components
-export const GameController = () => { };
-export const StartScreen = () => { };
+export const GameController = () => {}
+export const StartScreen = () => {}
 ```
 
 ### Interfaces and Types
+
 ```typescript
 // PascalCase with 'I' prefix for interfaces
-export interface IQuiz { }
-export interface IPlayer { }
+export interface IQuiz {}
+export interface IPlayer {}
 
 // PascalCase for types
-export type QuizFormData = Omit<IQuiz, 'id'>;
+export type QuizFormData = Omit<IQuiz, 'id'>
 ```
 
 ### Enums
+
 ```typescript
 // PascalCase for enum name, UPPER_CASE for values
 export enum GameState {
-  CREATED = "created",
-  WAITING = "waiting"
+  CREATED = 'created',
+  WAITING = 'waiting',
 }
 ```
 
 ### Constants
+
 ```typescript
 // UPPER_CASE for true constants
-const MAX_PLAYERS = 50;
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
+const MAX_PLAYERS = 50
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL
 
 // camelCase for configuration objects
 const socketConfig = {
   reconnection: true,
-  timeout: 5000
-};
+  timeout: 5000,
+}
 ```
 
 ### File Names
+
 ```typescript
 // kebab-case for files
-game-controller.tsx
+game - controller.tsx
 quiz_service.ts // underscore acceptable
 socket.client.ts // dot for namespace
 ```
@@ -230,42 +246,45 @@ socket.client.ts // dot for namespace
 ## Import Organization
 
 ### Import Order
+
 ```typescript
 // 1. React and Next.js
-import React, { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import React, { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 
 // 2. Third-party libraries
-import { usePrivy } from '@privy-io/react-auth';
-import { UserIcon } from '@phosphor-icons/react';
+import { usePrivy } from '@privy-io/react-auth'
+import { UserIcon } from '@phosphor-icons/react'
 
 // 3. UI components
-import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
+import { Button } from '@/components/ui/button'
+import { Card } from '@/components/ui/card'
 
 // 4. Custom components
-import GameController from '@/components/custom/game_controller';
+import GameController from '@/components/custom/game_controller'
 
 // 5. Services and utilities
-import socketClient from '@/utils/socket.client';
-import { addQuiz } from '@/services/quiz_service';
+import socketClient from '@/utils/socket.client'
+import { addQuiz } from '@/services/quiz_service'
 
 // 6. Types and interfaces
-import { IQuiz, IQuestion } from '@/interfaces/IQuiz';
-import { GameState } from '@/enums/game_state';
-import { SocketEvents } from '@/enums/socket-events';
+import { IQuiz, IQuestion } from '@/interfaces/IQuiz'
+import { GameState } from '@/enums/game_state'
+import { SocketEvents } from '@/enums/socket-events'
 ```
 
 ### Absolute Imports
+
 Always use `@/` path alias:
+
 ```typescript
 // Good
-import { IQuiz } from '@/interfaces/IQuiz';
-import socketClient from '@/utils/socket.client';
+import { IQuiz } from '@/interfaces/IQuiz'
+import socketClient from '@/utils/socket.client'
 
 // Bad
-import { IQuiz } from '../../../interfaces/IQuiz';
-import socketClient from '../../utils/socket.client';
+import { IQuiz } from '../../../interfaces/IQuiz'
+import socketClient from '../../utils/socket.client'
 ```
 
 ---
@@ -273,36 +292,38 @@ import socketClient from '../../utils/socket.client';
 ## Error Handling
 
 ### Try-Catch Pattern
+
 ```typescript
-const [error, setError] = useState<string>('');
-const [isLoading, setIsLoading] = useState(false);
+const [error, setError] = useState<string>('')
+const [isLoading, setIsLoading] = useState(false)
 
 const fetchQuiz = async (id: string) => {
-  setIsLoading(true);
-  setError('');
+  setIsLoading(true)
+  setError('')
 
   try {
-    const response = await getQuizById(id);
+    const response = await getQuizById(id)
 
     if (response.ok) {
-      setQuiz(response.payload);
+      setQuiz(response.payload)
     } else {
-      throw new Error(response.message);
+      throw new Error(response.message)
     }
   } catch (err) {
-    const errorMessage = err instanceof Error ? err.message : 'An error occurred';
-    setError(errorMessage);
-    console.error('Fetch quiz error:', err);
+    const errorMessage = err instanceof Error ? err.message : 'An error occurred'
+    setError(errorMessage)
+    console.error('Fetch quiz error:', err)
   } finally {
-    setIsLoading(false);
+    setIsLoading(false)
   }
-};
+}
 ```
 
 ### API Service Error Handling
+
 ```typescript
 export async function serviceName(params): Promise<IResponse> {
-  const response = await Http.post(endpoint, data);
+  const response = await Http.post(endpoint, data)
 
   if (response.payload.status === 200) {
     return {
@@ -312,10 +333,10 @@ export async function serviceName(params): Promise<IResponse> {
       ok: response.ok,
       statusText: response.payload.statusText,
       json: response.payload.json,
-    };
+    }
   }
 
-  throw new Error(`Operation failed: ${response.payload.message}`);
+  throw new Error(`Operation failed: ${response.payload.message}`)
 }
 ```
 
@@ -324,55 +345,58 @@ export async function serviceName(params): Promise<IResponse> {
 ## Socket.IO Patterns
 
 ### Connection Setup
+
 ```typescript
 useEffect(() => {
-  const socket = socketClient.connect();
+  const socket = socketClient.connect()
 
   socket.on('connect', () => {
-    console.log('✅ Connected:', socket.id);
-    setIsConnected(true);
-  });
+    console.log('✅ Connected:', socket.id)
+    setIsConnected(true)
+  })
 
   socket.on('disconnect', (reason) => {
-    console.log('❌ Disconnected:', reason);
-    setIsConnected(false);
-  });
+    console.log('❌ Disconnected:', reason)
+    setIsConnected(false)
+  })
 
   // Don't disconnect - other pages need the connection
   return () => {
     // Only clean up specific listeners
-  };
-}, []);
+  }
+}, [])
 ```
 
 ### Event Listener Cleanup
+
 ```typescript
 useEffect(() => {
   const handlePlayerJoin = (data: any) => {
-    setPlayers(prev => [...prev, data]);
-  };
+    setPlayers((prev) => [...prev, data])
+  }
 
-  socketClient.onPlayerJoined(handlePlayerJoin);
+  socketClient.onPlayerJoined(handlePlayerJoin)
 
   return () => {
-    socketClient.off(SocketEvents.PLAYER_JOINED);
-  };
-}, []);
+    socketClient.off(SocketEvents.PLAYER_JOINED)
+  }
+}, [])
 ```
 
 ### Type-Safe Socket Events
+
 ```typescript
 // Define event data types
 interface PlayerJoinedData {
-  playerName: string;
-  walletAddress: string;
-  gameSessionId: string;
+  playerName: string
+  walletAddress: string
+  gameSessionId: string
 }
 
 // Use in handler
 socketClient.onPlayerJoined((data: PlayerJoinedData) => {
-  console.log(`${data.playerName} joined`);
-});
+  console.log(`${data.playerName} joined`)
+})
 ```
 
 ---
@@ -380,16 +404,14 @@ socketClient.onPlayerJoined((data: PlayerJoinedData) => {
 ## API Service Patterns
 
 ### Service Function Template
+
 ```typescript
-import { IResponse } from '@/interfaces/IResponse';
-import { apiOptions } from '@/shared/api.config';
-import Http from '@/shared/http.config';
+import { IResponse } from '@/interfaces/IResponse'
+import { apiOptions } from '@/shared/api.config'
+import Http from '@/shared/http.config'
 
 export async function serviceName(params: ParamType): Promise<IResponse> {
-  const response = await Http.post(
-    `${apiOptions.endpoints.gameService}/path`,
-    params
-  );
+  const response = await Http.post(`${apiOptions.endpoints.gameService}/path`, params)
 
   if (response.payload.status === 200) {
     return {
@@ -399,10 +421,10 @@ export async function serviceName(params: ParamType): Promise<IResponse> {
       ok: response.ok,
       statusText: response.payload.statusText,
       json: response.payload.json,
-    };
+    }
   }
 
-  throw new Error(`Failed to perform action: ${response.payload.message}`);
+  throw new Error(`Failed to perform action: ${response.payload.message}`)
 }
 ```
 
@@ -411,6 +433,7 @@ export async function serviceName(params: ParamType): Promise<IResponse> {
 ## Form Handling
 
 ### React Hook Form Pattern
+
 ```typescript
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -459,6 +482,7 @@ const QuizForm = () => {
 ## Component Patterns
 
 ### Compound Components
+
 ```typescript
 export const Card = ({ children, ...props }) => (
   <div className="card" {...props}>{children}</div>
@@ -480,6 +504,7 @@ export const CardContent = ({ children }) => (
 ```
 
 ### Render Props Pattern
+
 ```typescript
 interface TimerProps {
   duration: number;
@@ -511,21 +536,23 @@ const Timer: React.FC<TimerProps> = ({ duration, children }) => {
 ## Performance Best Practices
 
 ### Memoization
+
 ```typescript
-import { useMemo, useCallback } from 'react';
+import { useMemo, useCallback } from 'react'
 
 // Memoize expensive calculations
 const sortedPlayers = useMemo(() => {
-  return players.sort((a, b) => b.totalScore - a.totalScore);
-}, [players]);
+  return players.sort((a, b) => b.totalScore - a.totalScore)
+}, [players])
 
 // Memoize callbacks
 const handlePlayerJoin = useCallback((player: IPlayer) => {
-  setPlayers(prev => [...prev, player]);
-}, []);
+  setPlayers((prev) => [...prev, player])
+}, [])
 ```
 
 ### Lazy Loading
+
 ```typescript
 import dynamic from 'next/dynamic';
 
@@ -540,6 +567,7 @@ const HeavyComponent = dynamic(() => import('@/components/HeavyComponent'), {
 ## Styling Guidelines
 
 ### TailwindCSS Classes
+
 ```typescript
 // Good: Organized by category
 className="
@@ -561,6 +589,7 @@ className={clsx(
 ```
 
 ### Custom Classes
+
 ```css
 /* globals.css - Use semantic names */
 .game-pin-background {
@@ -575,12 +604,14 @@ className={clsx(
 ## Testing Guidelines
 
 ### Test File Structure
+
 ```
 component.tsx
 component.test.tsx
 ```
 
 ### Test Pattern
+
 ```typescript
 import { render, screen, fireEvent } from '@testing-library/react';
 import { Button } from './button';
@@ -606,6 +637,7 @@ describe('Button', () => {
 ## Documentation
 
 ### File Headers
+
 ```typescript
 /**
  * Socket.IO Client Singleton
@@ -619,6 +651,7 @@ describe('Button', () => {
 ```
 
 ### Function Documentation
+
 ```typescript
 /**
  * Calculates player score based on correctness and answer speed
@@ -632,11 +665,7 @@ describe('Button', () => {
  * const score = calculateScore(true, 2500, 3);
  * // Returns: 1250 (base 1000 + speed bonus - streak multiplier)
  */
-function calculateScore(
-  isCorrect: boolean,
-  timeToAnswer: number,
-  streak: number
-): number {
+function calculateScore(isCorrect: boolean, timeToAnswer: number, streak: number): number {
   // Implementation
 }
 ```
@@ -646,6 +675,7 @@ function calculateScore(
 ## Git Commit Guidelines
 
 ### Commit Message Format
+
 ```
 type(scope): short description
 
@@ -656,6 +686,7 @@ Longer description if needed
 ```
 
 ### Commit Types
+
 - `feat`: New feature
 - `fix`: Bug fix
 - `refactor`: Code refactoring
@@ -665,6 +696,7 @@ Longer description if needed
 - `chore`: Build/config changes
 
 ### Examples
+
 ```
 feat(game): add prize distribution via escrow
 
@@ -683,6 +715,7 @@ which was causing score tracking issues.
 ## Code Review Checklist
 
 ### Before Submitting PR
+
 - [ ] All TypeScript strict mode checks pass
 - [ ] No `any` types used (unless absolutely necessary with comment)
 - [ ] All imports use `@/` path alias
@@ -695,6 +728,7 @@ which was causing score tracking issues.
 - [ ] Code follows naming conventions
 
 ### During Review
+
 - [ ] Logic is clear and maintainable
 - [ ] No duplicate code
 - [ ] State management is appropriate
@@ -707,62 +741,65 @@ which was causing score tracking issues.
 ## Common Pitfalls to Avoid
 
 ### 1. Memory Leaks
+
 ```typescript
 // Bad: No cleanup
 useEffect(() => {
-  socketClient.onPlayerJoined(handleJoin);
-}, []);
+  socketClient.onPlayerJoined(handleJoin)
+}, [])
 
 // Good: Cleanup listener
 useEffect(() => {
-  socketClient.onPlayerJoined(handleJoin);
+  socketClient.onPlayerJoined(handleJoin)
 
   return () => {
-    socketClient.off(SocketEvents.PLAYER_JOINED);
-  };
-}, []);
+    socketClient.off(SocketEvents.PLAYER_JOINED)
+  }
+}, [])
 ```
 
 ### 2. Stale Closures
+
 ```typescript
 // Bad: Closure captures initial value
 useEffect(() => {
   socketClient.onPlayerJoined(() => {
-    console.log(players); // Always logs initial value
-  });
-}, []);
+    console.log(players) // Always logs initial value
+  })
+}, [])
 
 // Good: Use functional updates
 useEffect(() => {
   socketClient.onPlayerJoined((newPlayer) => {
-    setPlayers(prev => [...prev, newPlayer]);
-  });
+    setPlayers((prev) => [...prev, newPlayer])
+  })
 
-  return () => socketClient.off(SocketEvents.PLAYER_JOINED);
-}, []);
+  return () => socketClient.off(SocketEvents.PLAYER_JOINED)
+}, [])
 ```
 
 ### 3. Race Conditions
+
 ```typescript
 // Bad: No cleanup
 useEffect(() => {
-  fetchData(id).then(setData);
-}, [id]);
+  fetchData(id).then(setData)
+}, [id])
 
 // Good: Use cleanup to prevent updates after unmount
 useEffect(() => {
-  let cancelled = false;
+  let cancelled = false
 
-  fetchData(id).then(result => {
+  fetchData(id).then((result) => {
     if (!cancelled) {
-      setData(result);
+      setData(result)
     }
-  });
+  })
 
   return () => {
-    cancelled = true;
-  };
-}, [id]);
+    cancelled = true
+  }
+}, [id])
 ```
 
 ---

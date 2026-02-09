@@ -9,46 +9,52 @@ Enumerations define constant values used throughout the application. All enums a
 **File:** [enums/game_state.ts](../../enums/game_state.ts)
 
 ### Definition
+
 ```typescript
 export enum GameState {
-  CREATED = "created",
-  WAITING = "waiting",
-  IN_PROGRESS = "in_progress",
-  COUNTDOWN = "countdown",
-  TIMEOUT = "question_timeout",
-  RESULTS_READY = "results_ready",
-  PAYOUT = "payout",
-  COMPLETED = "completed"
+  CREATED = 'created',
+  WAITING = 'waiting',
+  IN_PROGRESS = 'in_progress',
+  COUNTDOWN = 'countdown',
+  TIMEOUT = 'question_timeout',
+  RESULTS_READY = 'results_ready',
+  PAYOUT = 'payout',
+  COMPLETED = 'completed',
 }
 ```
 
 ### States Explained
 
 #### CREATED
+
 **Purpose:** Initial state when game session is created
 
 **When:** Immediately after `createGameSession()` is called
 
 **Valid Actions:**
+
 - Host can start inviting players
 - Navigate to lobby page
 
 **Next States:** `WAITING`
 
 **Example:**
+
 ```typescript
-const session = await createGameSession(quizId);
+const session = await createGameSession(quizId)
 // session.status === GameState.CREATED
 ```
 
 ---
 
 #### WAITING
+
 **Purpose:** Lobby state where players can join
 
 **When:** Host is in lobby waiting for players
 
 **Valid Actions:**
+
 - Players can join via game PIN
 - Display player list
 - Host can start game
@@ -56,10 +62,12 @@ const session = await createGameSession(quizId);
 **Next States:** `IN_PROGRESS`
 
 **Socket Events:**
+
 - Listen: `player-joined`, `player-left`
 - Emit: `start-game`
 
 **Example:**
+
 ```typescript
 if (gameSession.status === GameState.WAITING) {
   // Show "Start Game" button to host
@@ -70,11 +78,13 @@ if (gameSession.status === GameState.WAITING) {
 ---
 
 #### IN_PROGRESS
+
 **Purpose:** Active gameplay state
 
 **When:** Game has started, questions are being answered
 
 **Valid Actions:**
+
 - Display current question
 - Accept player answers
 - Show timers
@@ -83,19 +93,22 @@ if (gameSession.status === GameState.WAITING) {
 **Next States:** `COUNTDOWN`, `TIMEOUT`, `RESULTS_READY`, `COMPLETED`
 
 **Example:**
+
 ```typescript
-await updateGame(sessionId, GameState.IN_PROGRESS);
+await updateGame(sessionId, GameState.IN_PROGRESS)
 // Players can now see and answer questions
 ```
 
 ---
 
 #### COUNTDOWN
+
 **Purpose:** Pre-question countdown timer
 
 **When:** Before each question starts (3, 2, 1...)
 
 **Valid Actions:**
+
 - Display countdown animation
 - Prepare players for next question
 - No answer submission allowed
@@ -105,22 +118,25 @@ await updateGame(sessionId, GameState.IN_PROGRESS);
 **Next States:** `IN_PROGRESS`
 
 **Example:**
+
 ```typescript
-await updateGame(sessionId, GameState.COUNTDOWN);
+await updateGame(sessionId, GameState.COUNTDOWN)
 // Show 3... 2... 1... animation
 setTimeout(() => {
-  showQuestion();
-}, 3000);
+  showQuestion()
+}, 3000)
 ```
 
 ---
 
 #### TIMEOUT
+
 **Purpose:** Question time has expired
 
 **When:** Question timer reaches zero
 
 **Valid Actions:**
+
 - Stop accepting answers
 - Prepare to show results
 - Mark non-answering players
@@ -128,22 +144,25 @@ setTimeout(() => {
 **Next States:** `RESULTS_READY`
 
 **Example:**
+
 ```typescript
 useEffect(() => {
   if (timeRemaining === 0) {
-    await updateGame(sessionId, GameState.TIMEOUT);
+    await updateGame(sessionId, GameState.TIMEOUT)
   }
-}, [timeRemaining]);
+}, [timeRemaining])
 ```
 
 ---
 
 #### RESULTS_READY
+
 **Purpose:** Display question results and correct answer
 
 **When:** After question time expires or all players answer
 
 **Valid Actions:**
+
 - Show correct answer
 - Display player rankings
 - Update scores
@@ -154,23 +173,27 @@ useEffect(() => {
 **Next States:** `COUNTDOWN` (next question) or `COMPLETED` (final question)
 
 **Socket Events:**
+
 - Emit: `show-results`
 - Listen: `question-results`
 
 **Example:**
+
 ```typescript
-await updateGame(sessionId, GameState.RESULTS_READY);
-socketClient.showResults(sessionId, questionId);
+await updateGame(sessionId, GameState.RESULTS_READY)
+socketClient.showResults(sessionId, questionId)
 ```
 
 ---
 
 #### PAYOUT
+
 **Purpose:** Prize distribution in progress
 
 **When:** After game completion, distributing prizes via escrow
 
 **Valid Actions:**
+
 - Process blockchain transactions
 - Calculate winner shares
 - Display payout progress
@@ -178,12 +201,14 @@ socketClient.showResults(sessionId, questionId);
 **Next States:** `COMPLETED`
 
 **Socket Events:**
+
 - Listen: `prizes-distributed`
 - Listen: `prize-distribution-failed`
 
 **Example:**
+
 ```typescript
-await updateGame(sessionId, GameState.PAYOUT);
+await updateGame(sessionId, GameState.PAYOUT)
 // Backend processes escrow payouts
 // Wait for prizes-distributed event
 ```
@@ -191,11 +216,13 @@ await updateGame(sessionId, GameState.PAYOUT);
 ---
 
 #### COMPLETED
+
 **Purpose:** Game has ended
 
 **When:** Final question results shown and prizes distributed
 
 **Valid Actions:**
+
 - Display final leaderboard
 - Show game statistics
 - Allow restart/return home
@@ -203,11 +230,12 @@ await updateGame(sessionId, GameState.PAYOUT);
 **Next States:** None (terminal state)
 
 **Example:**
+
 ```typescript
 socketClient.onGameEnded((data) => {
   // Navigate to /score page
-  router.push(`/score?sessionId=${sessionId}`);
-});
+  router.push(`/score?sessionId=${sessionId}`)
+})
 ```
 
 ---
@@ -231,8 +259,9 @@ CREATED → WAITING → IN_PROGRESS → COUNTDOWN → IN_PROGRESS
 ### Usage Patterns
 
 #### Checking Game State
+
 ```typescript
-import { GameState } from '@/enums/game_state';
+import { GameState } from '@/enums/game_state'
 
 if (gameSession.status === GameState.WAITING) {
   // Show lobby UI
@@ -244,6 +273,7 @@ if (gameSession.status === GameState.WAITING) {
 ```
 
 #### State-Based Rendering
+
 ```typescript
 const renderGameUI = () => {
   switch (gameSession.status) {
@@ -270,6 +300,7 @@ const renderGameUI = () => {
 **File:** [enums/socket-events.ts](../../enums/socket-events.ts)
 
 ### Definition
+
 ```typescript
 export enum SocketEvents {
   // Connection
@@ -304,25 +335,27 @@ export enum SocketEvents {
   // Utility
   ERROR = 'error',
   PING = 'ping',
-  PONG = 'pong'
+  PONG = 'pong',
 }
 ```
 
 ### Event Categories
 
 #### Connection Events
+
 - **CONNECTION**: Socket connected to server
 - **DISCONNECT**: Socket disconnected from server
 
 **Usage:**
+
 ```typescript
 socket.on(SocketEvents.CONNECTION, () => {
-  console.log('Connected');
-});
+  console.log('Connected')
+})
 
 socket.on(SocketEvents.DISCONNECT, (reason) => {
-  console.log('Disconnected:', reason);
-});
+  console.log('Disconnected:', reason)
+})
 ```
 
 ---
@@ -330,38 +363,46 @@ socket.on(SocketEvents.DISCONNECT, (reason) => {
 #### Game Flow Events
 
 ##### JOIN_GAME (Emit)
+
 Player requests to join a game session.
+
 ```typescript
 socketClient.emit(SocketEvents.JOIN_GAME, {
   gameSessionId,
   playerName,
-  walletAddress
-});
+  walletAddress,
+})
 ```
 
 ##### LEAVE_GAME (Emit)
+
 Player voluntarily leaves the game.
+
 ```typescript
 socketClient.emit(SocketEvents.LEAVE_GAME, {
   gameSessionId,
-  playerName
-});
+  playerName,
+})
 ```
 
 ##### START_GAME (Emit)
+
 Host starts the game from lobby.
+
 ```typescript
 socketClient.emit(SocketEvents.START_GAME, {
-  gameSessionId
-});
+  gameSessionId,
+})
 ```
 
 ##### GAME_STARTED (Listen)
+
 Broadcast to all players when game begins.
+
 ```typescript
 socketClient.on(SocketEvents.GAME_STARTED, (data) => {
-  router.push('/play');
-});
+  router.push('/play')
+})
 ```
 
 ---
@@ -369,37 +410,45 @@ socketClient.on(SocketEvents.GAME_STARTED, (data) => {
 #### Player Events
 
 ##### PLAYER_JOINED (Listen)
+
 Host receives notification of new player.
+
 ```typescript
 socketClient.on(SocketEvents.PLAYER_JOINED, (data) => {
-  setPlayers(prev => [...prev, data]);
-});
+  setPlayers((prev) => [...prev, data])
+})
 ```
 
 ##### PLAYER_LEFT (Listen)
+
 Player intentionally left the game.
+
 ```typescript
 socketClient.on(SocketEvents.PLAYER_LEFT, (data) => {
-  setPlayers(prev => prev.filter(p => p.playerName !== data.playerName));
-});
+  setPlayers((prev) => prev.filter((p) => p.playerName !== data.playerName))
+})
 ```
 
 ##### PLAYER_DISCONNECTED (Listen)
+
 Player lost connection.
+
 ```typescript
 socketClient.on(SocketEvents.PLAYER_DISCONNECTED, (data) => {
-  console.warn(`${data.playerName} disconnected`);
-});
+  console.warn(`${data.playerName} disconnected`)
+})
 ```
 
 ##### JOINED_GAME (Listen)
+
 Confirmation that player successfully joined.
+
 ```typescript
 socketClient.on(SocketEvents.JOINED_GAME, (data) => {
   if (data.success) {
-    setStepper(JoinGameStep.LOBBYROOM);
+    setStepper(JoinGameStep.LOBBYROOM)
   }
-});
+})
 ```
 
 ---
@@ -407,49 +456,59 @@ socketClient.on(SocketEvents.JOINED_GAME, (data) => {
 #### Question Flow Events
 
 ##### QUESTION_STARTED (Listen)
+
 New question is broadcast to all players.
+
 ```typescript
 socketClient.on(SocketEvents.QUESTION_STARTED, (data) => {
-  setCurrentQuestion(data.question);
-  setTimeRemaining(data.timeLimit);
-});
+  setCurrentQuestion(data.question)
+  setTimeRemaining(data.timeLimit)
+})
 ```
 
 ##### NEXT_QUESTION (Emit)
+
 Host advances to next question.
+
 ```typescript
 socketClient.emit(SocketEvents.NEXT_QUESTION, {
   gameSessionId,
-  questionIndex
-});
+  questionIndex,
+})
 ```
 
 ##### SUBMIT_ANSWER (Emit)
+
 Player submits their answer.
+
 ```typescript
 socketClient.emit(SocketEvents.SUBMIT_ANSWER, {
   gameSessionId,
   playerName,
   questionId,
   answerId,
-  timeToAnswer
-});
+  timeToAnswer,
+})
 ```
 
 ##### ANSWER_SUBMITTED (Listen)
+
 Confirmation that answer was received.
+
 ```typescript
 socketClient.on(SocketEvents.ANSWER_SUBMITTED, (data) => {
-  setAnswerSubmitted(true);
-});
+  setAnswerSubmitted(true)
+})
 ```
 
 ##### PLAYER_ANSWERED (Listen)
+
 Host receives notification that a player answered.
+
 ```typescript
 socketClient.on(SocketEvents.PLAYER_ANSWERED, (data) => {
-  setAnsweredPlayers(prev => [...prev, data.playerName]);
-});
+  setAnsweredPlayers((prev) => [...prev, data.playerName])
+})
 ```
 
 ---
@@ -457,38 +516,46 @@ socketClient.on(SocketEvents.PLAYER_ANSWERED, (data) => {
 #### Results Events
 
 ##### SHOW_RESULTS (Emit)
+
 Host triggers results display.
+
 ```typescript
 socketClient.emit(SocketEvents.SHOW_RESULTS, {
   gameSessionId,
-  questionId
-});
+  questionId,
+})
 ```
 
 ##### QUESTION_RESULTS (Listen)
+
 Players receive their results.
+
 ```typescript
 socketClient.on(SocketEvents.QUESTION_RESULTS, (data) => {
-  setIsCorrect(data.isCorrect);
-  setNewScore(data.newScore);
-  setRank(data.rank);
-});
+  setIsCorrect(data.isCorrect)
+  setNewScore(data.newScore)
+  setRank(data.rank)
+})
 ```
 
 ##### END_GAME (Emit)
+
 Host ends the game.
+
 ```typescript
 socketClient.emit(SocketEvents.END_GAME, {
-  gameSessionId
-});
+  gameSessionId,
+})
 ```
 
 ##### GAME_ENDED (Listen)
+
 Broadcast when game is complete.
+
 ```typescript
 socketClient.on(SocketEvents.GAME_ENDED, (data) => {
-  router.push(`/score?sessionId=${gameSessionId}`);
-});
+  router.push(`/score?sessionId=${gameSessionId}`)
+})
 ```
 
 ---
@@ -496,21 +563,25 @@ socketClient.on(SocketEvents.GAME_ENDED, (data) => {
 #### Utility Events
 
 ##### ERROR (Listen)
+
 Server error notification.
+
 ```typescript
 socketClient.on(SocketEvents.ERROR, (data) => {
-  console.error('Socket error:', data.message);
-  toast.error(data.message);
-});
+  console.error('Socket error:', data.message)
+  toast.error(data.message)
+})
 ```
 
 ##### PING / PONG
+
 Connection health check.
+
 ```typescript
-socketClient.emit(SocketEvents.PING);
+socketClient.emit(SocketEvents.PING)
 socketClient.on(SocketEvents.PONG, () => {
-  console.log('Server responsive');
-});
+  console.log('Server responsive')
+})
 ```
 
 ---
@@ -520,20 +591,23 @@ socketClient.on(SocketEvents.PONG, () => {
 **File:** [enums/join_game_step.ts](../../enums/join_game_step.ts)
 
 ### Definition (Inferred)
+
 ```typescript
 export enum JoinGameStep {
-  ENTERGAMEPIN = "enter_game_pin",
-  ENTERNICKNAME = "enter_nickname",
-  LOBBYROOM = "lobby_room"
+  ENTERGAMEPIN = 'enter_game_pin',
+  ENTERNICKNAME = 'enter_nickname',
+  LOBBYROOM = 'lobby_room',
 }
 ```
 
 ### Steps
 
 #### ENTERGAMEPIN
+
 Player enters 6-digit game PIN
 
 **UI:**
+
 - Input for game PIN
 - Validation on submit
 - Error display
@@ -543,9 +617,11 @@ Player enters 6-digit game PIN
 ---
 
 #### ENTERNICKNAME
+
 Player chooses their display name
 
 **Validation:**
+
 - 2-20 characters
 - Unique within session
 - Wallet connected
@@ -555,9 +631,11 @@ Player chooses their display name
 ---
 
 #### LOBBYROOM
+
 Player waits for game to start
 
 **UI:**
+
 - Display player's nickname
 - Connection status
 - "Waiting for host..." message
@@ -571,20 +649,23 @@ Player waits for game to start
 **File:** [enums/create_game_step.ts](../../enums/create_game_step.ts)
 
 ### Definition (Inferred)
+
 ```typescript
 export enum CreateGameStep {
-  GAMETYPE = "game_type",
-  GAMECANVAS = "game_canvas",
-  GAMEFORM = "game_form"
+  GAMETYPE = 'game_type',
+  GAMECANVAS = 'game_canvas',
+  GAMEFORM = 'game_form',
 }
 ```
 
 ### Steps
 
 #### GAMETYPE
+
 Choose game mode
 
 **Options:**
+
 - Hangouts
 - Team Building
 - Degen PvP
@@ -592,18 +673,22 @@ Choose game mode
 ---
 
 #### GAMECANVAS
+
 Choose creation method
 
 **Options:**
+
 - Manual creation
 - AI generation
 
 ---
 
 #### GAMEFORM
+
 Build the quiz
 
 **UI:**
+
 - Quiz title input
 - Question builder
 - Answer options
@@ -614,55 +699,61 @@ Build the quiz
 ## Usage Best Practices
 
 ### 1. Always Import Enums
+
 ```typescript
-import { GameState } from '@/enums/game_state';
-import { SocketEvents } from '@/enums/socket-events';
+import { GameState } from '@/enums/game_state'
+import { SocketEvents } from '@/enums/socket-events'
 ```
 
 ### 2. Use Enum Values, Not Strings
+
 ```typescript
 // Good
-if (status === GameState.WAITING) { }
+if (status === GameState.WAITING) {
+}
 
 // Bad
-if (status === 'waiting') { }
+if (status === 'waiting') {
+}
 ```
 
 ### 3. Exhaustive Switch Statements
+
 ```typescript
 const getStatusColor = (state: GameState): string => {
   switch (state) {
     case GameState.CREATED:
     case GameState.WAITING:
-      return 'blue';
+      return 'blue'
     case GameState.IN_PROGRESS:
     case GameState.COUNTDOWN:
-      return 'yellow';
+      return 'yellow'
     case GameState.RESULTS_READY:
-      return 'green';
+      return 'green'
     case GameState.COMPLETED:
-      return 'gray';
+      return 'gray'
     default:
       // TypeScript ensures all cases are handled
-      const _exhaustive: never = state;
-      return 'black';
+      const _exhaustive: never = state
+      return 'black'
   }
-};
+}
 ```
 
 ### 4. Type-Safe Event Handling
+
 ```typescript
 const handleSocketEvent = (event: SocketEvents, data: any) => {
   switch (event) {
     case SocketEvents.PLAYER_JOINED:
-      handlePlayerJoin(data);
-      break;
+      handlePlayerJoin(data)
+      break
     case SocketEvents.GAME_STARTED:
-      handleGameStart(data);
-      break;
+      handleGameStart(data)
+      break
     // ... other cases
   }
-};
+}
 ```
 
 ---

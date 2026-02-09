@@ -4,7 +4,7 @@ import React, { Suspense } from 'react'
 const GameContainter = () => {
   return (
     <Suspense>
-        <GamePage />
+      <GamePage />
     </Suspense>
   )
 }

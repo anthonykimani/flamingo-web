@@ -6,7 +6,7 @@ import React, { Suspense } from 'react'
 const GenerateQuizCointainer = () => {
   return (
     <Suspense>
-        <GenerateQuiz />
+      <GenerateQuiz />
     </Suspense>
   )
 }

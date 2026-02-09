@@ -166,18 +166,18 @@ flamingo-web/
 
 ## File Count Summary
 
-| Category | Count | Description |
-|----------|-------|-------------|
-| **App Routes** | 8 | Next.js page routes |
-| **UI Components** | 51 | Reusable shadcn/ui components |
-| **Custom Components** | 9 | Game-specific components |
-| **Service Files** | 2 | API service layers |
-| **Interfaces** | 3 | TypeScript interface definitions |
-| **Enums** | 4 | Enumeration constants |
-| **Hooks** | 1 | Custom React hooks |
-| **Utilities** | 4 | Utility functions |
-| **Config Files** | 7 | Configuration files |
-| **Documentation** | 15+ | Markdown documentation files |
+| Category              | Count | Description                      |
+| --------------------- | ----- | -------------------------------- |
+| **App Routes**        | 8     | Next.js page routes              |
+| **UI Components**     | 51    | Reusable shadcn/ui components    |
+| **Custom Components** | 9     | Game-specific components         |
+| **Service Files**     | 2     | API service layers               |
+| **Interfaces**        | 3     | TypeScript interface definitions |
+| **Enums**             | 4     | Enumeration constants            |
+| **Hooks**             | 1     | Custom React hooks               |
+| **Utilities**         | 4     | Utility functions                |
+| **Config Files**      | 7     | Configuration files              |
+| **Documentation**     | 15+   | Markdown documentation files     |
 
 **Total Code Files:** ~90+
 **Total Lines of Code:** ~5,000+ (estimated)
@@ -188,43 +188,44 @@ flamingo-web/
 
 ### App Router Pages
 
-| File | Purpose | User Type |
-|------|---------|-----------|
-| `app/page.tsx` | Landing/home | Both |
-| `app/create/page.tsx` | Quiz creation | Host |
-| `app/generate/page.tsx` | AI quiz generation | Host |
-| `app/lobby/page.tsx` | Waiting room | Host |
-| `app/game/page.tsx` | Game controller | Host |
-| `app/join/page.tsx` | Join game flow | Player |
-| `app/play/page.tsx` | Play game | Player |
-| `app/score/page.tsx` | Final scores | Both |
+| File                    | Purpose            | User Type |
+| ----------------------- | ------------------ | --------- |
+| `app/page.tsx`          | Landing/home       | Both      |
+| `app/create/page.tsx`   | Quiz creation      | Host      |
+| `app/generate/page.tsx` | AI quiz generation | Host      |
+| `app/lobby/page.tsx`    | Waiting room       | Host      |
+| `app/game/page.tsx`     | Game controller    | Host      |
+| `app/join/page.tsx`     | Join game flow     | Player    |
+| `app/play/page.tsx`     | Play game          | Player    |
+| `app/score/page.tsx`    | Final scores       | Both      |
 
 ---
 
 ### Critical Service Files
 
-| File | Lines | Purpose |
-|------|-------|---------|
-| `services/quiz_service.ts` | ~259 | Quiz and game session API calls |
-| `utils/socket.client.ts` | ~167 | Socket.IO client singleton |
-| `shared/http.config.ts` | ~50 | Axios HTTP client configuration |
+| File                       | Lines | Purpose                         |
+| -------------------------- | ----- | ------------------------------- |
+| `services/quiz_service.ts` | ~259  | Quiz and game session API calls |
+| `utils/socket.client.ts`   | ~167  | Socket.IO client singleton      |
+| `shared/http.config.ts`    | ~50   | Axios HTTP client configuration |
 
 ---
 
 ### Core Type Definitions
 
-| File | Exports | Purpose |
-|------|---------|---------|
-| `interfaces/IQuiz.ts` | 4 interfaces | Quiz structure types |
-| `interfaces/IResponse.ts` | 1 interface | API response wrapper |
-| `enums/game_state.ts` | 1 enum | Game state constants |
-| `enums/socket-events.ts` | 1 enum | Socket event names |
+| File                      | Exports      | Purpose              |
+| ------------------------- | ------------ | -------------------- |
+| `interfaces/IQuiz.ts`     | 4 interfaces | Quiz structure types |
+| `interfaces/IResponse.ts` | 1 interface  | API response wrapper |
+| `enums/game_state.ts`     | 1 enum       | Game state constants |
+| `enums/socket-events.ts`  | 1 enum       | Socket event names   |
 
 ---
 
 ## Module Dependencies
 
 ### Component Hierarchy
+
 ```
 app/layout.tsx (Root)
 └── PrivyProviders
@@ -248,6 +249,7 @@ app/layout.tsx (Root)
 ```
 
 ### Service Dependencies
+
 ```
 Component
 └── services/quiz_service.ts
@@ -265,18 +267,21 @@ Component
 ## Import Path Patterns
 
 ### Absolute Imports (via `@/` alias)
+
 ```typescript
-import Component from '@/components/ui/button';
-import { addQuiz } from '@/services/quiz_service';
-import socketClient from '@/utils/socket.client';
-import { IQuiz } from '@/interfaces/IQuiz';
-import { GameState } from '@/enums/game_state';
+import Component from '@/components/ui/button'
+import { addQuiz } from '@/services/quiz_service'
+import socketClient from '@/utils/socket.client'
+import { IQuiz } from '@/interfaces/IQuiz'
+import { GameState } from '@/enums/game_state'
 ```
 
 ### Path Mapping
+
 `@/*` → Project root directory
 
 Configured in [tsconfig.json](../tsconfig.json):
+
 ```json
 {
   "compilerOptions": {
@@ -292,17 +297,20 @@ Configured in [tsconfig.json](../tsconfig.json):
 ## File Naming Conventions
 
 ### Components
+
 - **Pages:** `page.tsx` (Next.js convention)
 - **UI Components:** `lowercase-kebab.tsx` (e.g., `button.tsx`)
 - **Custom Components:** `snake_case.tsx` (e.g., `game_controller.tsx`)
 - **Navigation:** `kebab-case.tsx` (e.g., `navigation-bar.tsx`)
 
 ### Services & Utilities
+
 - **Services:** `snake_case.ts` (e.g., `quiz_service.ts`)
 - **Utilities:** `dot.notation.ts` (e.g., `socket.client.ts`)
 - **Config:** `kebab-case.ts` (e.g., `http.config.ts`)
 
 ### Types
+
 - **Interfaces:** `PascalCase.ts` with `I` prefix (e.g., `IQuiz.ts`)
 - **Enums:** `snake_case.ts` (e.g., `game_state.ts`)
 
@@ -311,6 +319,7 @@ Configured in [tsconfig.json](../tsconfig.json):
 ## Configuration Files
 
 ### Build Configuration
+
 - `next.config.ts` - Next.js settings
 - `tsconfig.json` - TypeScript compiler options
 - `tailwind.config.ts` - Tailwind CSS theme
@@ -318,10 +327,12 @@ Configured in [tsconfig.json](../tsconfig.json):
 - `components.json` - shadcn/ui setup
 
 ### Package Management
+
 - `package.json` - Dependencies and scripts
 - `package-lock.json` - Locked versions
 
 ### Environment
+
 - `.env.development` - Dev environment variables
 - `.env.production` - Prod environment variables (not in repo)
 
@@ -330,6 +341,7 @@ Configured in [tsconfig.json](../tsconfig.json):
 ## Code Statistics
 
 ### Language Distribution
+
 ```
 TypeScript: ~85%
 TSX (React): ~10%
@@ -338,6 +350,7 @@ Config: ~2%
 ```
 
 ### Component Breakdown
+
 ```
 Pages: 8 files
 UI Components: 51 files
@@ -346,6 +359,7 @@ Total Components: 68 files
 ```
 
 ### Type Safety
+
 ```
 Interfaces: 7+
 Enums: 4
@@ -358,6 +372,7 @@ Total Type Definitions: 14+
 ## Growth Areas
 
 ### Planned Additions
+
 - `/components/layouts/` - Layout components
 - `/middleware/` - Next.js middleware
 - `/tests/` - Test files
@@ -366,6 +381,7 @@ Total Type Definitions: 14+
 - `/context/` - Additional React contexts
 
 ### Future Documentation
+
 - Component development guide
 - Testing strategies
 - Deployment guide

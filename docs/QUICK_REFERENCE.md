@@ -3,6 +3,7 @@
 > Fast lookup for common tasks and patterns in Flamingo Web
 
 ## Table of Contents
+
 - [Common Imports](#common-imports)
 - [Socket.IO Patterns](#socketio-patterns)
 - [API Calls](#api-calls)
@@ -17,41 +18,47 @@
 ## Common Imports
 
 ### React & Next.js
+
 ```typescript
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import React, { useState, useEffect, useCallback, useMemo } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 ```
 
 ### UI Components
+
 ```typescript
-import { Button } from '@/components/ui/button';
-import { Card, CardHeader, CardContent } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button'
+import { Card, CardHeader, CardContent } from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
 ```
 
 ### Services
+
 ```typescript
-import socketClient from '@/utils/socket.client';
-import { addQuiz, getQuizById, createGameSession } from '@/services/quiz_service';
+import socketClient from '@/utils/socket.client'
+import { addQuiz, getQuizById, createGameSession } from '@/services/quiz_service'
 ```
 
 ### Types
+
 ```typescript
-import { IQuiz, IQuestion, IAnswer, IPlayer } from '@/interfaces/IQuiz';
-import { GameState } from '@/enums/game_state';
-import { SocketEvents } from '@/enums/socket-events';
+import { IQuiz, IQuestion, IAnswer, IPlayer } from '@/interfaces/IQuiz'
+import { GameState } from '@/enums/game_state'
+import { SocketEvents } from '@/enums/socket-events'
 ```
 
 ### Icons
+
 ```typescript
-import { UserIcon, SparkleIcon, LegoIcon } from '@phosphor-icons/react';
-import { Check, ChevronDown, X } from 'lucide-react';
+import { UserIcon, SparkleIcon, LegoIcon } from '@phosphor-icons/react'
+import { Check, ChevronDown, X } from 'lucide-react'
 ```
 
 ### Web3
+
 ```typescript
-import { usePrivy, useWallets } from '@privy-io/react-auth';
-import { useAppKitAccount } from '@reown/appkit/react';
+import { usePrivy, useWallets } from '@privy-io/react-auth'
+import { useAppKitAccount } from '@reown/appkit/react'
 ```
 
 ---
@@ -59,45 +66,48 @@ import { useAppKitAccount } from '@reown/appkit/react';
 ## Socket.IO Patterns
 
 ### Connect & Setup
+
 ```typescript
 useEffect(() => {
-  const socket = socketClient.connect();
+  const socket = socketClient.connect()
 
   socket.on('connect', () => {
-    console.log('✅ Connected:', socket.id);
-    setIsConnected(true);
-  });
+    console.log('✅ Connected:', socket.id)
+    setIsConnected(true)
+  })
 
   socket.on('disconnect', () => {
-    setIsConnected(false);
-  });
+    setIsConnected(false)
+  })
 
   return () => {
     // Don't disconnect - keep connection alive
-  };
-}, []);
+  }
+}, [])
 ```
 
 ### Listen to Events
+
 ```typescript
 useEffect(() => {
   socketClient.onPlayerJoined((data) => {
-    setPlayers(prev => [...prev, data]);
-  });
+    setPlayers((prev) => [...prev, data])
+  })
 
   return () => {
-    socketClient.off(SocketEvents.PLAYER_JOINED);
-  };
-}, []);
+    socketClient.off(SocketEvents.PLAYER_JOINED)
+  }
+}, [])
 ```
 
 ### Emit Events
+
 ```typescript
 // Join game
-socketClient.joinGame(sessionId, playerName, walletAddress);
+socketClient.joinGame(sessionId, playerName, walletAddress)
 
 // Start game
-socketClient.startGame(sessionId);
+socketClient.startGame(sessionId)
 
 // Submit answer
 socketClient.submitAnswer({
@@ -105,8 +115,8 @@ socketClient.submitAnswer({
   playerName,
   questionId,
   answerId,
-  timeToAnswer
-});
+  timeToAnswer,
+})
 ```
 
 ---
@@ -114,38 +124,42 @@ socketClient.submitAnswer({
 ## API Calls
 
 ### Create Quiz
+
 ```typescript
 const quiz: IQuiz = {
-  title: "My Quiz",
+  title: 'My Quiz',
   questions: [
     {
       questionNumber: 1,
-      question: "Question text?",
+      question: 'Question text?',
       answers: [
-        { answer: "Option 1", correctAnswer: true },
-        { answer: "Option 2", correctAnswer: false }
-      ]
-    }
-  ]
-};
+        { answer: 'Option 1', correctAnswer: true },
+        { answer: 'Option 2', correctAnswer: false },
+      ],
+    },
+  ],
+}
 
-const response = await addQuiz(quiz);
+const response = await addQuiz(quiz)
 ```
 
 ### Create Game Session
+
 ```typescript
-const session = await createGameSession(quizId);
-console.log(session.gamePin); // 6-digit PIN
+const session = await createGameSession(quizId)
+console.log(session.gamePin) // 6-digit PIN
 ```
 
 ### Get Game by PIN
+
 ```typescript
-const session = await getGameSessionByGamePin("123456");
+const session = await getGameSessionByGamePin('123456')
 ```
 
 ### Get Leaderboard
+
 ```typescript
-const leaderboard = await getLeaderboard(sessionId);
+const leaderboard = await getLeaderboard(sessionId)
 ```
 
 ---
@@ -153,51 +167,54 @@ const leaderboard = await getLeaderboard(sessionId);
 ## State Management
 
 ### Basic State
+
 ```typescript
-const [quiz, setQuiz] = useState<IQuiz | null>(null);
-const [players, setPlayers] = useState<IPlayer[]>([]);
-const [error, setError] = useState<string>('');
-const [isLoading, setIsLoading] = useState(false);
+const [quiz, setQuiz] = useState<IQuiz | null>(null)
+const [players, setPlayers] = useState<IPlayer[]>([])
+const [error, setError] = useState<string>('')
+const [isLoading, setIsLoading] = useState(false)
 ```
 
 ### Loading Pattern
+
 ```typescript
-const [data, setData] = useState(null);
-const [loading, setLoading] = useState(false);
-const [error, setError] = useState('');
+const [data, setData] = useState(null)
+const [loading, setLoading] = useState(false)
+const [error, setError] = useState('')
 
 useEffect(() => {
   const fetchData = async () => {
-    setLoading(true);
-    setError('');
+    setLoading(true)
+    setError('')
 
     try {
-      const result = await apiCall();
-      setData(result);
+      const result = await apiCall()
+      setData(result)
     } catch (err) {
-      setError(err.message);
+      setError(err.message)
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
-  fetchData();
-}, []);
+  fetchData()
+}, [])
 ```
 
 ### Timer Pattern
+
 ```typescript
-const [timeRemaining, setTimeRemaining] = useState(20);
+const [timeRemaining, setTimeRemaining] = useState(20)
 
 useEffect(() => {
-  if (timeRemaining <= 0) return;
+  if (timeRemaining <= 0) return
 
   const timer = setInterval(() => {
-    setTimeRemaining(prev => Math.max(0, prev - 1));
-  }, 1000);
+    setTimeRemaining((prev) => Math.max(0, prev - 1))
+  }, 1000)
 
-  return () => clearInterval(timer);
-}, [timeRemaining]);
+  return () => clearInterval(timer)
+}, [timeRemaining])
 ```
 
 ---
@@ -205,35 +222,38 @@ useEffect(() => {
 ## Routing
 
 ### Navigation
-```typescript
-import { useRouter } from 'next/navigation';
 
-const router = useRouter();
+```typescript
+import { useRouter } from 'next/navigation'
+
+const router = useRouter()
 
 // Navigate
-router.push('/lobby?sessionId=123&gamePin=456789');
+router.push('/lobby?sessionId=123&gamePin=456789')
 
 // Go back
-router.back();
+router.back()
 
 // Replace (no history)
-router.replace('/');
+router.replace('/')
 ```
 
 ### Read Query Params
+
 ```typescript
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams } from 'next/navigation'
 
-const searchParams = useSearchParams();
+const searchParams = useSearchParams()
 
-const sessionId = searchParams.get('sessionId');
-const gamePin = searchParams.get('gamePin');
+const sessionId = searchParams.get('sessionId')
+const gamePin = searchParams.get('gamePin')
 ```
 
 ### Build URLs
+
 ```typescript
-const url = `/play?sessionId=${sessionId}&playerName=${encodeURIComponent(name)}`;
-router.push(url);
+const url = `/play?sessionId=${sessionId}&playerName=${encodeURIComponent(name)}`
+router.push(url)
 ```
 
 ---
@@ -241,37 +261,37 @@ router.push(url);
 ## TypeScript Types
 
 ### Component Props
+
 ```typescript
 interface GameControllerProps {
-  sessionId: string;
-  gamePin: string;
+  sessionId: string
+  gamePin: string
 }
 
-export const GameController: React.FC<GameControllerProps> = ({
-  sessionId,
-  gamePin
-}) => {
+export const GameController: React.FC<GameControllerProps> = ({ sessionId, gamePin }) => {
   // Component logic
-};
+}
 ```
 
 ### Event Handlers
+
 ```typescript
 const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
   // Handle click
-};
+}
 
 const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-  setValue(event.target.value);
-};
+  setValue(event.target.value)
+}
 ```
 
 ### Async Functions
+
 ```typescript
 const fetchData = async (): Promise<IResponse> => {
-  const response = await getQuizById(id);
-  return response;
-};
+  const response = await getQuizById(id)
+  return response
+}
 ```
 
 ---
@@ -279,6 +299,7 @@ const fetchData = async (): Promise<IResponse> => {
 ## Styling
 
 ### Conditional Classes
+
 ```typescript
 import clsx from 'clsx';
 
@@ -290,27 +311,29 @@ className={clsx(
 ```
 
 ### TailwindCSS Utilities
+
 ```typescript
 // Layout
-className="flex flex-col items-center justify-center gap-4"
+className = 'flex flex-col items-center justify-center gap-4'
 
 // Sizing
-className="w-full max-w-md h-screen"
+className = 'w-full max-w-md h-screen'
 
 // Spacing
-className="p-4 m-2 space-y-3"
+className = 'p-4 m-2 space-y-3'
 
 // Colors
-className="bg-white text-black border-gray-200"
+className = 'bg-white text-black border-gray-200'
 
 // States
-className="hover:bg-gray-100 active:scale-95 disabled:opacity-50"
+className = 'hover:bg-gray-100 active:scale-95 disabled:opacity-50'
 
 // Responsive
-className="sm:text-lg md:text-xl lg:text-2xl"
+className = 'sm:text-lg md:text-xl lg:text-2xl'
 ```
 
 ### Background Images
+
 ```typescript
 // In component
 className="game-pin-background h-screen w-screen bg-no-repeat bg-cover"
@@ -326,47 +349,50 @@ className="game-pin-background h-screen w-screen bg-no-repeat bg-cover"
 ## Error Handling
 
 ### Try-Catch Pattern
+
 ```typescript
 try {
-  const result = await apiCall();
+  const result = await apiCall()
   // Success handling
 } catch (error) {
-  const message = error instanceof Error ? error.message : 'Unknown error';
-  console.error('Error:', message);
-  setError(message);
-  toast.error(message);
+  const message = error instanceof Error ? error.message : 'Unknown error'
+  console.error('Error:', message)
+  setError(message)
+  toast.error(message)
 }
 ```
 
 ### Socket Error Handling
+
 ```typescript
 socketClient.onError((data) => {
-  console.error('Socket error:', data.message);
-  toast.error(data.message);
-});
+  console.error('Socket error:', data.message)
+  toast.error(data.message)
+})
 ```
 
 ### Form Validation
+
 ```typescript
 const handleSubmit = async () => {
   // Validate
   if (!title.trim()) {
-    setError('Title is required');
-    return;
+    setError('Title is required')
+    return
   }
 
   if (questions.length === 0) {
-    setError('Add at least one question');
-    return;
+    setError('Add at least one question')
+    return
   }
 
   // Submit
   try {
-    await addQuiz({ title, questions });
+    await addQuiz({ title, questions })
   } catch (error) {
-    setError('Failed to save quiz');
+    setError('Failed to save quiz')
   }
-};
+}
 ```
 
 ---
@@ -374,70 +400,72 @@ const handleSubmit = async () => {
 ## Common Code Snippets
 
 ### Wait for Event
+
 ```typescript
 const waitForGameStart = () => {
   return new Promise((resolve) => {
     socketClient.onGameStarted((data) => {
-      resolve(data);
-    });
-  });
-};
+      resolve(data)
+    })
+  })
+}
 
-await waitForGameStart();
-router.push('/play');
+await waitForGameStart()
+router.push('/play')
 ```
 
 ### Countdown Timer
+
 ```typescript
-const [countdown, setCountdown] = useState(3);
+const [countdown, setCountdown] = useState(3)
 
 useEffect(() => {
   if (countdown <= 0) {
-    startQuestion();
-    return;
+    startQuestion()
+    return
   }
 
   const timer = setTimeout(() => {
-    setCountdown(prev => prev - 1);
-  }, 1000);
+    setCountdown((prev) => prev - 1)
+  }, 1000)
 
-  return () => clearTimeout(timer);
-}, [countdown]);
+  return () => clearTimeout(timer)
+}, [countdown])
 ```
 
 ### Array Updates
+
 ```typescript
 // Add item
-setItems(prev => [...prev, newItem]);
+setItems((prev) => [...prev, newItem])
 
 // Remove item
-setItems(prev => prev.filter(item => item.id !== removeId));
+setItems((prev) => prev.filter((item) => item.id !== removeId))
 
 // Update item
-setItems(prev => prev.map(item =>
-  item.id === updateId ? { ...item, ...updates } : item
-));
+setItems((prev) => prev.map((item) => (item.id === updateId ? { ...item, ...updates } : item)))
 
 // Replace all
-setItems(newItems);
+setItems(newItems)
 ```
 
 ### Object Updates
+
 ```typescript
 // Update property
-setUser(prev => ({ ...prev, name: 'New Name' }));
+setUser((prev) => ({ ...prev, name: 'New Name' }))
 
 // Update nested property
-setData(prev => ({
+setData((prev) => ({
   ...prev,
   user: {
     ...prev.user,
     profile: {
       ...prev.user.profile,
-      avatar: newAvatar
-    }
-  }
-}));
+      avatar: newAvatar,
+    },
+  },
+}))
 ```
 
 ---
@@ -445,28 +473,30 @@ setData(prev => ({
 ## Debugging
 
 ### Console Logging
+
 ```typescript
 // Socket events
 socketClient.getSocket()?.onAny((event, ...args) => {
-  console.log(`📡 Socket Event: ${event}`, args);
-});
+  console.log(`📡 Socket Event: ${event}`, args)
+})
 
 // Component lifecycle
 useEffect(() => {
-  console.log('Component mounted');
+  console.log('Component mounted')
 
   return () => {
-    console.log('Component unmounted');
-  };
-}, []);
+    console.log('Component unmounted')
+  }
+}, [])
 
 // State changes
 useEffect(() => {
-  console.log('State changed:', state);
-}, [state]);
+  console.log('State changed:', state)
+}, [state])
 ```
 
 ### Connection Status
+
 ```typescript
 <div className="fixed top-4 right-4 text-xs p-2 bg-black/50 text-white rounded">
   {socketClient.isConnected() ? '🟢 Connected' : '🔴 Disconnected'}
@@ -478,12 +508,14 @@ useEffect(() => {
 ## Environment Variables
 
 ### Access in Code
+
 ```typescript
-const apiUrl = process.env.NEXT_PUBLIC_GAMESERVICE_BASE_URL;
-const privyAppId = process.env.NEXT_PUBLIC_PRIVY_APP_ID;
+const apiUrl = process.env.NEXT_PUBLIC_GAMESERVICE_BASE_URL
+const privyAppId = process.env.NEXT_PUBLIC_PRIVY_APP_ID
 ```
 
 ### Required Variables
+
 ```bash
 NEXT_PUBLIC_GAMESERVICE_BASE_URL=http://localhost:3077
 NEXT_PUBLIC_PRIVY_APP_ID=your_app_id
@@ -496,12 +528,14 @@ NEXT_PUBLIC_PIMLICO_API_KEY=your_api_key
 ## Keyboard Shortcuts (Development)
 
 ### VS Code
+
 - `Ctrl+Shift+P` - Command palette
 - `Ctrl+P` - Quick file open
 - `F12` - Go to definition
 - `Alt+Shift+F` - Format document
 
 ### Browser DevTools
+
 - `F12` - Open DevTools
 - `Ctrl+Shift+C` - Inspect element
 - `Ctrl+Shift+M` - Toggle mobile view

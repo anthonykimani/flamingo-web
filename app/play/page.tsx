@@ -2,11 +2,11 @@ import PlayGame from '@/components/pages/play_game'
 import React, { Suspense } from 'react'
 
 const PlayGameContainer = () => {
-    return (
-        <Suspense>
-            <PlayGame />
-        </Suspense>
-    )
+  return (
+    <Suspense>
+      <PlayGame />
+    </Suspense>
+  )
 }
 
 export default PlayGameContainer
