@@ -6,12 +6,12 @@ import { WorldAppProvider } from "@/provider/worldapp"
 
 export default function Providers({ children }: { children: React.ReactNode }) {
   return (
-    <WorldAppProvider>
+    <PostHogProvider>
       <RainbowKitProviderContainer>
-        <PostHogProvider>
+        <WorldAppProvider>
           {children}
-        </PostHogProvider>
+        </WorldAppProvider>
       </RainbowKitProviderContainer>
-    </WorldAppProvider>
+    </PostHogProvider>
   )
 }

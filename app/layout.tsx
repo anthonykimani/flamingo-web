@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
-import ClientLayout from "@/provider/client-layout";
+import Providers from "@/provider/providers";
 import "./globals.css";
 
 const oldschool = localFont({
@@ -54,9 +54,9 @@ export default function RootLayout({
       <body
         className={`${oldschool.variable} antialiased font-poppins font-oldschool`}
       >
-        <ClientLayout>
+        <Providers>
           {children}
-        </ClientLayout>
+        </Providers>
       </body>
     </html>
   );

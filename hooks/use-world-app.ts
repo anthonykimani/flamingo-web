@@ -1,8 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { MiniKit } from "@worldcoin/minikit-js"
-import type { MiniKitWalletAuthOptions } from "@worldcoin/minikit-js/commands"
+import { MiniKit, isCommandAvailable, Command } from "@worldcoin/minikit-js"
 
 export interface WorldAppState {
   isWorldApp: boolean
@@ -40,22 +39,26 @@ export function useWorldApp(): WorldAppState {
     if (user) setUsername(user)
     if (pfp) setProfilePictureUrl(pfp)
 
-    // Auto-authenticate via SIWE if username not already available
     if (user && address) return
 
     const doAuth = async () => {
+      if (!isCommandAvailable(Command.WalletAuth)) return
+
       setIsAuthenticating(true)
       try {
         const nonce = crypto.randomUUID().replace(/-/g, "")
-        const result = await MiniKit.walletAuth({
+        const result = await MiniKit.commandsAsync.walletAuth({
           nonce,
           statement: "Sign in to Flamingo",
           expirationTime: new Date(Date.now() + 1000 * 60 * 60),
-        } satisfies MiniKitWalletAuthOptions)
+        })
 
-        if (result.executedWith === "fallback") return
+        if (result.finalPayload.status === 'error') {
+          setError('Authentication failed')
+          return
+        }
 
-        setWalletAddress(result.data.address)
+        setWalletAddress(result.finalPayload.address)
         setUsername(MiniKit.user?.username)
         setProfilePictureUrl(MiniKit.user?.profilePictureUrl)
         setIsAuthenticated(true)
