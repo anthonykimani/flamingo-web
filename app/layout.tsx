@@ -1,11 +1,7 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
+import ClientLayout from "@/provider/client-layout";
 import "./globals.css";
-import PrivyProviders from "@/provider";
-import { PostHogProvider } from "@/provider/posthog";
-import AppKitContextProvider from "@/provider/appkit";
-import { headers } from "next/headers";
-import { RainbowKitProviderContainer } from "@/provider/rainbow";
 
 const oldschool = localFont({
   src: [
@@ -43,34 +39,24 @@ const oi = localFont({
   variable: "--font-oi"
 })
 
-
 export const metadata: Metadata = {
   title: "Flamingo",
   description: "A real-time multiplayer quiz game similar to Kahoot",
 };
 
-export default async function RootLayout({
+export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const cookies = (await headers()).get('cookie')
-
   return (
     <html lang="en">
       <body
         className={`${oldschool.variable} antialiased font-poppins font-oldschool`}
       >
-        {/* <PrivyProviders> */}
-        {/* <AppKitContextProvider cookies={cookies}> */}
-        <RainbowKitProviderContainer>
-          <PostHogProvider>
-            {children}
-          </PostHogProvider>
-        </RainbowKitProviderContainer>
-        {/* </AppKitContextProvider> */}
-
-        {/* </PrivyProviders> */}
+        <ClientLayout>
+          {children}
+        </ClientLayout>
       </body>
     </html>
   );

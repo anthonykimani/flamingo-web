@@ -319,10 +319,7 @@ const CreateQuiz = ({ onSave, gameMode }: CreateQuizProps) => {
                         <div className='flex items-center gap-2'>
                             <CoinsIcon size={24} className='text-blue-600' />
                             <p className='text-sm text-blue-800'>
-                                {gameMode === GameMode.DEGEN_PVP
-                                    ? 'This mode includes prizes by default. Min 3 players required.'
-                                    : 'This mode will include prizes in future updates.'
-                                }
+                                This mode will include prizes in future updates.
                             </p>
                         </div>
                     </Card>
