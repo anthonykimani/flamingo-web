@@ -1,7 +1,8 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { MiniKit, isCommandAvailable, Command } from "@worldcoin/minikit-js"
+import { MiniKit } from "@worldcoin/minikit-js"
+import { useMiniKit } from "@worldcoin/minikit-js/minikit-provider"
 
 export interface WorldAppState {
   isWorldApp: boolean
@@ -15,7 +16,7 @@ export interface WorldAppState {
 }
 
 export function useWorldApp(): WorldAppState {
-  const [isInstalled, setIsInstalled] = useState(false)
+  const { isInstalled } = useMiniKit()
   const [walletAddress, setWalletAddress] = useState<string | undefined>()
   const [username, setUsername] = useState<string | undefined>()
   const [profilePictureUrl, setProfilePictureUrl] = useState<string | undefined>()
@@ -24,9 +25,7 @@ export function useWorldApp(): WorldAppState {
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    if (!MiniKit.isInstalled()) return
-
-    setIsInstalled(true)
+    if (!isInstalled) return
 
     const address = MiniKit.user?.walletAddress
     const user = MiniKit.user?.username
@@ -42,9 +41,8 @@ export function useWorldApp(): WorldAppState {
     if (user && address) return
 
     const doAuth = async () => {
-      if (!isCommandAvailable(Command.WalletAuth)) return
-
       setIsAuthenticating(true)
+      setError(null)
       try {
         const nonce = crypto.randomUUID().replace(/-/g, "")
         const result = await MiniKit.commandsAsync.walletAuth({
@@ -63,19 +61,19 @@ export function useWorldApp(): WorldAppState {
         setProfilePictureUrl(MiniKit.user?.profilePictureUrl)
         setIsAuthenticated(true)
       } catch {
-        // silent
+        setError('World App authentication failed')
       } finally {
         setIsAuthenticating(false)
       }
     }
 
     doAuth()
-  }, [])
+  }, [isInstalled])
 
   return {
     isWorldApp: typeof window !== 'undefined' &&
       window.navigator?.userAgent?.includes('World') === true,
-    isInstalled,
+    isInstalled: isInstalled === true,
     walletAddress,
     username,
     profilePictureUrl,

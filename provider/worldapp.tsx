@@ -8,6 +8,7 @@ export function WorldAppProvider({ children }: { children: React.ReactNode }) {
   const appId = process.env.NEXT_PUBLIC_WORLD_APP_ID ?? ""
 
   useEffect(() => {
+    if (!appId) return
     MiniKit.install(appId)
   }, [appId])
 
