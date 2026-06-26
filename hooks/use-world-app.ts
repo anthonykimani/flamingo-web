@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import { MiniKit } from "@worldcoin/minikit-js"
 import type { MiniKitWalletAuthOptions } from "@worldcoin/minikit-js/commands"
 
@@ -23,66 +23,28 @@ export function useWorldApp(): WorldAppState {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [isAuthenticating, setIsAuthenticating] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const authAttempted = useRef(false)
 
-  // Poll MiniKit.isInstalled() since it initializes async after MiniKitProvider mounts
   useEffect(() => {
-    let attempts = 0
-    const maxAttempts = 20 // ~2s total
+    if (!MiniKit.isInstalled()) return
 
-    const check = () => {
-      if (MiniKit.isInstalled()) {
-        setIsInstalled(true)
-        const address = MiniKit.user?.walletAddress
-        const user = MiniKit.user?.username
-        const pfp = MiniKit.user?.profilePictureUrl
+    setIsInstalled(true)
 
-        if (address) {
-          setWalletAddress(address)
-          setIsAuthenticated(true)
-        }
-        if (user) setUsername(user)
-        if (pfp) setProfilePictureUrl(pfp)
-        return true
-      }
-      return false
+    const address = MiniKit.user?.walletAddress
+    const user = MiniKit.user?.username
+    const pfp = MiniKit.user?.profilePictureUrl
+
+    if (address) {
+      setWalletAddress(address)
+      setIsAuthenticated(true)
     }
+    if (user) setUsername(user)
+    if (pfp) setProfilePictureUrl(pfp)
 
-    // Check immediately
-    if (check()) return
+    // Auto-authenticate via SIWE if username not already available
+    if (user && address) return
 
-    // Poll with increasing intervals
-    const intervals = [100, 200, 500, 500, 500]
-    let idx = 0
-
-    const poll = () => {
-      if (idx >= intervals.length || check()) return
-      setTimeout(poll, intervals[idx])
-      idx++
-    }
-
-    const timer = setTimeout(poll, intervals[0])
-    idx = 1
-
-    return () => clearTimeout(timer)
-  }, [])
-
-  // Auto-authenticate via SIWE once installed, to get username/profile
-  useEffect(() => {
-    if (!isInstalled || authAttempted.current) return
-
-    const autoAuth = async () => {
-      if (MiniKit.user?.username && MiniKit.user?.walletAddress) {
-        setUsername(MiniKit.user.username)
-        setProfilePictureUrl(MiniKit.user.profilePictureUrl)
-        setWalletAddress(MiniKit.user.walletAddress)
-        setIsAuthenticated(true)
-        return
-      }
-
-      authAttempted.current = true
+    const doAuth = async () => {
       setIsAuthenticating(true)
-
       try {
         const nonce = crypto.randomUUID().replace(/-/g, "")
         const result = await MiniKit.walletAuth({
@@ -98,14 +60,14 @@ export function useWorldApp(): WorldAppState {
         setProfilePictureUrl(MiniKit.user?.profilePictureUrl)
         setIsAuthenticated(true)
       } catch {
-        // Silent fail — user can still use walletAddress from init
+        // silent
       } finally {
         setIsAuthenticating(false)
       }
     }
 
-    autoAuth()
-  }, [isInstalled])
+    doAuth()
+  }, [])
 
   return {
     isWorldApp: typeof window !== 'undefined' &&

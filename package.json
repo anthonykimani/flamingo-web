@@ -39,6 +39,7 @@
     "@radix-ui/react-toggle-group": "^1.1.11",
     "@radix-ui/react-tooltip": "^1.2.8",
     "@rainbow-me/rainbowkit": "^2.2.9",
+    "@react-native-async-storage/async-storage": "1.23.1",
     "@reown/appkit": "^1.8.11",
     "@reown/appkit-adapter-wagmi": "^1.8.11",
     "@reown/appkit-wallet-button": "^1.8.11",
