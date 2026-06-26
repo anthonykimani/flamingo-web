@@ -6,29 +6,61 @@ import { GameControllerIcon, MagicWandIcon } from '@phosphor-icons/react'
 import { useRouter } from 'next/navigation'
 import { ConnectWalletButton } from '../custom/connect-wallet-button'
 import { useAccount } from 'wagmi'
+import { useWorldApp } from '@/hooks/use-world-app'
 
 const StartScreen = () => {
   const router = useRouter()
-  const { address, isConnected } = useAccount();
+  const { address, isConnected } = useAccount()
+  const { isInstalled, walletAddress, username, isAuthenticated, isAuthenticating, authenticate } = useWorldApp()
 
-  //prevent hydration mismatch
-  const [mounted, setMounted] = useState(false);
+  const [mounted, setMounted] = useState(false)
   useEffect(() => setMounted(true), [])
 
-  // Handle button click
-  const handleRoute = (route: string) => {
-    if (!isConnected) {
-      alert("Please connect your wallet first.");
-      return;
+  const isWorldApp = isInstalled
+  const userReady = isWorldApp ? isAuthenticated : isConnected
+
+  const handleRoute = async (route: string) => {
+    if (isWorldApp) {
+      if (!isAuthenticated) {
+        const addr = await authenticate()
+        if (!addr) return
+      }
+    } else if (!isConnected) {
+      alert("Please connect your wallet first.")
+      return
     }
-    router.push(route);
-  };
+    router.push(route)
+  }
+
+  const displayName = isWorldApp
+    ? username ?? walletAddress?.slice(0, 6) + '...' ?? ''
+    : undefined
 
   return (
     <div className="flex flex-col start-screen-background h-screen w-screen bg-no-repeat bg-cover">
       <div>
         <div className='flex items-start justify-start gap-2 animate-fadeIn cursor-pointer p-1 sm:p-3'>
-          {mounted && <ConnectWalletButton />}
+          {mounted && (
+            isWorldApp ? (
+              isAuthenticated ? (
+                <div className="flex items-center gap-2 rounded-lg border-2 border-slate-800 border-b-[6px] border-r-[6px] active:border-b-2 active:border-r-2 bg-white p-2">
+                  <span className="font-semibold text-sm">{displayName}</span>
+                </div>
+              ) : (
+                <button
+                  onClick={authenticate}
+                  disabled={isAuthenticating}
+                  className="flex items-center rounded-lg border-2 border-slate-800 border-b-[6px] border-r-[6px] active:border-b-2 active:border-r-2 bg-white hover:bg-white/90 transition-all cursor-pointer p-2"
+                >
+                  <span className="font-semibold text-sm">
+                    {isAuthenticating ? 'Signing in...' : 'Sign in with World ID'}
+                  </span>
+                </button>
+              )
+            ) : (
+              <ConnectWalletButton />
+            )
+          )}
         </div>
       </div>
 
@@ -44,10 +76,12 @@ const StartScreen = () => {
                 variant="active"
                 size="xl"
                 onClick={() => handleRoute("/create")}
-                disabled={!isConnected}
+                disabled={!userReady}
               >
-                {!isConnected ? (
-                  <span className="animate-pulse">Connecting...</span>
+                {!userReady ? (
+                  <span className="animate-pulse">
+                    {isWorldApp ? 'Sign in to continue...' : 'Connecting...'}
+                  </span>
                 ) : (
                   <>
                     <MagicWandIcon size={32} />
@@ -56,7 +90,7 @@ const StartScreen = () => {
                 )}
               </Button>
 
-              <Button variant="active" onClick={() => handleRoute('/join')} disabled={!isConnected}>
+              <Button variant="active" onClick={() => handleRoute('/join')} disabled={!userReady}>
                 <GameControllerIcon size={32} />
                 Join a Game
               </Button>

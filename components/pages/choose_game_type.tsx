@@ -36,7 +36,8 @@ const ChooseGameType = ({ onGameTypeSelect }: ChooseGameTypeProps) => {
                     <StrategyIcon size={32} />Team Building
                 </Button>
                 <Button
-                    
+                    showComingSoon
+                    disabled
                     onClick={() => onGameTypeSelect(GameMode.DEGEN_PVP)}
                     variant={"active"}
                     size={"gametype"}

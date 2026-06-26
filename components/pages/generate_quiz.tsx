@@ -3,7 +3,7 @@
 import React, { useState } from 'react'
 import { Card, CardHeader, CardContent } from '../ui/card'
 import { Button } from '../ui/button'
-import { JoystickIcon, UserIcon, XIcon, CoinsIcon, SparkleIcon, LightningIcon, UsersIcon } from '@phosphor-icons/react'
+import { JoystickIcon, XIcon, CoinsIcon, UsersIcon } from '@phosphor-icons/react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Input } from '../ui/input'
 import { addAgentQuiz, createGameSession } from '@/services/quiz_service'
@@ -90,12 +90,6 @@ const GenerateQuiz = () => {
                     title: 'Team Building',
                     description: 'Collaborative gameplay perfect for team bonding.'
                 }
-            case GameMode.DEGEN_PVP:
-                return {
-                    icon: <LightningIcon size={32} weight="duotone" className="text-slate-700" />,
-                    title: 'Degen PvP',
-                    description: 'High-stakes competitive gameplay with crypto prizes.'
-                }
             default:
                 return {
                     icon: <UsersIcon size={32} weight="duotone" />,
@@ -156,18 +150,11 @@ const GenerateQuiz = () => {
                                 </div>
                                 <div className='flex-1'>
                                     <p className='text-sm font-semibold text-slate-800'>
-                                        {gameMode === GameMode.DEGEN_PVP
-                                            ? '🔥 This mode includes prizes by default'
-                                            : gameMode === GameMode.HANGOUTS
-                                                ? '💰 Optional prize pool available below'
-                                                : '🚧 Prize functionality coming soon for this mode'
+                                        {gameMode === GameMode.HANGOUTS
+                                            ? '💰 Optional prize pool available below'
+                                            : '🚧 Prize functionality coming soon for this mode'
                                         }
                                     </p>
-                                    {gameMode === GameMode.DEGEN_PVP && (
-                                        <p className='text-xs text-slate-600 mt-1'>
-                                            Minimum 3 players required to start
-                                        </p>
-                                    )}
                                 </div>
                             </div>
                         </CardContent>
