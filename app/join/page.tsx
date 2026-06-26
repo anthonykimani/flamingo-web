@@ -18,7 +18,7 @@ import { useAccount } from 'wagmi'
 const JoinGame = () => {
   const [stepper, setStepper] = useState<JoinGameStep>(JoinGameStep.ENTERGAMEPIN)
   const { address, isConnected } = useAccount()
-  const { isInstalled, walletAddress, username, isAuthenticated, authenticate } = useWorldApp()
+  const { isInstalled, walletAddress, username, isAuthenticated, isAuthenticating } = useWorldApp()
 
   const [gamePin, setGamePin] = useState('')
   const [nickname, setNickname] = useState('')
@@ -92,12 +92,13 @@ const JoinGame = () => {
 
         // Ensure user is authenticated
         if (isWorldApp) {
+          if (!isAuthenticated && !isAuthenticating) {
+            setError('World App authentication still connecting...')
+            return
+          }
           if (!isAuthenticated) {
-            const addr = await authenticate()
-            if (!addr) {
-              setError('World App authentication required')
-              return
-            }
+            setError('World App authentication still connecting...')
+            return
           }
         } else if (!isConnected || !address) {
           setError('Wallet connection lost. Please return to start.')

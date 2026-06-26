@@ -11,26 +11,14 @@ import { useWorldApp } from '@/hooks/use-world-app'
 const StartScreen = () => {
   const router = useRouter()
   const { address, isConnected } = useAccount()
-  const { isInstalled, walletAddress, username, isAuthenticated, isAuthenticating, authenticate } = useWorldApp()
+  const { isInstalled, walletAddress, username, isAuthenticated, isAuthenticating } = useWorldApp()
 
   const [mounted, setMounted] = useState(false)
   useEffect(() => setMounted(true), [])
 
   const isWorldApp = isInstalled
   const userReady = isWorldApp ? isAuthenticated : isConnected
-
-  const handleRoute = async (route: string) => {
-    if (isWorldApp) {
-      if (!isAuthenticated) {
-        const addr = await authenticate()
-        if (!addr) return
-      }
-    } else if (!isConnected) {
-      alert("Please connect your wallet first.")
-      return
-    }
-    router.push(route)
-  }
+  const isLoading = isWorldApp && isAuthenticating && !isAuthenticated
 
   const displayName = isWorldApp
     ? username ?? walletAddress?.slice(0, 6) + '...' ?? ''
@@ -42,21 +30,13 @@ const StartScreen = () => {
         <div className='flex items-start justify-start gap-2 animate-fadeIn cursor-pointer p-1 sm:p-3'>
           {mounted && (
             isWorldApp ? (
-              isAuthenticated ? (
-                <div className="flex items-center gap-2 rounded-lg border-2 border-slate-800 border-b-[6px] border-r-[6px] active:border-b-2 active:border-r-2 bg-white p-2">
-                  <span className="font-semibold text-sm">{displayName}</span>
-                </div>
-              ) : (
-                <button
-                  onClick={authenticate}
-                  disabled={isAuthenticating}
-                  className="flex items-center rounded-lg border-2 border-slate-800 border-b-[6px] border-r-[6px] active:border-b-2 active:border-r-2 bg-white hover:bg-white/90 transition-all cursor-pointer p-2"
-                >
-                  <span className="font-semibold text-sm">
-                    {isAuthenticating ? 'Signing in...' : 'Sign in with World ID'}
-                  </span>
-                </button>
-              )
+              <div className="flex items-center gap-2 rounded-lg border-2 border-slate-800 border-b-[6px] border-r-[6px] active:border-b-2 active:border-r-2 bg-white p-2">
+                <span className="font-semibold text-sm">
+                  {isLoading
+                    ? 'Connecting...'
+                    : displayName ?? 'Connecting...'}
+                </span>
+              </div>
             ) : (
               <ConnectWalletButton />
             )
@@ -75,12 +55,12 @@ const StartScreen = () => {
               <Button
                 variant="active"
                 size="xl"
-                onClick={() => handleRoute("/create")}
+                onClick={() => router.push("/create")}
                 disabled={!userReady}
               >
                 {!userReady ? (
                   <span className="animate-pulse">
-                    {isWorldApp ? 'Sign in to continue...' : 'Connecting...'}
+                    {isLoading ? 'Connecting...' : 'Connecting...'}
                   </span>
                 ) : (
                   <>
@@ -90,7 +70,7 @@ const StartScreen = () => {
                 )}
               </Button>
 
-              <Button variant="active" onClick={() => handleRoute('/join')} disabled={!userReady}>
+              <Button variant="active" onClick={() => router.push('/join')} disabled={!userReady}>
                 <GameControllerIcon size={32} />
                 Join a Game
               </Button>

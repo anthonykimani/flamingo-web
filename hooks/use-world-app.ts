@@ -1,8 +1,8 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { MiniKit } from "@worldcoin/minikit-js"
-import type { MiniKitWalletAuthOptions, WalletAuthResult } from "@worldcoin/minikit-js/commands"
+import type { MiniKitWalletAuthOptions } from "@worldcoin/minikit-js/commands"
 
 export interface WorldAppState {
   isWorldApp: boolean
@@ -13,7 +13,6 @@ export interface WorldAppState {
   isAuthenticated: boolean
   isAuthenticating: boolean
   error: string | null
-  authenticate: () => Promise<string | undefined>
 }
 
 export function useWorldApp(): WorldAppState {
@@ -24,63 +23,88 @@ export function useWorldApp(): WorldAppState {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [isAuthenticating, setIsAuthenticating] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const authAttempted = useRef(false)
 
+  // Poll MiniKit.isInstalled() since it initializes async after MiniKitProvider mounts
   useEffect(() => {
-    const installed = MiniKit.isInstalled()
-    setIsInstalled(installed)
+    let attempts = 0
+    const maxAttempts = 20 // ~2s total
 
-    if (installed) {
-      const address = MiniKit.user?.walletAddress
-      const user = MiniKit.user?.username
-      const pfp = MiniKit.user?.profilePictureUrl
+    const check = () => {
+      if (MiniKit.isInstalled()) {
+        setIsInstalled(true)
+        const address = MiniKit.user?.walletAddress
+        const user = MiniKit.user?.username
+        const pfp = MiniKit.user?.profilePictureUrl
 
-      if (address) {
-        setWalletAddress(address)
-        setIsAuthenticated(true)
+        if (address) {
+          setWalletAddress(address)
+          setIsAuthenticated(true)
+        }
+        if (user) setUsername(user)
+        if (pfp) setProfilePictureUrl(pfp)
+        return true
       }
-      if (user) setUsername(user)
-      if (pfp) setProfilePictureUrl(pfp)
+      return false
     }
+
+    // Check immediately
+    if (check()) return
+
+    // Poll with increasing intervals
+    const intervals = [100, 200, 500, 500, 500]
+    let idx = 0
+
+    const poll = () => {
+      if (idx >= intervals.length || check()) return
+      setTimeout(poll, intervals[idx])
+      idx++
+    }
+
+    const timer = setTimeout(poll, intervals[0])
+    idx = 1
+
+    return () => clearTimeout(timer)
   }, [])
 
-  const authenticate = useCallback(async () => {
-    if (!isInstalled) {
-      setError("Not in World App")
-      return
-    }
+  // Auto-authenticate via SIWE once installed, to get username/profile
+  useEffect(() => {
+    if (!isInstalled || authAttempted.current) return
 
-    setIsAuthenticating(true)
-    setError(null)
-
-    try {
-      const nonce = crypto.randomUUID().replace(/-/g, "")
-
-      const input = {
-        nonce,
-        statement: "Sign in to Flamingo",
-        expirationTime: new Date(Date.now() + 1000 * 60 * 60),
-      } satisfies MiniKitWalletAuthOptions
-
-      const result = await MiniKit.walletAuth(input)
-
-      if (result.executedWith === "fallback") {
-        setError("Authentication failed")
+    const autoAuth = async () => {
+      if (MiniKit.user?.username && MiniKit.user?.walletAddress) {
+        setUsername(MiniKit.user.username)
+        setProfilePictureUrl(MiniKit.user.profilePictureUrl)
+        setWalletAddress(MiniKit.user.walletAddress)
+        setIsAuthenticated(true)
         return
       }
 
-      const address = result.data.address
-      setWalletAddress(address)
-      setUsername(MiniKit.user?.username)
-      setProfilePictureUrl(MiniKit.user?.profilePictureUrl)
-      setIsAuthenticated(true)
+      authAttempted.current = true
+      setIsAuthenticating(true)
 
-      return address
-    } catch (err) {
-      const message = err instanceof Error ? err.message : "Authentication failed"
-      setError(message)
-    } finally {
-      setIsAuthenticating(false)
+      try {
+        const nonce = crypto.randomUUID().replace(/-/g, "")
+        const result = await MiniKit.walletAuth({
+          nonce,
+          statement: "Sign in to Flamingo",
+          expirationTime: new Date(Date.now() + 1000 * 60 * 60),
+        } satisfies MiniKitWalletAuthOptions)
+
+        if (result.executedWith === "fallback") return
+
+        setWalletAddress(result.data.address)
+        setUsername(MiniKit.user?.username)
+        setProfilePictureUrl(MiniKit.user?.profilePictureUrl)
+        setIsAuthenticated(true)
+      } catch {
+        // Silent fail — user can still use walletAddress from init
+      } finally {
+        setIsAuthenticating(false)
+      }
     }
+
+    autoAuth()
   }, [isInstalled])
 
   return {
@@ -93,6 +117,5 @@ export function useWorldApp(): WorldAppState {
     isAuthenticated,
     isAuthenticating,
     error,
-    authenticate,
   }
 }
