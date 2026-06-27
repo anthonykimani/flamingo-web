@@ -19,6 +19,8 @@ const LobbyPage = () => {
     const [gameSession, setGameSession] = useState<IGameSession | null>(null)
     const [loading, setLoading] = useState(true)
     const [isSocketConnected, setIsSocketConnected] = useState(false)
+    const [preGameCountdown, setPreGameCountdown] = useState<number | null>(null)
+    const [gameStarted, setGameStarted] = useState(false)
     const { address, isConnected } = useAccount();
     const router = useRouter()
     const searchParams = useSearchParams()
@@ -83,11 +85,9 @@ const LobbyPage = () => {
         // Listen for player joined events
         socketClient.onPlayerJoined((data) => {
             console.log('👥 Player joined:', data)
-            // Update players list from the event data
             if (data.players && Array.isArray(data.players)) {
                 setPlayers(data.players)
             } else {
-                // Fallback: fetch fresh leaderboard
                 refreshPlayerList()
             }
         })
@@ -102,10 +102,16 @@ const LobbyPage = () => {
             }
         })
 
+        // Listen for pre-game countdown
+        socket.on('pre-game-countdown', (data) => {
+            console.log('⏳ Pre-game countdown:', data.count)
+            setPreGameCountdown(data.count)
+        })
+
         // Listen for game started event
         socketClient.onGameStarted((data) => {
             console.log('🚀 Game started:', data)
-            // Navigate to game page
+            setGameStarted(true)
             if (isHost) {
                 router.push(`/game?sessionId=${sessionId}&gamePin=${gamePin}`)
             } else {
@@ -124,9 +130,28 @@ const LobbyPage = () => {
             socketClient.off(SocketEvents.PLAYER_LEFT)
             socketClient.off(SocketEvents.GAME_STARTED)
             socketClient.off(SocketEvents.ERROR)
-            // Don't disconnect, other pages need the connection
+            socket.off('pre-game-countdown')
         }
     }, [sessionId, gamePin, isHost, router])
+
+    // Auto-start game when host + players are present
+    useEffect(() => {
+        if (!isHost || gameStarted || preGameCountdown !== null) return
+        if (players.length === 0) return
+
+        const autoStartTimer = setTimeout(() => {
+            console.log('🎮 Auto-starting game...')
+            socketClient.startGame(sessionId!)
+        }, 2000)
+
+        return () => clearTimeout(autoStartTimer)
+    }, [isHost, players.length, gameStarted, preGameCountdown, sessionId])
+
+    // Host skip pre-game countdown
+    const handleSkipCountdown = () => {
+        if (!sessionId) return
+        socketClient.startGame(sessionId)
+    }
 
 
     const handleStartGame = async () => {
@@ -218,40 +243,47 @@ const LobbyPage = () => {
                 </div>
             </div>
 
-            {/* Host Controls */}
-            {isHost && (
-                <div className='flex flex-col gap-2 w-full max-w-md'>
-                    <Button
-                        variant="active"
-                        size="xl"
-                        onClick={handleStartGame}
-                        disabled={players.length === 0}
-                        buttoncolor='gametype'
-                    >
-                        {players.length === 0
-                            ? 'Waiting for players...'
-                            : `Start Game`}
-                    </Button>
-                    <p className='text-white text-center text-sm'>
-                        {players.length === 0
-                            ? 'Share the PIN above with players'
-                            : 'Click to start when everyone is ready'}
-                    </p>
-                </div>
-            )}
-
-            {/* Player Waiting Message */}
-            {!isHost && (
-                <Card className='w-full max-w-md'>
+            {/* Pre-game Countdown */}
+            {preGameCountdown !== null && preGameCountdown > 0 && (
+                <Card className='w-full max-w-md bg-white/95'>
                     <CardHeader className='text-center'>
-                        <div className='animate-pulse'>
-                            <p className='text-lg font-semibold mb-2'>Get Ready! 🎮</p>
-                            <p className='text-sm text-gray-600'>
-                                Waiting for host to start the game...
-                            </p>
+                        <div className='text-7xl font-bold text-[#FF00B7] animate-pulse'>
+                            {preGameCountdown}
                         </div>
+                        <p className='text-xl font-semibold mt-2'>Game starting in {preGameCountdown}...</p>
+                        {isHost && (
+                            <button
+                                onClick={handleSkipCountdown}
+                                className='mt-3 text-sm text-gray-500 hover:text-gray-800 underline cursor-pointer'
+                            >
+                                Start Now
+                            </button>
+                        )}
                     </CardHeader>
                 </Card>
+            )}
+
+            {/* Waiting for players */}
+            {preGameCountdown === null && (
+                <div className='flex flex-col gap-2 w-full max-w-md'>
+                    {isHost && players.length === 0 && (
+                        <p className='text-white text-center text-sm'>
+                            Share the PIN above with players
+                        </p>
+                    )}
+                    {!isHost && players.length > 0 && preGameCountdown === null && (
+                        <Card className='w-full max-w-md'>
+                            <CardHeader className='text-center'>
+                                <div className='animate-pulse'>
+                                    <p className='text-lg font-semibold mb-2'>Get Ready! 🎮</p>
+                                    <p className='text-sm text-gray-600'>
+                                        Waiting for the game to start...
+                                    </p>
+                                </div>
+                            </CardHeader>
+                        </Card>
+                    )}
+                </div>
             )}
 
             <style jsx>{`

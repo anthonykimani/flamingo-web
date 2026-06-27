@@ -2,12 +2,13 @@
 
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
-import { JoystickIcon, SquareIcon, StarIcon, CircleIcon, TriangleIcon, UserIcon } from '@phosphor-icons/react'
+import { SquareIcon, StarIcon, CircleIcon, TriangleIcon, UserIcon } from '@phosphor-icons/react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import React, { useState, useEffect } from 'react'
 import { getGameSession, getGameSessionByGamePin, getQuizById } from '@/services/quiz_service'
 import { IPlayer, IQuiz } from '@/interfaces/IQuiz'
 import { GameState } from '@/enums/game_state'
+import { SocketEvents } from '@/enums/socket-events'
 import socketClient from '@/utils/socket/socket.client'
 
 // Icon mapping for answers
@@ -132,6 +133,12 @@ const GamePage = () => {
             setGameState(GameState.RESULTS_READY)
         })
 
+        // Listen for game ended — host auto-navigates to score
+        socketClient.onGameEnded((data) => {
+            console.log('🏁 Game ended:', data)
+            router.push(`/score?sessionId=${sessionId}`)
+        })
+
         // Listen for question started (after countdown)
         socket.on('question-started', (data) => {
             console.log('⏱️ Question timer started:', data)
@@ -143,6 +150,7 @@ const GamePage = () => {
         return () => {
             socketClient.off('player-answered')
             socketClient.off('question-results')
+            socketClient.off(SocketEvents.GAME_ENDED)
             socket.off('question-started')
             socket.off('countdown-tick')
             socket.off('time-update')
@@ -266,19 +274,11 @@ const GamePage = () => {
                     </CardHeader>
                 </Card>
 
-                {/* Next Button */}
+                {/* Auto-advancing... */}
                 <div className='flex justify-center'>
-                    <Button
-                        leftIcon={<JoystickIcon size={28} />}
-                        variant="active"
-                        size="xl"
-                        onClick={handleNextQuestion}
-                        className='text-xl px-8'
-                    >
-                        {currentQuestionIndex < quizData.questions.length - 1
-                            ? 'Next Question'
-                            : 'View Final Score'}
-                    </Button>
+                    <p className='text-white/70 text-lg font-semibold animate-pulse'>
+                        Next question coming up...
+                    </p>
                 </div>
             </div>
         </div>

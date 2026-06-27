@@ -2,16 +2,36 @@ import * as React from "react"
 
 import { cn } from "@/lib/utils"
 
-function Card({ className, ...props }: React.ComponentProps<"div">) {
+interface CardProps extends React.ComponentProps<"div"> {
+  showComingSoon?: boolean
+  comingSoonText?: string
+}
+
+const cardBase =
+  "bg-card text-card-foreground flex flex-col gap-6 rounded-xl border-slate-800 border-2 py-6 shadow-sm border-b-6 border-r-6 active:border-b-2 active:border-r-2"
+
+function Card({ className, showComingSoon, comingSoonText = "COMING SOON", ...props }: CardProps) {
+  if (!showComingSoon) {
+    return (
+      <div
+        data-slot="card"
+        className={cn(cardBase, className)}
+        {...props}
+      />
+    )
+  }
+
   return (
-    <div
-      data-slot="card"
-      className={cn(
-        "bg-card text-card-foreground flex flex-col gap-6 rounded-xl border-slate-800 border-2 py-6 shadow-sm border-b-6 border-r-6 active:border-b-2 active:border-r-2",
-        className
-      )}
-      {...props}
-    />
+    <div className={cn("relative", className)}>
+      <div
+        data-slot="card"
+        className={cardBase}
+        {...props}
+      />
+      <div className="absolute -top-3 right-2 bg-yellow-400 text-black text-[10px] font-bold px-2 py-0.5 rounded-md border-2 border-yellow-600 shadow-lg whitespace-nowrap z-10">
+        {comingSoonText}
+      </div>
+    </div>
   )
 }
 
@@ -75,7 +95,7 @@ function CardFooter({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
       data-slot="card-footer"
-      className={cn("flex items-center px-6 [.border-t]:pt-6", className)}
+      className={cn("flex items-center px-6 [.border-b]:pb-6", className)}
       {...props}
     />
   )

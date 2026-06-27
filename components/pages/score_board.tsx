@@ -47,7 +47,7 @@ const ScoreBoardPage = () => {
         <div className='result-background flex flex-col justify-center items-center min-h-screen bg-no-repeat bg-cover p-3 sm:p-4 py-6 sm:py-8'>
             <div className='w-full max-w-3xl space-y-4 sm:space-y-8'>
                 <div className='flex flex-row justify-between sm:items-center mb-4'>
-                    <NavigationBar />
+                    <NavigationBar route="/" />
                 </div>
 
                 <div className='text-center space-y-2 sm:space-y-4'>
