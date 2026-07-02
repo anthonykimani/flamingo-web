@@ -41,6 +41,13 @@ const PlayGame = () => {
     const sessionId = searchParams.get('sessionId')
     const playerName = searchParams.get('playerName')
 
+    const rejoinGame = () => {
+        if (sessionId && playerName) {
+            console.log('🔁 Re-joining game room after reconnect')
+            socketClient.joinGame(sessionId, playerName, '')
+        }
+    }
+
     useEffect(() => {
         if (!sessionId || !playerName) {
             console.error('Missing sessionId or playerName')
@@ -54,6 +61,12 @@ const PlayGame = () => {
                 setGameState(response.payload.status as GameState)
             }).catch(console.error)
         }
+
+        // Re-join game room on reconnect (screen-off recovery)
+        socket.on('connect', () => {
+            console.log('✅ Player WebSocket reconnected — rejoining game room')
+            rejoinGame()
+        })
 
         // Listen for countdown
         socket.on('countdown-tick', (data: { count: number }) => {

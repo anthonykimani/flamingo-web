@@ -21,6 +21,7 @@ const LobbyPage = () => {
     const [isSocketConnected, setIsSocketConnected] = useState(false)
     const [preGameCountdown, setPreGameCountdown] = useState<number | null>(null)
     const [gameStarted, setGameStarted] = useState(false)
+    const [hostJoinedRoom, setHostJoinedRoom] = useState(false)
     const { address, isConnected } = useAccount();
     const router = useRouter()
     const searchParams = useSearchParams()
@@ -119,6 +120,14 @@ const LobbyPage = () => {
             }
         })
 
+        // Listen for host room join confirmation
+        socketClient.onJoinedGame((data) => {
+            console.log('✅ Host confirmed in room:', data)
+            if (data.isHost) {
+                setHostJoinedRoom(true)
+            }
+        })
+
         // Listen for errors
         socketClient.onError((data) => {
             console.error('⚠️ Socket error:', data.message)
@@ -129,15 +138,17 @@ const LobbyPage = () => {
             socketClient.off(SocketEvents.PLAYER_JOINED)
             socketClient.off(SocketEvents.PLAYER_LEFT)
             socketClient.off(SocketEvents.GAME_STARTED)
+            socketClient.off(SocketEvents.JOINED_GAME)
             socketClient.off(SocketEvents.ERROR)
             socket.off('pre-game-countdown')
         }
     }, [sessionId, gamePin, isHost, router])
 
-    // Auto-start game when host + players are present
+    // Auto-start game when host + socket ready + players are present
     useEffect(() => {
         if (!isHost || gameStarted || preGameCountdown !== null) return
         if (players.length === 0) return
+        if (!isSocketConnected || !hostJoinedRoom) return
 
         const autoStartTimer = setTimeout(() => {
             console.log('🎮 Auto-starting game...')
@@ -145,7 +156,7 @@ const LobbyPage = () => {
         }, 2000)
 
         return () => clearTimeout(autoStartTimer)
-    }, [isHost, players.length, gameStarted, preGameCountdown, sessionId])
+    }, [isHost, players.length, gameStarted, preGameCountdown, isSocketConnected, hostJoinedRoom, sessionId])
 
     // Host skip pre-game countdown
     const handleSkipCountdown = () => {

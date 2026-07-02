@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { SquareIcon, StarIcon, CircleIcon, TriangleIcon, UserIcon } from '@phosphor-icons/react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import React, { useState, useEffect } from 'react'
-import { getGameSession, getGameSessionByGamePin, getQuizById } from '@/services/quiz_service'
+import { getGameSession, getGameSessionByGamePin, getQuizById, getActivePlayers } from '@/services/quiz_service'
 import { IPlayer, IQuiz } from '@/interfaces/IQuiz'
 import { GameState } from '@/enums/game_state'
 import { SocketEvents } from '@/enums/socket-events'
@@ -28,6 +28,7 @@ const GamePage = () => {
     const [timeLeft, setTimeLeft] = useState(10)
     const [leaderboard, setLeaderboard] = useState<IPlayer[]>([])
     const [playersAnswered, setPlayersAnswered] = useState<Set<string>>(new Set())
+    const [playerCount, setPlayerCount] = useState(0)
     const [isConnected, setIsConnected] = useState(false)
     const [gameState, setGameState] = useState<GameState>(GameState.WAITING)
     const [countdown, setCountdown] = useState<number | null>(null)
@@ -36,6 +37,13 @@ const GamePage = () => {
     const searchParams = useSearchParams()
     const gamePinId = searchParams.get("gamePin")
     const sessionId = searchParams.get("sessionId")
+
+    const rejoinGame = () => {
+        if (sessionId) {
+            console.log('🔁 Host re-joining game room after reconnect')
+            socketClient.joinGame(sessionId, 'Host', '')
+        }
+    }
 
     // Fetch quiz data
     useEffect(() => {
@@ -85,6 +93,11 @@ const GamePage = () => {
                 setCurrentQuestionIndex(response.payload.currentQuestionIndex)
                 setTimeLeft(response.payload.timeLeft)
             }).catch(console.error)
+            // Fetch initial player count
+            getActivePlayers(sessionId)
+                .then(d => {
+                    if (d?.payload?.length) setPlayerCount(d.payload.length)
+                }).catch(() => {})
         }
 
         if (socket.connected) {
@@ -100,6 +113,12 @@ const GamePage = () => {
         socket.on('disconnect', () => {
             console.log('❌ Host disconnected from WebSocket')
             setIsConnected(false)
+        })
+
+        socket.on('connect', () => {
+            console.log('✅ Host WebSocket reconnected — rejoining room')
+            setIsConnected(true)
+            rejoinGame()
         })
 
         // Listen for countdown ticks from backend
@@ -131,6 +150,14 @@ const GamePage = () => {
             console.log('📊 Question results:', data)
             setLeaderboard(data.leaderboard)
             setGameState(GameState.RESULTS_READY)
+        })
+
+        // Listen for players joining during the game
+        socketClient.onPlayerJoined((data) => {
+            console.log('👥 Player joined during game:', data.playerName)
+            if (data.totalPlayers) {
+                setPlayerCount(data.totalPlayers)
+            }
         })
 
         // Listen for game ended — host auto-navigates to score
@@ -325,14 +352,19 @@ const GamePage = () => {
                     })}
                 </div>
 
-                {/* Timer and Answers Count */}
-                <div className='flex justify-between items-center'>
+                {/* Timer, Player Count, and Question Info */}
+                <div className='flex flex-wrap justify-between items-center gap-2'>
                     <div
                         className='flex items-center text-white text-xl'>
                         <div className='border-2 border-black p-5 font-[Oi] text-white text-3xl rounded-full bg-[#F24E1E]'>
                             {timeLeft}
                         </div>
                         <p className='ml-2'>seconds remaining</p>
+                    </div>
+                    <div className='flex items-center gap-3 text-white'>
+                        <span className='bg-black/40 px-3 py-1 rounded-full text-sm'>
+                            👥 {playerCount > 0 ? `${playerCount} players` : 'Waiting for players'}
+                        </span>
                     </div>
                     <Button variant="active" size="xl">
                         Question {currentQuestionIndex + 1} of {quizData.questions.length}

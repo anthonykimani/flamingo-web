@@ -3,7 +3,7 @@
 import { Button } from '@/components/ui/button'
 import { Card, CardHeader } from '@/components/ui/card'
 import { JoinGameStep } from '@/enums/join_game_step'
-import { UserIcon } from '@phosphor-icons/react'
+import { MagicWandIcon, UserIcon } from '@phosphor-icons/react'
 import { useRouter } from 'next/navigation'
 import React, { useState, useEffect, useRef } from 'react'
 import { getGameSessionByGamePin, getActiveGames } from '@/services/quiz_service'
@@ -234,8 +234,17 @@ const JoinGame = () => {
                     No active games right now
                   </p>
                   <p className='text-white/60 text-sm text-center'>
-                    Create a game or enter a PIN
+                    Create a game or enter a PIN below
                   </p>
+                  <Button
+                    variant="active"
+                    size="xl"
+                    onClick={() => router.push('/create')}
+                    className='mt-2'
+                  >
+                    <MagicWandIcon size={24} />
+                    Create a Game
+                  </Button>
                 </div>
               ) : (
                 <div className='mt-6 w-full flex justify-center'>
