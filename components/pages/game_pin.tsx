@@ -217,20 +217,27 @@ const LobbyPage = () => {
             </h1>
 
             {/* Game PIN Display */}
-            <Card className='w-full max-w-md'>
-                <CardHeader className='text-center'>
-                    <h2 className='text-2xl font-bold mb-2'>Game PIN</h2>
-                    <p className='text-5xl font-bold tracking-wider'>{gamePin}</p>
+            <Card className='w-full max-w-md bg-white/95 shadow-lg'>
+                <CardHeader className='text-center py-6'>
+                    <p className='text-sm uppercase tracking-widest text-gray-500 mb-1'>Game PIN</p>
+                    <p className='text-6xl font-black tracking-[0.15em] text-gray-900'>
+                        {gamePin}
+                    </p>
                 </CardHeader>
             </Card>
 
-            {/* Quiz Title */}
-            <Card className='w-full max-w-md'>
-                <CardHeader className='text-center'>
-                    <h3 className='text-xl font-semibold'>{gameSession.quiz?.title}</h3>
-                    <h3 className='text-xl font-semibold text-center'>
-                        Players {players.length}
+            {/* Quiz Title & Player Count */}
+            <Card className='w-full max-w-md bg-white/95 shadow-lg'>
+                <CardHeader className='text-center py-4'>
+                    <h3 className='text-2xl font-bold text-gray-900 truncate max-w-full'>
+                        {gameSession.quiz?.title || 'Untitled Quiz'}
                     </h3>
+                    <div className='flex items-center justify-center gap-2 mt-2'>
+                        <span className='flex items-center gap-1.5 text-lg font-semibold text-gray-700'>
+                            <UserIcon size={20} weight="fill" />
+                            {players.length} player{players.length !== 1 ? 's' : ''}
+                        </span>
+                    </div>
                 </CardHeader>
             </Card>
 

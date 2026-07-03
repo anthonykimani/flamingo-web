@@ -137,6 +137,8 @@ const JoinGame = () => {
       return
     }
 
+    const isGuest = localStorage.getItem('flamingo_guest') === 'true'
+
     if (isWorldApp) {
       if (!isAuthenticated && !isAuthenticating) {
         setError('World App authentication still connecting...')
@@ -146,7 +148,7 @@ const JoinGame = () => {
         setError('World App authentication still connecting...')
         return
       }
-    } else if (!isConnected || !address) {
+    } else if (!isConnected && !isGuest) {
       setError('Wallet connection lost. Please return to start.')
       setTimeout(() => router.push('/'), 2000)
       return

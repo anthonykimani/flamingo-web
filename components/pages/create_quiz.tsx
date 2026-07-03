@@ -214,8 +214,8 @@ const CreateQuiz = ({ onSave, gameMode }: CreateQuizProps) => {
     const currentQuestion = quizData.questions[currentQuestionIndex]
 
     return (
-        <div className='flex flex-col md:flex-row gap-10 h-full w-screen'>
-            <div className='flex flex-row md:flex-col overflow-x-auto md:overflow-x-visible md:overflow-y-auto min-h-[110px]'>
+        <div className='flex flex-col md:flex-row gap-4 md:gap-10 h-full w-full max-w-full overflow-hidden'>
+            <div className='flex flex-row md:flex-col overflow-x-auto md:overflow-x-visible md:overflow-y-auto min-h-[60px] md:min-h-[110px] gap-1 md:gap-2 px-1 md:px-0 shrink-0'>
                 {quizData.questions.map((q, index) => (
                     <Button
                         key={q.questionNumber}
@@ -225,7 +225,7 @@ const CreateQuiz = ({ onSave, gameMode }: CreateQuizProps) => {
                         onDelete={(e) => handleDeleteQuestion(index, e)}
                         showDelete={quizData.questions.length > 1 && currentQuestionIndex === index}
                     >
-                        Question {q.questionNumber}
+                        {q.questionNumber}
                     </Button>
                 ))}
                 <Button
@@ -233,34 +233,32 @@ const CreateQuiz = ({ onSave, gameMode }: CreateQuizProps) => {
                     size="sidebarquestion"
                     onClick={handleAddQuestion}
                 >
-                    <PlusCircleIcon size={32} />
+                    <PlusCircleIcon size={24} />
                 </Button>
             </div>
 
-            <div className="flex flex-col justify-around w-full gap-3">
+            <div className="flex flex-col w-full gap-3 min-w-0 px-2">
                 <Input
-                    className=''
                     variant="title"
-                    leftIcon={<MagicWandIcon size={32} />}
+                    leftIcon={<MagicWandIcon size={24} />}
                     placeholder='Edit Game Title'
                     value={quizData.title}
                     onChange={handleTitleChange}
                 />
 
                 <Input
-                    className=''
                     variant="question"
                     placeholder='Start Typing Your Question'
                     value={currentQuestion.question}
                     onChange={handleQuestionChange}
                 />
 
-                <div className='grid grid-cols-1 lg:grid-cols-2 gap-2'>
+                <div className='grid grid-cols-1 sm:grid-cols-2 gap-2'>
                     {currentQuestion.answers.map((answer, index) => (
                         <Input
                             key={index}
                             variant="answer"
-                            leftIcon={<Image src={ANSWER_ICONS[index]} alt="" />}
+                            leftIcon={<Image src={ANSWER_ICONS[index]} alt="" className='w-5 h-5 sm:w-6 sm:h-6' />}
                             placeholder={`Add Answer ${index + 1}`}
                             rightCheckbox={true}
                             value={answer.answer}

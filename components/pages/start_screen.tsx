@@ -14,16 +14,23 @@ const StartScreen = () => {
   const { isInstalled, walletAddress, username, isAuthenticated, isAuthenticating, error } = useWorldApp()
 
   const [mounted, setMounted] = useState(false)
+  const [isGuest, setIsGuest] = useState(false)
   useEffect(() => setMounted(true), [])
 
   const isWorldApp = isInstalled
-  const userReady = isWorldApp ? isAuthenticated : isConnected
+  const hasCrypto = isWorldApp ? isAuthenticated : isConnected
+  const userReady = hasCrypto || isGuest
   const isLoading = isWorldApp && isAuthenticating && !isAuthenticated
   const hasError = isWorldApp && !!error && !isAuthenticated && !isAuthenticating
 
   const displayName = isWorldApp
     ? username ?? walletAddress?.slice(0, 6) + '...' ?? ''
     : undefined
+
+  const handleGuestMode = () => {
+    setIsGuest(true)
+    localStorage.setItem('flamingo_guest', 'true')
+  }
 
   return (
     <div className="flex flex-col start-screen-background h-screen w-screen bg-no-repeat bg-cover">
@@ -37,6 +44,10 @@ const StartScreen = () => {
                   {hasError && 'Connection failed'}
                   {!isLoading && !hasError && (displayName ?? 'Connecting...')}
                 </span>
+              </div>
+            ) : isGuest ? (
+              <div className="flex items-center gap-2 rounded-lg border-2 border-slate-800 border-b-[4px] border-r-[4px] bg-green-100 p-2">
+                <span className="font-semibold text-sm text-green-800">Playing as Guest</span>
               </div>
             ) : (
               <ConnectWalletButton />
@@ -89,6 +100,27 @@ const StartScreen = () => {
                 Join a Game
               </Button>
             </div>
+
+            {!userReady && !isWorldApp && (
+              <div className='mt-4 flex flex-col items-center gap-2'>
+                <div className='flex items-center gap-2 w-full'>
+                  <div className='flex-1 h-px bg-white/30' />
+                  <span className='text-white/60 text-sm'>or</span>
+                  <div className='flex-1 h-px bg-white/30' />
+                </div>
+                <Button
+                  variant="active"
+                  color="gametype"
+                  size="xl"
+                  onClick={handleGuestMode}
+                >
+                  Continue as Guest
+                </Button>
+                <p className='text-white/50 text-xs text-center max-w-xs mt-1'>
+                  Play Hangouts games without a wallet. Wallet required for Degen PvP.
+                </p>
+              </div>
+            )}
           </div>
         )}
       </div>
