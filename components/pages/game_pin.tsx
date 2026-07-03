@@ -1,7 +1,6 @@
 'use client'
 
 import { Button } from '@/components/ui/button'
-import { Card, CardHeader } from '@/components/ui/card'
 import { ConnectionStatus } from '@/components/ui/connection-status'
 import { UserIcon, UsersThreeIcon } from '@phosphor-icons/react'
 import { useRouter, useSearchParams } from 'next/navigation'
@@ -184,9 +183,9 @@ const LobbyPage = () => {
     if (loading) {
         return (
             <div className='game-pin-background h-screen bg-no-repeat bg-cover flex justify-center items-center'>
-                <Card>
-                    <CardHeader className='text-2xl'>Loading lobby...</CardHeader>
-                </Card>
+                <div className='bg-white/95 rounded-xl border-2 border-slate-800 border-b-[6px] border-r-[6px] py-10 px-8 text-center animate-fadeIn'>
+                    <div className='text-2xl font-oldschool text-slate-600'>Loading lobby...</div>
+                </div>
             </div>
         )
     }
@@ -194,11 +193,11 @@ const LobbyPage = () => {
     if (!gameSession) {
         return (
             <div className='game-pin-background h-screen bg-no-repeat bg-cover flex justify-center items-center'>
-                <Card>
-                    <CardHeader className='text-2xl text-red-500'>
+                <div className='bg-white/95 rounded-xl border-2 border-red-400 border-b-[6px] border-r-[6px] py-10 px-8 text-center animate-fadeIn'>
+                    <div className='text-2xl font-oldschool text-red-500'>
                         Game session not found
-                    </CardHeader>
-                </Card>
+                    </div>
+                </div>
             </div>
         )
     }

@@ -174,22 +174,18 @@ const PlayGame = () => {
     if (gameState === GameState.WAITING) {
         return (
             <div className='game-pin-background h-screen bg-no-repeat bg-cover flex justify-center items-center'>
-                <Card className='w-full max-w-md mx-4 bg-white/95 border-2 border-slate-800 border-b-[6px] border-r-[6px]'>
-                    <CardHeader className='text-center'>
-                        <div className='animate-fadeIn'>
-                            <div className='flex justify-center mb-4'>
-                                <HourglassIcon size={48} weight="fill" className='text-slate-600' />
-                            </div>
-                            <p className='text-2xl font-oldschool mb-4 text-slate-800'>Loading Game...</p>
-                            <p className='text-sm text-slate-500'>
-                                Waiting for host to start the game
-                            </p>
-                            <div className='mt-4 text-xs text-slate-400'>
-                                Player: <strong className='text-slate-700'>{playerName}</strong>
-                            </div>
-                        </div>
-                    </CardHeader>
-                </Card>
+                <div className='w-full max-w-md mx-4 bg-white/95 rounded-xl border-2 border-slate-800 border-b-[6px] border-r-[6px] py-10 px-8 text-center animate-fadeIn'>
+                    <div className='flex justify-center mb-5'>
+                        <HourglassIcon size={48} weight="fill" className='text-slate-600 animate-icon-spin' />
+                    </div>
+                    <p className='text-2xl font-oldschool mb-3 text-slate-800'>Loading Game...</p>
+                    <p className='text-base text-slate-500'>
+                        Waiting for host to start the game
+                    </p>
+                    <div className='mt-6 text-sm text-slate-400'>
+                        Player: <strong className='text-slate-700'>{playerName}</strong>
+                    </div>
+                </div>
             </div>
         )
     }
@@ -344,14 +340,12 @@ const PlayGame = () => {
 
     return (
         <div className='game-pin-background h-screen bg-no-repeat bg-cover flex justify-center items-center'>
-            <Card className='bg-white/95 border-2 border-slate-800 border-b-[6px] border-r-[6px]'>
-                <CardHeader className='text-2xl animate-fadeIn'>
-                    <div className='flex items-center gap-3 justify-center'>
-                        <ClockIcon size={24} weight="bold" className='text-slate-600' />
-                        Connecting...
-                    </div>
-                </CardHeader>
-            </Card>
+            <div className='bg-white/95 rounded-xl border-2 border-slate-800 border-b-[6px] border-r-[6px] py-10 px-8 text-center animate-fadeIn'>
+                <div className='flex items-center gap-3 justify-center'>
+                    <ClockIcon size={24} weight="bold" className='text-slate-600' />
+                    <span className='text-2xl font-oldschool text-slate-600'>Connecting...</span>
+                </div>
+            </div>
         </div>
     )
 }

@@ -221,9 +221,9 @@ const GamePage = () => {
     if (loading) {
         return (
             <div className='game-pin-background h-screen bg-no-repeat bg-cover flex justify-center items-center'>
-                <Card className='bg-white/95 border-2 border-slate-800 border-b-[6px] border-r-[6px]'>
-                    <CardHeader className='text-2xl animate-fadeIn'>Loading quiz...</CardHeader>
-                </Card>
+                <div className='bg-white/95 rounded-xl border-2 border-slate-800 border-b-[6px] border-r-[6px] py-10 px-8 text-center animate-fadeIn'>
+                    <div className='text-2xl font-oldschool text-slate-600'>Loading quiz...</div>
+                </div>
             </div>
         )
     }
@@ -231,11 +231,11 @@ const GamePage = () => {
     if (error || !quizData) {
         return (
             <div className='game-pin-background h-screen bg-no-repeat bg-cover flex justify-center items-center'>
-                <Card className='bg-white/95 border-2 border-red-400 border-b-[6px] border-r-[6px]'>
-                    <CardHeader className='text-2xl text-red-500 animate-fadeIn'>
+                <div className='bg-white/95 rounded-xl border-2 border-red-400 border-b-[6px] border-r-[6px] py-10 px-8 text-center animate-fadeIn'>
+                    <div className='text-2xl font-oldschool text-red-500'>
                         {error || 'Quiz not found'}
-                    </CardHeader>
-                </Card>
+                    </div>
+                </div>
             </div>
         )
     }
@@ -243,9 +243,9 @@ const GamePage = () => {
     if (!isConnected) {
         return (
             <div className='game-pin-background h-screen bg-no-repeat bg-cover flex justify-center items-center'>
-                <Card className='bg-white/95 border-2 border-slate-800 border-b-[6px] border-r-[6px]'>
-                    <CardHeader className='text-2xl animate-fadeIn'>Connecting to game server...</CardHeader>
-                </Card>
+                <div className='bg-white/95 rounded-xl border-2 border-slate-800 border-b-[6px] border-r-[6px] py-10 px-8 text-center animate-fadeIn'>
+                    <div className='text-2xl font-oldschool text-slate-600'>Connecting to game server...</div>
+                </div>
             </div>
         )
     }

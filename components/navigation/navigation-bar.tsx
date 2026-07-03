@@ -21,8 +21,9 @@ const NavigationBar = ({ route }: NavigationBarProps) => {
             <div className='hidden sm:block'>
                 <Button
                     onClick={handleClick}
-                    leftIcon={<ArrowFatLeftIcon size={28} color="bg-transparent" />}
-                    variant={"active"}
+                    leftIcon={<ArrowFatLeftIcon size={20} color="bg-transparent" />}
+                    variant={"default"}
+                    size='default'
                 >
                     Back
                 </Button>
@@ -31,8 +32,9 @@ const NavigationBar = ({ route }: NavigationBarProps) => {
             <div className='block sm:hidden'>
                 <Button
                     onClick={handleClick}
-                    centerIcon={<ArrowFatLeftIcon size={28} color="bg-transparent" />}
-                    variant={"active"}
+                    centerIcon={<ArrowFatLeftIcon size={18} color="bg-transparent" />}
+                    variant={"default"}
+                    size='icon'
                 >
                 </Button>
             </div>

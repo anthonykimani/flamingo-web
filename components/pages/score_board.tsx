@@ -1,6 +1,7 @@
 'use client'
 
 import { Button } from '@/components/ui/button'
+import { Progress } from '@/components/ui/progress'
 import { GameControllerIcon, CheckCircle, XCircle, FireIcon } from '@phosphor-icons/react'
 import React, { useEffect, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
@@ -60,8 +61,8 @@ const ScoreBoardPage = () => {
     if (loading) {
         return (
             <div className='result-background flex justify-center items-center h-screen bg-no-repeat bg-cover'>
-                <div className='bg-white/95 rounded-xl border-2 border-slate-800 border-b-[6px] border-r-[6px] mx-4 px-8 py-6'>
-                    <div className='animate-fadeIn text-lg sm:text-2xl font-oldschool text-slate-600'>Loading final scores...</div>
+                <div className='bg-white/95 rounded-xl border-2 border-slate-800 border-b-[6px] border-r-[6px] mx-4 px-8 py-10 text-center animate-fadeIn'>
+                    <div className='text-lg sm:text-2xl font-oldschool text-slate-600'>Loading final scores...</div>
                 </div>
             </div>
         )
@@ -107,18 +108,18 @@ const ScoreBoardPage = () => {
                                             {player.playerName}
                                         </span>
 
-                                        <div className='flex items-center gap-2 text-xs text-slate-400 shrink-0'>
-                                            <span className='flex items-center gap-0.5'>
-                                                <CheckCircle size={11} weight="fill" className='text-green-500' />
+                                        <div className='flex items-center gap-3 text-sm text-slate-500 shrink-0'>
+                                            <span className='flex items-center gap-1'>
+                                                <CheckCircle size={16} weight="fill" className='text-green-500' />
                                                 {player.correctAnswers}
                                             </span>
-                                            <span className='flex items-center gap-0.5'>
-                                                <XCircle size={11} weight="fill" className='text-red-400' />
+                                            <span className='flex items-center gap-1'>
+                                                <XCircle size={16} weight="fill" className='text-red-400' />
                                                 {player.wrongAnswers}
                                             </span>
                                             {player.bestStreak > 1 && (
-                                                <span className='flex items-center gap-0.5'>
-                                                    <FireIcon size={11} weight="fill" className='text-orange-500' />
+                                                <span className='flex items-center gap-1'>
+                                                    <FireIcon size={16} weight="fill" className='text-orange-500' />
                                                     {player.bestStreak}x
                                                 </span>
                                             )}
@@ -130,31 +131,29 @@ const ScoreBoardPage = () => {
                                             </div>
                                         </div>
 
-                                        <div className='hidden sm:block w-16 lg:w-24 h-2 bg-slate-100 rounded-full overflow-hidden shrink-0'>
-                                            <div
-                                                className={`h-full rounded-full transition-all duration-1000 ease-out ${index === 0 ? 'bg-yellow-400' : index === 1 ? 'bg-slate-400' : index === 2 ? 'bg-orange-400' : 'bg-blue-400'}`}
-                                                style={{
-                                                    width: visibleRows > index ? `${pct}%` : '0%',
-                                                    transitionDelay: `${300 + index * 100}ms`,
-                                                }}
-                                            />
-                                        </div>
+                                        <Progress
+                                            value={visibleRows > index ? pct : 0}
+                                            barColor={index === 0 ? 'bg-yellow-400' : index === 1 ? 'bg-slate-400' : index === 2 ? 'bg-orange-400' : 'bg-blue-400'}
+                                            className='hidden sm:block w-16 lg:w-24 shrink-0'
+                                            style={{ transitionDelay: visibleRows > index ? `${300 + index * 100}ms` : '0ms' }}
+                                        />
                                     </div>
                                 )
                             })}
                         </div>
                     )}
+                </div>
 
-                    <div className='flex justify-center p-4 border-t border-slate-200'>
-                        <Button
-                            variant="active"
-                            size="xl"
-                            onClick={() => router.push('/')}
-                        >
-                            <GameControllerIcon size={24} />
-                            Play Again
-                        </Button>
-                    </div>
+                <div className='flex justify-center'>
+                    <Button
+                        variant="active"
+                        size="xl"
+                        onClick={() => router.push('/')}
+                        className='max-w-xs'
+                    >
+                        <GameControllerIcon size={24} />
+                        Play Again
+                    </Button>
                 </div>
             </div>
         </div>
