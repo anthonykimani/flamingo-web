@@ -2,7 +2,8 @@
 
 import React, { useEffect, useState } from 'react'
 import { Button } from '../ui/button'
-import { GameControllerIcon, MagicWandIcon, WarningCircle, ArrowClockwise } from '@phosphor-icons/react'
+import { StatusBadge } from '../ui/status-badge'
+import { GameControllerIcon, MagicWandIcon, WarningCircle, ArrowClockwise, SpinnerBallIcon } from '@phosphor-icons/react'
 import { useRouter } from 'next/navigation'
 import { ConnectWalletButton } from '../custom/connect-wallet-button'
 import { useAccount } from 'wagmi'
@@ -24,7 +25,7 @@ const StartScreen = () => {
   const hasError = isWorldApp && !!error && !isAuthenticated && !isAuthenticating
 
   const displayName = isWorldApp
-    ? username ?? walletAddress?.slice(0, 6) + '...' ?? ''
+    ? username ?? (walletAddress?.slice(0, 6) ?? '') + '...'
     : undefined
 
   const handleGuestMode = () => {
@@ -38,17 +39,17 @@ const StartScreen = () => {
         <div className='flex items-start justify-start gap-2 animate-fadeIn cursor-pointer p-1 sm:p-3'>
           {mounted && (
             isWorldApp ? (
-              <div className="flex items-center gap-2 rounded-lg border-2 border-slate-800 border-b-[6px] border-r-[6px] active:border-b-2 active:border-r-2 bg-white p-2">
-                <span className="font-semibold text-sm">
+              <StatusBadge variant="wallet">
+                <span>
                   {isLoading && 'Connecting...'}
                   {hasError && 'Connection failed'}
                   {!isLoading && !hasError && (displayName ?? 'Connecting...')}
                 </span>
-              </div>
+              </StatusBadge>
             ) : isGuest ? (
-              <div className="flex items-center gap-2 rounded-lg border-2 border-slate-800 border-b-[4px] border-r-[4px] bg-green-100 p-2">
-                <span className="font-semibold text-sm text-green-800">Playing as Guest</span>
-              </div>
+              <StatusBadge variant="guest">
+                Playing as Guest
+              </StatusBadge>
             ) : (
               <ConnectWalletButton />
             )
@@ -64,7 +65,7 @@ const StartScreen = () => {
         {mounted && (
           <div className="flex flex-col items-center mt-4 gap-2">
             {hasError && (
-              <div className="flex items-center gap-2 text-red-500 bg-white/90 p-2 rounded-lg text-sm font-semibold">
+              <StatusBadge variant="error">
                 <WarningCircle size={16} weight="fill" />
                 <span>{error}</span>
                 <button
@@ -74,7 +75,7 @@ const StartScreen = () => {
                 >
                   <ArrowClockwise size={14} />
                 </button>
-              </div>
+              </StatusBadge>
             )}
             <div className="flex flex-col sm:flex-row justify-center gap-2">
               <Button
@@ -84,8 +85,9 @@ const StartScreen = () => {
                 disabled={!userReady}
               >
                 {!userReady ? (
-                  <span className="animate-pulse">
-                    {isLoading ? 'Connecting...' : 'Connecting...'}
+                  <span className="animate-pulse inline-flex items-center gap-2">
+                    <SpinnerBallIcon size={32} className='animate-icon-spin' />
+                    Connecting...
                   </span>
                 ) : (
                   <>
@@ -103,11 +105,7 @@ const StartScreen = () => {
 
             {!userReady && !isWorldApp && (
               <div className='mt-4 flex flex-col items-center gap-2'>
-                <div className='flex items-center gap-2 w-full'>
-                  <div className='flex-1 h-px bg-white/30' />
-                  <span className='text-white/60 text-sm'>or</span>
-                  <div className='flex-1 h-px bg-white/30' />
-                </div>
+                
                 <Button
                   variant="active"
                   color="gametype"
@@ -116,9 +114,6 @@ const StartScreen = () => {
                 >
                   Continue as Guest
                 </Button>
-                <p className='text-white/50 text-xs text-center max-w-xs mt-1'>
-                  Play Hangouts games without a wallet. Wallet required for Degen PvP.
-                </p>
               </div>
             )}
           </div>

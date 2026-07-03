@@ -70,13 +70,13 @@ const GenerateQuiz = () => {
                     <h1 className="font-[Oi] text-white [-webkit-text-stroke:2px_black] sm:[-webkit-text-stroke:3px_black] text-5xl sm:text-7xl">
                         Create Your Game
                     </h1>
-                    <p className='text-white text-lg sm:text-xl font-semibold drop-shadow-lg'>
+                    <p className='text-white text-lg sm:text-xl font-oldschool drop-shadow-lg'>
                         Let AI generate your perfect quiz
                     </p>
                 </div>
 
                 <div className='w-full flex flex-col gap-4'>
-                    <p className='text-white text-center text-lg font-semibold drop-shadow-lg'>
+                    <p className='text-white text-center text-lg font-oldschool drop-shadow-lg'>
                         Mode: {gameModeDetails.title} — {gameModeDetails.description}
                     </p>
 

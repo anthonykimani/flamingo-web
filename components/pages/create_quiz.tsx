@@ -276,7 +276,7 @@ const CreateQuiz = ({ onSave, gameMode }: CreateQuizProps) => {
                             <div className='flex items-center justify-between'>
                                 <div className='flex items-center gap-2'>
                                     <CoinsIcon size={24} />
-                                    <Label htmlFor='prizes-toggle-create' className='text-lg font-semibold cursor-pointer'>
+                                    <Label htmlFor='prizes-toggle-create' className='text-lg font-oldschool cursor-pointer'>
                                         Enable Prizes/Payouts
                                     </Label>
                                 </div>

@@ -221,11 +221,11 @@ const PlayGame = () => {
                                     +{answerResult.pointsEarned}
                                 </div>
                                 <div className='flex items-center justify-center gap-6 text-lg'>
-                                    <div className='font-semibold'>
+                                    <div className='font-oldschool'>
                                         Total: <span className='text-2xl text-blue-600'>{playerScore}</span>
                                     </div>
                                     {answerResult.currentStreak > 0 && (
-                                        <div className='text-orange-600 font-semibold'>
+                                        <div className='text-orange-600 font-oldschool'>
                                             🔥 {answerResult.currentStreak}x
                                         </div>
                                     )}
@@ -269,7 +269,7 @@ const PlayGame = () => {
                                         <div className='text-2xl font-bold w-8 text-center'>
                                             {index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : index + 1}
                                         </div>
-                                        <h3 className='text-xl font-semibold flex-1 truncate'>
+                                        <h3 className='text-xl font-oldschool flex-1 truncate'>
                                             {player.playerName}
                                             {player.playerName === playerName && (
                                                 <span className='text-sm text-blue-600 ml-2'>(You)</span>
@@ -345,7 +345,7 @@ const PlayGame = () => {
                     {hasAnswered ? (
                         <Card>
                             <CardHeader>
-                                <p className='text-lg font-semibold'>
+                                <p className='text-lg font-oldschool'>
                                     Answer submitted! ✅ Waiting for results...
                                 </p>
                             </CardHeader>

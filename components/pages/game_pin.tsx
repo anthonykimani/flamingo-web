@@ -2,6 +2,7 @@
 
 import { Button } from '@/components/ui/button'
 import { Card, CardHeader } from '@/components/ui/card'
+import { ConnectionStatus } from '@/components/ui/connection-status'
 import { UserIcon } from '@phosphor-icons/react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import React, { useState, useEffect } from 'react'
@@ -205,12 +206,12 @@ const LobbyPage = () => {
     return (
         <div className="flex flex-col p-4 gap-4 game-type-background h-screen bg-no-repeat bg-cover justify-center items-center w-full">
             {/* Connection Debug Info */}
-            <div className='absolute top-4 right-4 bg-black/50 text-white text-xs p-2 rounded'>
+            <ConnectionStatus>
                 {isSocketConnected ? '🟢 Connected' : '🔴 Disconnected'}
                 {sessionId && <div>Room: {sessionId.slice(0, 8)}...</div>}
                 {players.length > 0 && <div>Players: {players.length}</div>}
                 {isHost && <div>👑 Host View</div>}
-            </div>
+            </ConnectionStatus>
 
             <h1 className="font-[Oi] text-white [-webkit-text-stroke:2px_black] sm:[-webkit-text-stroke:3px_black] text-4xl xsm:text-6xl sm:text-8xl">
                 Flamingo
@@ -233,7 +234,7 @@ const LobbyPage = () => {
                         {gameSession.quiz?.title || 'Untitled Quiz'}
                     </h3>
                     <div className='flex items-center justify-center gap-2 mt-2'>
-                        <span className='flex items-center gap-1.5 text-lg font-semibold text-gray-700'>
+                        <span className='flex items-center gap-1.5 text-lg font-oldschool text-gray-700'>
                             <UserIcon size={20} weight="fill" />
                             {players.length} player{players.length !== 1 ? 's' : ''}
                         </span>
@@ -268,7 +269,7 @@ const LobbyPage = () => {
                         <div className='text-7xl font-bold text-[#FF00B7] animate-pulse'>
                             {preGameCountdown}
                         </div>
-                        <p className='text-xl font-semibold mt-2'>Game starting in {preGameCountdown}...</p>
+                        <p className='text-xl font-oldschool mt-2'>Game starting in {preGameCountdown}...</p>
                         {isHost && (
                             <button
                                 onClick={handleSkipCountdown}
@@ -293,7 +294,7 @@ const LobbyPage = () => {
                         <Card className='w-full max-w-md'>
                             <CardHeader className='text-center'>
                                 <div className='animate-pulse'>
-                                    <p className='text-lg font-semibold mb-2'>Get Ready! 🎮</p>
+                                    <p className='text-lg font-oldschool mb-2'>Get Ready! 🎮</p>
                                     <p className='text-sm text-gray-600'>
                                         Waiting for the game to start...
                                     </p>
@@ -304,21 +305,6 @@ const LobbyPage = () => {
                 </div>
             )}
 
-            <style jsx>{`
-                @keyframes fadeIn {
-                    from {
-                        opacity: 0;
-                        transform: translateY(10px);
-                    }
-                    to {
-                        opacity: 1;
-                        transform: translateY(0);
-                    }
-                }
-                .animate-fadeIn {
-                    animation: fadeIn 0.3s ease-out;
-                }
-            `}</style>
         </div>
     )
 }

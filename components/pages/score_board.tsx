@@ -119,7 +119,7 @@ const ScoreBoardPage = () => {
                                     <div className={`${PodiumHeight(pos)} w-16 sm:w-24 ${pos === 0 ? 'bg-yellow-400/80' : pos === 1 ? 'bg-gray-400/80' : 'bg-orange-400/80'} rounded-t-lg flex items-start justify-center pt-2 shadow-lg`}>
                                         <span className='text-white text-2xl sm:text-3xl font-bold'>{player.totalScore}</span>
                                     </div>
-                                    <span className='text-white text-xs sm:text-sm font-semibold text-center truncate max-w-20 sm:max-w-28 drop-shadow-lg'>
+                                    <span className='text-white text-xs sm:text-sm font-oldschool text-center truncate max-w-20 sm:max-w-28 drop-shadow-lg'>
                                         {player.playerName}
                                     </span>
                                 </div>
@@ -155,7 +155,7 @@ const ScoreBoardPage = () => {
                                                 <UserIcon size={18} weight="bold" className='text-gray-600' />
                                             </div>
                                             <div className='min-w-0'>
-                                                <h3 className='text-sm sm:text-lg font-semibold truncate text-gray-800'>
+                                                <h3 className='text-sm sm:text-lg font-oldschool truncate text-gray-800'>
                                                     {player.playerName}
                                                 </h3>
                                                 <div className='flex items-center gap-2 text-xs text-gray-400 mt-0.5'>
@@ -193,7 +193,7 @@ const ScoreBoardPage = () => {
                 {/* Score bar visualization */}
                 {leaderboard.length > 0 && (
                     <div className='bg-white/90 backdrop-blur-sm rounded-xl p-4 shadow-lg'>
-                        <h3 className='text-sm font-semibold text-gray-500 mb-3 uppercase tracking-wider'>Score Distribution</h3>
+                        <h3 className='text-sm font-oldschool text-gray-500 mb-3 uppercase tracking-wider'>Score Distribution</h3>
                         <div className='space-y-2'>
                             {leaderboard.slice(0, 5).map((player, index) => {
                                 const pct = Math.max(5, (player.totalScore / topScore) * 100)
@@ -211,7 +211,7 @@ const ScoreBoardPage = () => {
                                                 }}
                                             />
                                         </div>
-                                        <span className='text-xs font-semibold text-gray-600 w-12 text-right'>{player.totalScore}</span>
+                                        <span className='text-xs font-oldschool text-gray-600 w-12 text-right'>{player.totalScore}</span>
                                     </div>
                                 )
                             })}

@@ -69,7 +69,7 @@ const SelectTheme = () => {
           <h1 className="font-[Oi] text-white [-webkit-text-stroke:2px_black] sm:[-webkit-text-stroke:3px_black] text-5xl sm:text-7xl">
             Choose a Theme
           </h1>
-          <p className='text-white text-lg sm:text-xl font-semibold drop-shadow-lg'>
+          <p className='text-white text-lg sm:text-xl font-oldschool drop-shadow-lg'>
             Pick a topic to create your quiz
           </p>
         </div>

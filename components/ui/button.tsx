@@ -5,7 +5,7 @@ import { cn } from "@/lib/utils"
 import { XCircleIcon } from "@phosphor-icons/react/dist/ssr"
 
 const buttonVariants = cva(
-  "inline-flex items-center text-center justify-center gap-2 whitespace-nowrap rounded-xl text-md font-book transition-all disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive cursor-pointer",
+  "inline-flex items-center text-center justify-center gap-2 whitespace-nowrap rounded-xl text-lg font-oldschool transition-all disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive cursor-pointer",
   {
     variants: {
       variant: {
@@ -18,7 +18,11 @@ const buttonVariants = cva(
         outline:
           "bg-white text-sky-500 hover:bg-slate-100 border-2",
         destructive:
-          "bg-red-500 text-white border-2 border-slate-800 border-b-[6px] border-r-[6px] active:border-b-2 active:border-r-2 w-full"
+          "bg-red-500 text-white border-2 border-slate-800 border-b-[6px] border-r-[6px] active:border-b-2 active:border-r-2 w-full",
+        wallet:
+          "bg-white hover:bg-white/90 text-black border-2 border-slate-800 border-b-[6px] border-r-[6px] active:border-b-2 active:border-r-2",
+        walletDanger:
+          "bg-red-500 hover:bg-red-600 text-white border-2 border-red-700 border-b-[6px] border-r-[6px] active:border-b-2 active:border-r-2",
       },
       size: {
         default: "h-9 px-4 py-2 has-[>svg]:px-3",
@@ -30,6 +34,8 @@ const buttonVariants = cva(
         gameanswer: "h-[150px] w-full",
         resultButton: "h-[150px] w-[150px] rounded-full",
         icon: "size-9",
+        wallet: "h-auto p-2",
+        walletLg: "h-auto p-3",
       },
       buttoncolor: {
         gametype: "bg-[#2819DB] text-white border-2 border-[#1a0f8a] border-b-[6px] border-r-[6px] active:border-b-2 active:border-r-2",

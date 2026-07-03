@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useCallback } from 'react'
 import useEmblaCarousel from 'embla-carousel-react'
 import { Button } from '@/components/ui/button'
+import { GamePill } from '@/components/ui/game-pill'
 import { Users } from '@phosphor-icons/react'
 
 const CARD_GRADIENTS = [
@@ -87,13 +88,13 @@ const SwipeGames = ({ games, onJoin, isSubmitting }: SwipeGamesProps) => {
                   </h2>
 
                   <div className='mt-4 flex items-center gap-3'>
-                    <span className='flex items-center gap-1.5 text-white/90 text-sm font-semibold bg-black/20 px-3 py-1.5 rounded-full'>
+                    <GamePill variant="default">
                       <Users size={16} weight='fill' />
                       {game.playerCount} {game.playerCount === 1 ? 'player' : 'players'}
-                    </span>
-                    <span className='text-white/80 text-xs font-semibold uppercase tracking-wider bg-black/20 px-3 py-1.5 rounded-full'>
+                    </GamePill>
+                    <GamePill variant="meta">
                       {game.gameMode}
-                    </span>
+                    </GamePill>
                   </div>
                 </div>
 

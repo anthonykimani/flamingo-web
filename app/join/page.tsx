@@ -2,6 +2,7 @@
 
 import { Button } from '@/components/ui/button'
 import { Card, CardHeader } from '@/components/ui/card'
+import { ConnectionStatus } from '@/components/ui/connection-status'
 import { JoinGameStep } from '@/enums/join_game_step'
 import { MagicWandIcon, UserIcon } from '@phosphor-icons/react'
 import { useRouter } from 'next/navigation'
@@ -232,7 +233,7 @@ const JoinGame = () => {
                 </div>
               ) : activeGames.length === 0 ? (
                 <div className='flex flex-col items-center gap-4 mt-8'>
-                  <p className='text-white/80 text-lg font-semibold text-center'>
+                  <p className='text-white/80 text-lg font-oldschool text-center'>
                     No active games right now
                   </p>
                   <p className='text-white/60 text-sm text-center'>
@@ -260,7 +261,7 @@ const JoinGame = () => {
 
               {error && (
                 <div className='fixed bottom-8 left-1/2 -translate-x-1/2 z-50'>
-                  <p className='text-red-500 text-center font-semibold bg-white/95 p-3 rounded-xl shadow-lg text-sm'>
+                  <p className='text-red-500 text-center font-oldschool bg-white/95 p-3 rounded-xl shadow-lg text-sm'>
                     {error}
                   </p>
                 </div>
@@ -325,7 +326,7 @@ const JoinGame = () => {
                       }
                       setIsEditingNickname(false)
                     }}
-                    className='text-white/70 hover:text-white text-sm font-semibold cursor-pointer'
+                    className='text-white/70 hover:text-white text-sm font-oldschool cursor-pointer'
                     disabled={editName.trim().length < 2}
                   >
                     Save
@@ -342,15 +343,15 @@ const JoinGame = () => {
                   {countdown !== null && countdown > 0 ? (
                     <div>
                       <p className='text-5xl font-bold text-[#FF00B7] animate-pulse mb-2'>{countdown}</p>
-                      <p className='text-xl font-semibold'>Game starting in {countdown}...</p>
+                      <p className='text-xl font-oldschool'>Game starting in {countdown}...</p>
                     </div>
                   ) : (
                     <div>
-                      <p className='text-2xl font-semibold mb-2'>You're in!</p>
-                      <p className='text-lg font-semibold mb-2'>
+                      <p className='text-2xl font-oldschool mb-2'>You're in!</p>
+                      <p className='text-lg font-oldschool mb-2'>
                         See your nickname on the host's screen?
                       </p>
-                      <p className='text-lg font-semibold mb-2'>Waiting for game to start...</p>
+                      <p className='text-lg font-oldschool mb-2'>Waiting for game to start...</p>
                       <div className='animate-pulse text-black/80 text-sm flex items-center justify-center gap-2'>
                         <span>⏳</span>
                         <span>Get ready!</span>
@@ -361,9 +362,9 @@ const JoinGame = () => {
               </Card>
             </div>
 
-            <p className='absolute top-4 right-4 bg-black/50 text-white text-xs p-2 rounded'>
+            <ConnectionStatus>
               {isSocketConnected ? 'Connected to game' : 'Reconnecting...'}
-            </p>
+            </ConnectionStatus>
           </div>
         )
     }

@@ -287,7 +287,7 @@ const GamePage = () => {
                                             {index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : index + 1}
                                         </div>
                                         <div className='flex items-center gap-3 flex-1'>
-                                            <h3 className='text-xl font-semibold truncate'>
+                                            <h3 className='text-xl font-oldschool truncate'>
                                                 {player.playerName}
                                             </h3>
                                         </div>
@@ -303,7 +303,7 @@ const GamePage = () => {
 
                 {/* Auto-advancing... */}
                 <div className='flex justify-center'>
-                    <p className='text-white/70 text-lg font-semibold animate-pulse'>
+                    <p className='text-white/70 text-lg font-oldschool animate-pulse'>
                         Next question coming up...
                     </p>
                 </div>
