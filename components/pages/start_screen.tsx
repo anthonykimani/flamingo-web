@@ -3,56 +3,110 @@
 import React, { useEffect, useState } from 'react'
 import { Button } from '../ui/button'
 import { StatusBadge } from '../ui/status-badge'
-import { GameControllerIcon, MagicWandIcon, WarningCircle, ArrowClockwise, SpinnerBallIcon } from '@phosphor-icons/react'
+import { GameControllerIcon, MagicWandIcon, WarningCircle, ArrowClockwise, PencilSimpleLine, Shuffle, Check } from '@phosphor-icons/react'
 import { useRouter } from 'next/navigation'
 import { ConnectWalletButton } from '../custom/connect-wallet-button'
 import { useAccount } from 'wagmi'
 import { useWorldApp } from '@/hooks/use-world-app'
+import { getPlayerName, setPlayerName, generateFunName, getPlayerId } from '@/lib/fun-names'
 
 const StartScreen = () => {
   const router = useRouter()
-  const { address, isConnected } = useAccount()
+  const { isConnected } = useAccount()
   const { isInstalled, walletAddress, username, isAuthenticated, isAuthenticating, error } = useWorldApp()
 
   const [mounted, setMounted] = useState(false)
-  const [isGuest, setIsGuest] = useState(false)
+  const [playerName, setPlayerNameState] = useState('')
+  const [isEditingName, setIsEditingName] = useState(false)
+  const [editName, setEditName] = useState('')
   useEffect(() => setMounted(true), [])
 
   const isWorldApp = isInstalled
-  const hasCrypto = isWorldApp ? isAuthenticated : isConnected
-  const userReady = hasCrypto || isGuest
   const isLoading = isWorldApp && isAuthenticating && !isAuthenticated
   const hasError = isWorldApp && !!error && !isAuthenticated && !isAuthenticating
 
-  const displayName = isWorldApp
-    ? username ?? (walletAddress?.slice(0, 6) ?? '') + '...'
-    : undefined
+  useEffect(() => {
+    setPlayerNameState(getPlayerName())
+    getPlayerId()
+  }, [])
 
-  const handleGuestMode = () => {
-    setIsGuest(true)
-    localStorage.setItem('flamingo_guest', 'true')
+  useEffect(() => {
+    if (mounted && isWorldApp && username && !localStorage.getItem('flamingo_player_name')) {
+      setPlayerName(username)
+      setPlayerNameState(username)
+    }
+  }, [mounted, isWorldApp, username])
+
+  const handleShuffle = () => {
+    const newName = generateFunName()
+    setPlayerNameState(newName)
+    setPlayerName(newName)
+  }
+
+  const handleSaveName = () => {
+    if (editName.trim().length >= 2) {
+      setPlayerName(editName.trim())
+      setPlayerNameState(editName.trim())
+    }
+    setIsEditingName(false)
   }
 
   return (
     <div className="flex flex-col start-screen-background h-screen w-screen bg-no-repeat bg-cover">
-      <div>
-        <div className='flex items-start justify-start gap-2 animate-fadeIn cursor-pointer p-1 sm:p-3'>
+      <div className="flex items-start justify-between p-1 sm:p-3">
+        <div className='flex items-center gap-2 animate-fadeIn'>
+          {mounted && (
+            isEditingName ? (
+              <div className='flex items-center gap-2 bg-white/90 rounded-lg px-3 py-2'>
+                <input
+                  autoFocus
+                  value={editName}
+                  onChange={(e) => setEditName(e.target.value)}
+                  maxLength={20}
+                  className='text-sm font-oldschool bg-transparent outline-none text-gray-800 w-28'
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') handleSaveName()
+                    if (e.key === 'Escape') setIsEditingName(false)
+                  }}
+                  onBlur={handleSaveName}
+                />
+                <button onClick={handleSaveName} className='cursor-pointer text-green-600 hover:text-green-800'>
+                  <Check size={16} weight="bold" />
+                </button>
+              </div>
+            ) : (
+              <div className='flex items-center gap-1.5 bg-white/90 rounded-lg px-3 py-2'>
+                <span className='text-sm font-oldschool text-gray-800'>{playerName}</span>
+                <button
+                  onClick={() => { setEditName(playerName); setIsEditingName(true) }}
+                  className='cursor-pointer text-gray-400 hover:text-gray-600'
+                  title='Edit name'
+                >
+                  <PencilSimpleLine size={14} />
+                </button>
+                <button
+                  onClick={handleShuffle}
+                  className='cursor-pointer text-gray-400 hover:text-gray-600'
+                  title='Randomize name'
+                >
+                  <Shuffle size={14} />
+                </button>
+              </div>
+            )
+          )}
+        </div>
+
+        <div className='flex items-center gap-2 animate-fadeIn'>
           {mounted && (
             isWorldApp ? (
-              <StatusBadge variant="wallet">
-                <span>
-                  {isLoading && 'Connecting...'}
-                  {hasError && 'Connection failed'}
-                  {!isLoading && !hasError && (displayName ?? 'Connecting...')}
-                </span>
+              <StatusBadge variant="wallet" className="text-xs !p-1.5">
+                {isLoading && 'Connecting...'}
+                {hasError && 'Connection failed'}
+                {!isLoading && !hasError && (isAuthenticated ? 'World ID ✓' : 'Connecting...')}
               </StatusBadge>
-            ) : isGuest ? (
-              <StatusBadge variant="guest">
-                Playing as Guest
-              </StatusBadge>
-            ) : (
+            ) : isConnected ? (
               <ConnectWalletButton />
-            )
+            ) : null
           )}
         </div>
       </div>
@@ -82,40 +136,16 @@ const StartScreen = () => {
                 variant="active"
                 size="xl"
                 onClick={() => router.push("/create")}
-                disabled={!userReady}
               >
-                {!userReady ? (
-                  <span className="animate-pulse inline-flex items-center gap-2">
-                    <SpinnerBallIcon size={32} className='animate-icon-spin' />
-                    Connecting...
-                  </span>
-                ) : (
-                  <>
-                    <MagicWandIcon size={32} />
-                    Create a Game
-                  </>
-                )}
+                <MagicWandIcon size={32} />
+                Create a Game
               </Button>
 
-              <Button variant="active" onClick={() => router.push('/join')} disabled={!userReady}>
+              <Button variant="active" onClick={() => router.push('/join')}>
                 <GameControllerIcon size={32} />
                 Join a Game
               </Button>
             </div>
-
-            {!userReady && !isWorldApp && (
-              <div className='mt-4 flex flex-col items-center gap-2'>
-                
-                <Button
-                  variant="active"
-                  color="gametype"
-                  size="xl"
-                  onClick={handleGuestMode}
-                >
-                  Continue as Guest
-                </Button>
-              </div>
-            )}
           </div>
         )}
       </div>

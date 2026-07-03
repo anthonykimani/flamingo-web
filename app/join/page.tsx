@@ -15,11 +15,12 @@ import NavigationBar from '@/components/navigation/navigation-bar'
 import SwipeGames from '@/components/pages/swipe_games'
 import { useWorldApp } from '@/hooks/use-world-app'
 import { useAccount } from 'wagmi'
+import { getPlayerName, setPlayerName } from '@/lib/fun-names'
 
 const JoinGame = () => {
   const [stepper, setStepper] = useState<JoinGameStep>(JoinGameStep.BROWSEGAMES)
   const { address, isConnected } = useAccount()
-  const { isInstalled, walletAddress, username, isAuthenticated, isAuthenticating } = useWorldApp()
+  const { isInstalled, walletAddress, username } = useWorldApp()
 
   const [nickname, setNickname] = useState('')
   const [gameSession, setGameSession] = useState<any>(null)
@@ -33,7 +34,6 @@ const JoinGame = () => {
   const [editName, setEditName] = useState('')
   const router = useRouter()
 
-  // Refs to avoid stale closures in socket listeners
   const gameSessionRef = useRef(gameSession)
   const nicknameRef = useRef(nickname)
   const countdownRef = useRef(countdown)
@@ -90,17 +90,12 @@ const JoinGame = () => {
     }
   }, [router])
 
-  // Pre-fill nickname from World App username or truncated wallet address
   useEffect(() => {
     if (nickname) return
-    if (isWorldApp && username) {
-      setNickname(username)
-    } else if (!isWorldApp && address) {
-      setNickname(`${address.slice(0, 6)}...${address.slice(-4)}`)
-    }
-  }, [isWorldApp, username, address, nickname])
+    const saved = getPlayerName()
+    setNickname(saved)
+  }, [nickname])
 
-  // Fetch active games on mount and periodically
   useEffect(() => {
     if (stepper !== JoinGameStep.BROWSEGAMES) return
 
@@ -138,23 +133,6 @@ const JoinGame = () => {
       return
     }
 
-    const isGuest = localStorage.getItem('flamingo_guest') === 'true'
-
-    if (isWorldApp) {
-      if (!isAuthenticated && !isAuthenticating) {
-        setError('World App authentication still connecting...')
-        return
-      }
-      if (!isAuthenticated) {
-        setError('World App authentication still connecting...')
-        return
-      }
-    } else if (!isConnected && !isGuest) {
-      setError('Wallet connection lost. Please return to start.')
-      setTimeout(() => router.push('/'), 2000)
-      return
-    }
-
     setIsSubmitting(true)
     try {
       setError('')
@@ -177,7 +155,6 @@ const JoinGame = () => {
       const isGameAlreadyRunning = response.payload.status === GameState.COUNTDOWN || response.payload.status === GameState.IN_PROGRESS
 
       if (isGameAlreadyRunning) {
-        // Game already started — go straight to play
         router.push(`/play?sessionId=${response.payload.id}&playerName=${nickname}&gamePin=${response.payload.gamePin}`)
         setIsSubmitting(false)
         return
@@ -306,6 +283,7 @@ const JoinGame = () => {
                     onKeyDown={(e) => {
                       if (e.key === 'Enter' && editName.trim().length >= 2) {
                         setNickname(editName.trim())
+                        setPlayerName(editName.trim())
                         setIsEditingNickname(false)
                       }
                       if (e.key === 'Escape') {
@@ -315,6 +293,7 @@ const JoinGame = () => {
                     onBlur={() => {
                       if (editName.trim().length >= 2) {
                         setNickname(editName.trim())
+                        setPlayerName(editName.trim())
                       }
                       setIsEditingNickname(false)
                     }}
@@ -323,6 +302,7 @@ const JoinGame = () => {
                     onClick={() => {
                       if (editName.trim().length >= 2) {
                         setNickname(editName.trim())
+                        setPlayerName(editName.trim())
                       }
                       setIsEditingNickname(false)
                     }}
