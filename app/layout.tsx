@@ -1,7 +1,15 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
+import { Poppins } from "next/font/google";
 import Providers from "@/provider/providers";
 import "./globals.css";
+
+const poppins = Poppins({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700", "900"],
+  variable: "--font-poppins",
+  display: "swap",
+});
 
 const oldschool = localFont({
   src: [
@@ -42,7 +50,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${oldschool.variable} ${oi.variable} antialiased`}
+        className={`${oldschool.variable} ${oi.variable} ${poppins.variable} font-poppins antialiased`}
       >
         <Providers>
           {children}

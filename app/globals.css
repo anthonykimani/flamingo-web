@@ -36,6 +36,7 @@ body {
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+  --font-poppins: var(--font-poppins);
   --font-oldschool: var(--font-oldschool);
   --font-oi: var(--font-oi);
   --color-sidebar-ring: var(--sidebar-ring);
