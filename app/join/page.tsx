@@ -206,7 +206,7 @@ const JoinGame = () => {
 
               {loadingGames && activeGames.length === 0 ? (
                 <div className='flex justify-center py-16'>
-                  <div className='animate-pulse text-white text-lg'>Loading games...</div>
+                  <div className='animate-fadeIn text-white/70 text-lg font-oldschool'>Loading games...</div>
                 </div>
               ) : activeGames.length === 0 ? (
                 <div className='flex flex-col items-center gap-4 mt-8'>
@@ -237,8 +237,8 @@ const JoinGame = () => {
               )}
 
               {error && (
-                <div className='fixed bottom-8 left-1/2 -translate-x-1/2 z-50'>
-                  <p className='text-red-500 text-center font-oldschool bg-white/95 p-3 rounded-xl shadow-lg text-sm'>
+                <div className='fixed bottom-8 left-1/2 -translate-x-1/2 z-50 animate-fadeIn'>
+                  <p className='text-red-500 text-center font-oldschool bg-white/95 p-3 rounded-xl border-2 border-red-300 border-b-[4px] border-r-[4px] text-sm'>
                     {error}
                   </p>
                 </div>

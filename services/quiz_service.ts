@@ -12,18 +12,18 @@ export async function addQuiz(gameData: IQuiz): Promise<IResponse> {
         `${apiOptions.endpoints.gameService}/quizzes/createQuiz`, gameData
     );
 
-    if (response.payload.status == 200) {
+    if (response.payload?.status == 200) {
         return {
             message: response.payload.message,
             payload: response.payload.data,
-            status: response.payload.status,
+            status: response.payload?.status,
             ok: response.ok,
-            statusText: response.payload.statusText,
+            statusText: response.payload?.statusText,
             json: response.payload.json,
         }
     }
     throw new Error(`
-        Failed to add reward program: ${response.payload.message}`);
+        Failed to add reward program: ${response.payload?.message ?? 'Unknown error'}`);
 }
 
 export async function addAgentQuiz(prompt: string): Promise<IResponse> {
@@ -36,36 +36,36 @@ export async function addAgentQuiz(prompt: string): Promise<IResponse> {
     console.log("AgentQuiz Response:", response)
     posthog.capture('agentquiz response', response)
 
-    if (response.payload.status == 200) {
+    if (response.payload?.status == 200) {
         return {
             message: response.payload.message,
             payload: response.payload.data,
-            status: response.payload.status,
+            status: response.payload?.status,
             ok: response.ok,
-            statusText: response.payload.statusText,
+            statusText: response.payload?.statusText,
             json: response.payload.json,
         }
     }
     throw new Error(`
-        Failed to add reward program: ${response.payload.message}`);
+        Failed to add reward program: ${response.payload?.message ?? 'Unknown error'}`);
 }
 
 
 export async function getQuizById(id: string): Promise<IResponse> {
     const response = await Http.get(`${apiOptions.endpoints.gameService}/quizzes/quiz/${id}`)
 
-    if (response.payload.status === 200) {
+    if (response.payload?.status === 200) {
         return {
             message: response.payload.message,
             payload: response.payload.data,
-            status: response.payload.status,
+            status: response.payload?.status,
             ok: response.ok,
-            statusText: response.payload.statusText,
+            statusText: response.payload?.statusText,
             json: response.payload.json,
         }
     }
     throw new Error(`
-        Failed to add reward program: ${response.payload.message}`);
+        Failed to add reward program: ${response.payload?.message ?? 'Unknown error'}`);
 }
 
 export async function createGameSession(config: string | IGameConfig): Promise<IResponse> {
@@ -79,17 +79,17 @@ export async function createGameSession(config: string | IGameConfig): Promise<I
         requestData
     );
 
-    if (response.payload.status === 200) {
+    if (response.payload?.status === 200) {
         return {
             message: response.payload.message,
             payload: response.payload.data,
-            status: response.payload.status,
+            status: response.payload?.status,
             ok: response.ok,
-            statusText: response.payload.statusText,
+            statusText: response.payload?.statusText,
             json: response.payload.json,
         };
     }
-    throw new Error(`Failed to create game session: ${response.payload.message}`);
+    throw new Error(`Failed to create game session: ${response.payload?.message ?? 'Unknown error'}`);
 }
 
 export async function joinGame(gamePin: string): Promise<IResponse> {
@@ -98,17 +98,17 @@ export async function joinGame(gamePin: string): Promise<IResponse> {
         { gamePin }
     );
 
-    if (response.payload.status === 200) {
+    if (response.payload?.status === 200) {
         return {
             message: response.payload.message,
             payload: response.payload.data,
-            status: response.payload.status,
+            status: response.payload?.status,
             ok: response.ok,
-            statusText: response.payload.statusText,
+            statusText: response.payload?.statusText,
             json: response.payload.json,
         };
     }
-    throw new Error(`Failed to join game: ${response.payload.message}`);
+    throw new Error(`Failed to join game: ${response.payload?.message ?? 'Unknown error'}`);
 }
 
 export async function submitAnswer(answerData: {
@@ -126,17 +126,17 @@ export async function submitAnswer(answerData: {
         answerData
     );
 
-    if (response.payload.status === 200) {
+    if (response.payload?.status === 200) {
         return {
             message: response.payload.message,
             payload: response.payload.data,
-            status: response.payload.status,
+            status: response.payload?.status,
             ok: response.ok,
-            statusText: response.payload.statusText,
+            statusText: response.payload?.statusText,
             json: response.payload.json,
         };
     }
-    throw new Error(`Failed to submit answer: ${response.payload.message}`);
+    throw new Error(`Failed to submit answer: ${response.payload?.message ?? 'Unknown error'}`);
 }
 
 export async function getLeaderboard(gameSessionId: string): Promise<IResponse> {
@@ -144,17 +144,17 @@ export async function getLeaderboard(gameSessionId: string): Promise<IResponse> 
         `${apiOptions.endpoints.gameService}/games/leaderboard/${gameSessionId}`
     );
 
-    if (response.payload.status === 200) {
+    if (response.payload?.status === 200) {
         return {
             message: response.payload.message,
             payload: response.payload.data,
-            status: response.payload.status,
+            status: response.payload?.status,
             ok: response.ok,
-            statusText: response.payload.statusText,
+            statusText: response.payload?.statusText,
             json: response.payload.json,
         };
     }
-    throw new Error(`Failed to get leaderboard: ${response.payload.message}`);
+    throw new Error(`Failed to get leaderboard: ${response.payload?.message ?? 'Unknown error'}`);
 }
 
 export async function getPlayerStats(gameSessionId: string, playerName: string): Promise<IResponse> {
@@ -162,17 +162,17 @@ export async function getPlayerStats(gameSessionId: string, playerName: string):
         `${apiOptions.endpoints.gameService}/games/player-stats/${gameSessionId}/${playerName}`
     );
 
-    if (response.payload.status === 200) {
+    if (response.payload?.status === 200) {
         return {
             message: response.payload.message,
             payload: response.payload.data,
-            status: response.payload.status,
+            status: response.payload?.status,
             ok: response.ok,
-            statusText: response.payload.statusText,
+            statusText: response.payload?.statusText,
             json: response.payload.json,
         };
     }
-    throw new Error(`Failed to get player stats: ${response.payload.message}`);
+    throw new Error(`Failed to get player stats: ${response.payload?.message ?? 'Unknown error'}`);
 }
 
 export async function addPlayer(playerData: {
@@ -184,17 +184,17 @@ export async function addPlayer(playerData: {
         playerData
     );
 
-    if (response.payload.status === 200) {
+    if (response.payload?.status === 200) {
         return {
             message: response.payload.message,
             payload: response.payload.data,
-            status: response.payload.status,
+            status: response.payload?.status,
             ok: response.ok,
-            statusText: response.payload.statusText,
+            statusText: response.payload?.statusText,
             json: response.payload.json,
         };
     }
-    throw new Error(`Failed to add player: ${response.payload.message}`);
+    throw new Error(`Failed to add player: ${response.payload?.message ?? 'Unknown error'}`);
 }
 
 export async function startGame(id: string, gameState: GameState): Promise<IResponse> {
@@ -202,17 +202,17 @@ export async function startGame(id: string, gameState: GameState): Promise<IResp
         gameState
     });
 
-    if (response.payload.status === 200) {
+    if (response.payload?.status === 200) {
         return {
             message: response.payload.message,
             payload: response.payload.data,
-            status: response.payload.status,
+            status: response.payload?.status,
             ok: response.ok,
-            statusText: response.payload.statusText,
+            statusText: response.payload?.statusText,
             json: response.payload.json,
         };
     }
-    throw new Error(`Failed to Start Game: ${response.payload.message}`)
+    throw new Error(`Failed to Start Game: ${response.payload?.message ?? 'Unknown error'}`)
 }
 
 export async function updateGame(id: string, gameState: GameState): Promise<IResponse> {
@@ -220,52 +220,52 @@ export async function updateGame(id: string, gameState: GameState): Promise<IRes
         gameState
     });
 
-    if (response.payload.status === 200) {
+    if (response.payload?.status === 200) {
         return {
             message: response.payload.message,
             payload: response.payload.data,
-            status: response.payload.status,
+            status: response.payload?.status,
             ok: response.ok,
-            statusText: response.payload.statusText,
+            statusText: response.payload?.statusText,
             json: response.payload.json,
         };
     }
-    throw new Error(`Failed to Start Game: ${response.payload.message}`)
+    throw new Error(`Failed to Start Game: ${response.payload?.message ?? 'Unknown error'}`)
 }
 
 export async function getGameSession(id: string): Promise<IResponse> {
     const response = await Http.get(`${apiOptions.endpoints.gameService}/games/session/${id}`);
 
-    if (response.payload.status === 200) {
+    if (response.payload?.status === 200) {
         return {
             message: response.payload.message,
             payload: response.payload.data,
-            status: response.payload.status,
+            status: response.payload?.status,
             ok: response.ok,
-            statusText: response.payload.statusText,
+            statusText: response.payload?.statusText,
             json: response.payload.json,
         }
     }
 
-    throw new Error(`Failed to Get Game Session: ${response.payload.message}`)
+    throw new Error(`Failed to Get Game Session: ${response.payload?.message ?? 'Unknown error'}`)
 }
 
 
 export async function getActiveGames(): Promise<IResponse> {
     const response = await Http.get(`${apiOptions.endpoints.gameService}/games/active`);
 
-    if (response.payload.status === 200) {
+    if (response.payload?.status === 200) {
         return {
             message: response.payload.message,
             payload: response.payload.data,
-            status: response.payload.status,
+            status: response.payload?.status,
             ok: response.ok,
-            statusText: response.payload.statusText,
+            statusText: response.payload?.statusText,
             json: response.payload.json,
         }
     }
 
-    throw new Error(`Failed to get active games: ${response.payload.message}`)
+    throw new Error(`Failed to get active games: ${response.payload?.message ?? 'Unknown error'}`)
 }
 
 export async function getActivePlayers(gameSessionId: string): Promise<IResponse> {
@@ -273,33 +273,33 @@ export async function getActivePlayers(gameSessionId: string): Promise<IResponse
         `${apiOptions.endpoints.gameService}/games/active-players/${gameSessionId}`
     );
 
-    if (response.payload.status === 200) {
+    if (response.payload?.status === 200) {
         return {
             message: response.payload.message,
             payload: response.payload.data,
-            status: response.payload.status,
+            status: response.payload?.status,
             ok: response.ok,
-            statusText: response.payload.statusText,
+            statusText: response.payload?.statusText,
             json: response.payload.json,
         }
     }
 
-    throw new Error(`Failed to get active players: ${response.payload.message}`)
+    throw new Error(`Failed to get active players: ${response.payload?.message ?? 'Unknown error'}`)
 }
 
 export async function getGameSessionByGamePin(id: string): Promise<IResponse> {
     const response = await Http.get(`${apiOptions.endpoints.gameService}/games/gamepin/${id}`);
 
-    if (response.payload.status === 200) {
+    if (response.payload?.status === 200) {
         return {
             message: response.payload.message,
             payload: response.payload.data,
-            status: response.payload.status,
+            status: response.payload?.status,
             ok: response.ok,
-            statusText: response.payload.statusText,
+            statusText: response.payload?.statusText,
             json: response.payload.json,
         }
     }
 
-    throw new Error(`Failed to Get Game Session: ${response.payload.message}`)
+    throw new Error(`Failed to Get Game Session: ${response.payload?.message ?? 'Unknown error'}`)
 }

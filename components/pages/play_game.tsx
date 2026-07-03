@@ -7,7 +7,7 @@ import { SocketEvents } from '@/enums/socket-events'
 import { IAnswer, IPlayer, IQuestion } from '@/interfaces/IQuiz'
 import { getGameSession } from '@/services/quiz_service'
 import socketClient from '@/utils/socket/socket.client'
-import { CircleIcon, SquareIcon, StarIcon, TriangleIcon } from '@phosphor-icons/react'
+import { CircleIcon, SquareIcon, StarIcon, TriangleIcon, CheckCircleIcon, XCircleIcon, FireIcon, ClockIcon, HourglassIcon } from '@phosphor-icons/react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import React, { useEffect, useState } from 'react'
 
@@ -62,20 +62,17 @@ const PlayGame = () => {
             }).catch(console.error)
         }
 
-        // Re-join game room on reconnect (screen-off recovery)
         socket.on('connect', () => {
             console.log('✅ Player WebSocket reconnected — rejoining game room')
             rejoinGame()
         })
 
-        // Listen for countdown
         socket.on('countdown-tick', (data: { count: number }) => {
             console.log('⏰ Countdown:', data.count)
             setCountdown(data.count)
             setGameState(GameState.COUNTDOWN)
         })
 
-        // Listen for question started
         socketClient.onQuestionStarted((data: {
             question: IQuestion;
             questionIndex: number;
@@ -96,12 +93,10 @@ const PlayGame = () => {
             setQuestionStartTime(new Date(data.startTime))
         })
 
-        // Listen for time updates
         socket.on('time-update', (data: { timeLeft: number }) => {
             setTimeLeft(data.timeLeft)
         })
 
-        // Listen for answer confirmation
         socketClient.onAnswerSubmitted((data: {
             success: boolean;
             isCorrect: boolean;
@@ -119,20 +114,17 @@ const PlayGame = () => {
             setHasAnswered(true)
         })
 
-        // Listen for question results
         socketClient.onQuestionResults((data: { leaderboard: any[] }) => {
             console.log('📊 Question results:', data)
             setLeaderboard(data.leaderboard)
             setGameState(GameState.RESULTS_READY)
         })
 
-        // Listen for game ended
         socketClient.onGameEnded((data: { leaderboard: any[] }) => {
             console.log('🏁 Game ended:', data)
             router.push(`/score?sessionId=${sessionId}`)
         })
 
-        // Listen for errors
         socketClient.onError((data: { message: string }) => {
             console.error('⚠️ Socket error:', data.message)
             alert(data.message)
@@ -155,10 +147,8 @@ const PlayGame = () => {
 
         setSelectedAnswer(answer.id!)
 
-        // Calculate time to answer
         const timeToAnswer = (new Date().getTime() - questionStartTime.getTime()) / 1000
 
-        // Submit answer via WebSocket
         socketClient.submitAnswer({
             gameSessionId: sessionId,
             playerName: playerName,
@@ -168,33 +158,34 @@ const PlayGame = () => {
         })
     }
 
-    // FIX #2: Show countdown UI (like GamePage)
     if (countdown !== null && gameState === GameState.COUNTDOWN) {
         return (
             <div className='game-pin-background h-screen bg-no-repeat bg-cover flex justify-center items-center'>
-                <div className='text-center'>
-                    <div className='text-white text-9xl font-bold animate-pulse'>
+                <div className='text-center animate-fadeIn'>
+                    <div className='text-white text-9xl font-bold'>
                         {countdown}
                     </div>
-                    <p className='text-white text-2xl mt-4'>Get Ready!</p>
+                    <p className='text-white text-2xl font-oldschool mt-4'>Get Ready!</p>
                 </div>
             </div>
         )
     }
 
-    // FIX #4: Only show waiting screen for WAITING state, and make it clearer
     if (gameState === GameState.WAITING) {
         return (
             <div className='game-pin-background h-screen bg-no-repeat bg-cover flex justify-center items-center'>
-                <Card className='w-full max-w-md mx-4'>
+                <Card className='w-full max-w-md mx-4 bg-white/95 border-2 border-slate-800 border-b-[6px] border-r-[6px]'>
                     <CardHeader className='text-center'>
-                        <div className='animate-pulse'>
-                            <p className='text-2xl font-bold mb-4'>⏳ Loading Game...</p>
-                            <p className='text-sm text-gray-600'>
+                        <div className='animate-fadeIn'>
+                            <div className='flex justify-center mb-4'>
+                                <HourglassIcon size={48} weight="fill" className='text-slate-600' />
+                            </div>
+                            <p className='text-2xl font-oldschool mb-4 text-slate-800'>Loading Game...</p>
+                            <p className='text-sm text-slate-500'>
                                 Waiting for host to start the game
                             </p>
-                            <div className='mt-4 text-xs text-gray-500'>
-                                Player: <strong>{playerName}</strong>
+                            <div className='mt-4 text-xs text-slate-400'>
+                                Player: <strong className='text-slate-700'>{playerName}</strong>
                             </div>
                         </div>
                     </CardHeader>
@@ -203,117 +194,108 @@ const PlayGame = () => {
         )
     }
 
-    // Show results screen
     if (gameState === GameState.RESULTS_READY) {
     return (
-        <div className='result-background flex flex-col justify-center items-center h-screen bg-no-repeat bg-cover py-4 px-1'>
-            <div className='w-full max-w-2xl space-y-6'>
-                {/* Answer Result Card */}
-                <Card className='bg-white/95 backdrop-blur-sm'>
-                    <CardHeader className='text-center space-y-4 py-8'>
-                        <h2 className='text-4xl font-bold'>
-                            {answerResult?.isCorrect ? '✅ Correct!' : '❌ Wrong!'}
-                        </h2>
-                        
-                        {answerResult && (
-                            <>
-                                <div className='text-6xl font-bold text-blue-600'>
-                                    +{answerResult.pointsEarned}
-                                </div>
-                                <div className='flex items-center justify-center gap-6 text-lg'>
-                                    <div className='font-oldschool'>
-                                        Total: <span className='text-2xl text-blue-600'>{playerScore}</span>
+        <div className='result-background flex justify-center items-center h-screen bg-no-repeat bg-cover p-4'>
+            <div className='w-full max-w-2xl'>
+                <div className='bg-white/95 rounded-xl border-2 border-slate-800 border-b-[6px] border-r-[6px] overflow-hidden'>
+                    {answerResult && (
+                        <div className={`flex items-center justify-between px-4 sm:px-6 py-4 ${answerResult.isCorrect ? 'bg-green-50 border-b-2 border-green-200' : 'bg-red-50 border-b-2 border-red-200'}`}>
+                            <div className='flex items-center gap-3'>
+                                {answerResult.isCorrect ? (
+                                    <CheckCircleIcon size={28} weight="fill" className='text-green-500 shrink-0' />
+                                ) : (
+                                    <XCircleIcon size={28} weight="fill" className='text-red-500 shrink-0' />
+                                )}
+                                <div>
+                                    <p className='text-lg font-bold text-slate-800'>
+                                        {answerResult.isCorrect ? 'Correct!' : 'Wrong!'}
+                                    </p>
+                                    <div className='flex items-center gap-3 text-xs text-slate-500'>
+                                        <span>Total: <strong className='text-slate-700'>{playerScore}</strong></span>
+                                        {answerResult.currentStreak > 0 && (
+                                            <span className='flex items-center gap-0.5 text-orange-600'>
+                                                <FireIcon size={12} weight="fill" />
+                                                {answerResult.currentStreak}x streak
+                                            </span>
+                                        )}
                                     </div>
-                                    {answerResult.currentStreak > 0 && (
-                                        <div className='text-orange-600 font-oldschool'>
-                                            🔥 {answerResult.currentStreak}x
-                                        </div>
-                                    )}
                                 </div>
-                            </>
-                        )}
-                        
-                        {!answerResult && hasAnswered && (
-                            <div className='text-xl text-gray-600'>
-                                Answer recorded! Calculating results...
                             </div>
-                        )}
-                        
-                        {!hasAnswered && (
-                            <div className='text-xl text-gray-600'>
-                                Time's up!
+                            <div className='text-3xl sm:text-4xl font-bold text-[#FF9700] shrink-0'>
+                                +{answerResult.pointsEarned}
                             </div>
-                        )}
-                    </CardHeader>
-                </Card>
-
-                {/* Leaderboard Card */}
-                <Card className='bg-white/95 backdrop-blur-sm'>
-                    <CardHeader className='py-6'>
-                        <h3 className='text-2xl font-bold text-center mb-6'>Leaderboard</h3>
-                        <div className='space-y-3'>
-                            {leaderboard.length === 0 ? (
-                                <p className='text-center text-gray-500'>Loading scores...</p>
-                            ) : (
-                                leaderboard.map((player, index) => (
-                                    <div 
-                                        key={player.id} 
-                                        className={`
-                                            flex items-center gap-4 p-4 rounded-lg
-                                            ${player.playerName === playerName 
-                                                ? 'bg-blue-100 border-2 border-blue-400' 
-                                                : 'bg-slate-50'
-                                            }
-                                        `}
-                                    >
-                                        <div className='text-2xl font-bold w-8 text-center'>
-                                            {index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : index + 1}
-                                        </div>
-                                        <h3 className='text-xl font-oldschool flex-1 truncate'>
-                                            {player.playerName}
-                                            {player.playerName === playerName && (
-                                                <span className='text-sm text-blue-600 ml-2'>(You)</span>
-                                            )}
-                                        </h3>
-                                        <div className='text-2xl font-bold text-slate-700'>
-                                            {player.totalScore}
-                                        </div>
-                                    </div>
-                                ))
-                            )}
                         </div>
-                    </CardHeader>
-                </Card>
+                    )}
+
+                    {!answerResult && hasAnswered && (
+                        <div className='flex items-center gap-2 px-6 py-4 border-b-2 border-slate-200 bg-slate-50'>
+                            <ClockIcon size={20} weight="bold" className='text-slate-500' />
+                            <p className='text-base font-oldschool text-slate-500'>Answer recorded! Calculating results...</p>
+                        </div>
+                    )}
+
+                    {!hasAnswered && (
+                        <div className='px-6 py-4 border-b-2 border-slate-200 bg-slate-50'>
+                            <p className='text-base font-oldschool text-slate-500 text-center'>Time's up!</p>
+                        </div>
+                    )}
+
+                    <div>
+                        {leaderboard.length === 0 ? (
+                            <p className='text-center text-slate-500 py-6'>Loading scores...</p>
+                        ) : (
+                            leaderboard.map((player, index) => (
+                                <div
+                                    key={player.id}
+                                    className={`flex items-center gap-3 px-4 sm:px-6 py-3 border-b border-slate-100 last:border-b-0 ${
+                                        player.playerName === playerName ? 'bg-[#FF9700]/5' : ''
+                                    }`}
+                                >
+                                    <span className='w-6 text-xs font-bold text-slate-400 text-center shrink-0'>
+                                        {index === 0 ? '1st' : index === 1 ? '2nd' : index === 2 ? '3rd' : `#${index + 1}`}
+                                    </span>
+                                    <span className='text-sm sm:text-base font-oldschool truncate text-slate-800 flex-1'>
+                                        {player.playerName}
+                                        {player.playerName === playerName && (
+                                            <span className='text-xs text-[#FF9700] ml-1.5 font-bold'>(You)</span>
+                                        )}
+                                    </span>
+                                    <span className='text-sm sm:text-base font-bold text-slate-700 shrink-0'>
+                                        {player.totalScore}
+                                    </span>
+                                </div>
+                            ))
+                        )}
+                    </div>
+                </div>
             </div>
         </div>
     )
 }
-    // Show question
     if (question && gameState === GameState.IN_PROGRESS) {
         return (
             <div className='game-pin-background flex flex-col justify-between h-screen bg-no-repeat bg-cover p-4'>
-                {/* Header */}
-                <div className='flex justify-between items-center'>
-                    <div className='text-white text-xl font-bold'>
-                        Question {currentQuestionNumber}/{totalQuestions}
+                <div className='flex items-center justify-between gap-2 max-w-4xl mx-auto w-full'>
+                    <div className='text-white font-oldschool text-lg min-w-0 truncate'>
+                        Q {currentQuestionNumber}/{totalQuestions}
                     </div>
-                    <div className='text-white text-2xl font-bold bg-black/50 px-4 py-2 rounded'>
-                        ⏱️ {timeLeft}s
+                    <div className='bg-black/50 px-4 py-2 rounded-full text-white font-bold text-xl flex items-center gap-2 shrink-0'>
+                        <ClockIcon size={20} weight="fill" />
+                        {timeLeft}s
                     </div>
-                    <div className='text-white text-xl font-bold'>
+                    <div className='text-white font-oldschool text-lg shrink-0'>
                         Score: {playerScore}
                     </div>
                 </div>
 
-                {/* Question */}
-                <Card className='w-full'>
-                    <CardHeader className='text-center text-2xl font-bold'>
+                <Card className='w-full bg-white/95 border-2 border-slate-800 border-b-[6px] border-r-[6px] max-w-4xl mx-auto'>
+                    <CardHeader className='text-center text-2xl font-bold text-slate-800'>
                         {question.question}
                     </CardHeader>
                 </Card>
 
-                {/* Answers Grid */}
-                <div className='grid grid-cols-1 sm:grid-cols-2 gap-4'>
+                <div className='grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-4xl mx-auto w-full'>
                     {question.answers?.map((answer, index) => {
                         const { Icon, color, borderColor } = ANSWER_CONFIG[index % ANSWER_CONFIG.length]
                         const isSelected = selectedAnswer === answer.id
@@ -325,11 +307,11 @@ const PlayGame = () => {
                                 disabled={hasAnswered}
                                 leftIcon={<Icon size={32} color="white" weight="fill" />}
                                 className={`
-                                    ${color} 
+                                    ${color}
                                     border-2 ${borderColor} border-b-[6px] border-r-[6px]
                                     ${isSelected ? 'ring-4 ring-white' : ''}
                                     ${hasAnswered ? 'opacity-50 cursor-not-allowed active:border-b-[6px] active:border-r-[6px]' : 'hover:scale-105 active:border-b-2 active:border-r-2'}
-                                    min-h-[80px] sm:min-h-[100px] text-white text-lg sm:text-xl font-bold transition-all text-left
+                                    min-h-[100px] sm:min-h-[120px] text-white text-lg sm:text-xl font-bold transition-all text-left
                                 `}
                                 variant="active"
                                 size="xl"
@@ -340,18 +322,18 @@ const PlayGame = () => {
                     })}
                 </div>
 
-                {/* Status Message */}
-                <div className='text-center'>
+                <div className='text-center max-w-4xl mx-auto w-full'>
                     {hasAnswered ? (
-                        <Card>
+                        <Card className='bg-white/95 border-2 border-slate-800 border-b-[4px] border-r-[4px]'>
                             <CardHeader>
-                                <p className='text-lg font-oldschool'>
-                                    Answer submitted! ✅ Waiting for results...
+                                <p className='text-lg font-oldschool text-slate-700 flex items-center justify-center gap-2'>
+                                    <CheckCircleIcon size={20} weight="fill" className='text-green-500' />
+                                    Answer submitted! Waiting for results...
                                 </p>
                             </CardHeader>
                         </Card>
                     ) : (
-                        <p className='text-white text-lg'>
+                        <p className='text-white text-lg font-oldschool'>
                             Select your answer!
                         </p>
                     )}
@@ -360,12 +342,14 @@ const PlayGame = () => {
         )
     }
 
-    // Fallback loading state
     return (
         <div className='game-pin-background h-screen bg-no-repeat bg-cover flex justify-center items-center'>
-            <Card>
-                <CardHeader className='text-2xl'>
-                    <div className='animate-pulse'>Connecting...</div>
+            <Card className='bg-white/95 border-2 border-slate-800 border-b-[6px] border-r-[6px]'>
+                <CardHeader className='text-2xl animate-fadeIn'>
+                    <div className='flex items-center gap-3 justify-center'>
+                        <ClockIcon size={24} weight="bold" className='text-slate-600' />
+                        Connecting...
+                    </div>
                 </CardHeader>
             </Card>
         </div>

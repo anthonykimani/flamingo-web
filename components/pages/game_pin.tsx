@@ -3,7 +3,7 @@
 import { Button } from '@/components/ui/button'
 import { Card, CardHeader } from '@/components/ui/card'
 import { ConnectionStatus } from '@/components/ui/connection-status'
-import { UserIcon } from '@phosphor-icons/react'
+import { UserIcon, UsersThreeIcon } from '@phosphor-icons/react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import React, { useState, useEffect } from 'react'
 import { getGameSession, getLeaderboard } from '@/services/quiz_service'
@@ -183,7 +183,7 @@ const LobbyPage = () => {
 
     if (loading) {
         return (
-            <div className='h-screen bg-no-repeat bg-cover flex justify-center items-center'>
+            <div className='game-pin-background h-screen bg-no-repeat bg-cover flex justify-center items-center'>
                 <Card>
                     <CardHeader className='text-2xl'>Loading lobby...</CardHeader>
                 </Card>
@@ -193,7 +193,7 @@ const LobbyPage = () => {
 
     if (!gameSession) {
         return (
-            <div className='h-screen bg-no-repeat bg-cover flex justify-center items-center'>
+            <div className='game-pin-background h-screen bg-no-repeat bg-cover flex justify-center items-center'>
                 <Card>
                     <CardHeader className='text-2xl text-red-500'>
                         Game session not found
@@ -217,30 +217,34 @@ const LobbyPage = () => {
                 Flamingo
             </h1>
 
-            {/* Game PIN Display */}
-            <Card className='w-full max-w-md bg-white/95 shadow-lg'>
-                <CardHeader className='text-center py-6'>
-                    <p className='text-sm uppercase tracking-widest text-gray-500 mb-1'>Game PIN</p>
-                    <p className='text-6xl font-black tracking-[0.15em] text-gray-900'>
+            {/* Game Info Card — PIN + Quiz Title merged */}
+            <div className='w-full max-w-md bg-white rounded-xl border-2 border-slate-800 border-b-[6px] border-r-[6px] overflow-hidden'>
+                {/* PIN section */}
+                <div className='text-center pt-8 pb-4 px-6'>
+                    <p className='text-xs uppercase tracking-[0.2em] text-slate-500 font-oldschool mb-3'>
+                        Game PIN
+                    </p>
+                    <p className='text-6xl sm:text-7xl font-bold text-black leading-none tracking-[0.1em]'>
                         {gamePin}
                     </p>
-                </CardHeader>
-            </Card>
+                </div>
 
-            {/* Quiz Title & Player Count */}
-            <Card className='w-full max-w-md bg-white/95 shadow-lg'>
-                <CardHeader className='text-center py-4'>
-                    <h3 className='text-2xl font-bold text-gray-900 truncate max-w-full'>
+                {/* Divider */}
+                <div className='h-px bg-slate-200 mx-6' />
+
+                {/* Quiz Title + Player Count */}
+                <div className='flex items-center justify-between px-6 py-4'>
+                    <h3 className='text-lg sm:text-xl font-oldschool text-slate-800 truncate max-w-[65%]'>
                         {gameSession.quiz?.title || 'Untitled Quiz'}
                     </h3>
-                    <div className='flex items-center justify-center gap-2 mt-2'>
-                        <span className='flex items-center gap-1.5 text-lg font-oldschool text-gray-700'>
-                            <UserIcon size={20} weight="fill" />
-                            {players.length} player{players.length !== 1 ? 's' : ''}
+                    <div className='flex items-center gap-1.5 text-slate-500 shrink-0'>
+                        <UsersThreeIcon size={20} weight="fill" />
+                        <span className='text-base font-oldschool'>
+                            {players.length}
                         </span>
                     </div>
-                </CardHeader>
-            </Card>
+                </div>
+            </div>
 
             {/* Players List */}
             <div className='w-full max-w-2xl max-h-96 overflow-y-auto'>
@@ -248,12 +252,10 @@ const LobbyPage = () => {
                     {players.length === 0 ? null : (
                         players.map((player, index) => (
                             <div key={player.id} className='flex flex-col items-center gap-2 animate-fadeIn'>
-                                <Card className={`active:border-b-6 active:border-r-6 active:border-t-2 active:border-l-2 ${PLAYER_COLORS[index % PLAYER_COLORS.length]} text-white p-6`}>
-                                    <CardHeader className='justify-center items-center'>
-                                        <UserIcon size={32} weight='fill' />
-                                    </CardHeader>
-                                </Card>
-                                <p className='text-lg text-white text-center font-bold truncate w-full'>
+                                <div className={`${PLAYER_COLORS[index % PLAYER_COLORS.length]} text-white p-6 rounded-xl border-2 border-slate-800 border-b-[4px] border-r-[4px]`}>
+                                    <UserIcon size={32} weight='fill' />
+                                </div>
+                                <p className='text-lg text-white text-center font-bold truncate w-full drop-shadow-lg'>
                                     {player.playerName}
                                 </p>
                             </div>
@@ -264,43 +266,45 @@ const LobbyPage = () => {
 
             {/* Pre-game Countdown */}
             {preGameCountdown !== null && preGameCountdown > 0 && (
-                <Card className='w-full max-w-md bg-white/95'>
-                    <CardHeader className='text-center'>
-                        <div className='text-7xl font-bold text-[#FF00B7] animate-pulse'>
+                <div className='w-full max-w-md bg-white rounded-xl border-2 border-slate-800 border-b-[6px] border-r-[6px]'>
+                    <div className='text-center py-8 px-6'>
+                        <div className='text-7xl sm:text-8xl font-bold text-black leading-none animate-fadeIn'>
                             {preGameCountdown}
                         </div>
-                        <p className='text-xl font-oldschool mt-2'>Game starting in {preGameCountdown}...</p>
+                        <p className='text-lg font-oldschool text-slate-600 mt-4'>
+                            Game starting in {preGameCountdown}...
+                        </p>
                         {isHost && (
                             <button
                                 onClick={handleSkipCountdown}
-                                className='mt-3 text-sm text-gray-500 hover:text-gray-800 underline cursor-pointer'
+                                className='mt-3 text-sm text-slate-400 hover:text-slate-700 underline cursor-pointer font-oldschool'
                             >
                                 Start Now
                             </button>
                         )}
-                    </CardHeader>
-                </Card>
+                    </div>
+                </div>
             )}
 
             {/* Waiting for players */}
             {preGameCountdown === null && (
                 <div className='flex flex-col gap-2 w-full max-w-md'>
                     {isHost && players.length === 0 && (
-                        <p className='text-white text-center text-sm'>
+                        <p className='text-white/70 text-center text-sm font-oldschool'>
                             Share the PIN above with players
                         </p>
                     )}
                     {!isHost && players.length > 0 && preGameCountdown === null && (
-                        <Card className='w-full max-w-md'>
-                            <CardHeader className='text-center'>
-                                <div className='animate-pulse'>
-                                    <p className='text-lg font-oldschool mb-2'>Get Ready! 🎮</p>
-                                    <p className='text-sm text-gray-600'>
+                        <div className='w-full max-w-md bg-white rounded-xl border-2 border-slate-800 border-b-[6px] border-r-[6px]'>
+                            <div className='text-center py-8 px-6'>
+                                <div className='animate-fadeIn'>
+                                    <p className='text-lg font-oldschool text-slate-700 mb-2'>Get Ready!</p>
+                                    <p className='text-sm text-slate-400'>
                                         Waiting for the game to start...
                                     </p>
                                 </div>
-                            </CardHeader>
-                        </Card>
+                            </div>
+                        </div>
                     )}
                 </div>
             )}

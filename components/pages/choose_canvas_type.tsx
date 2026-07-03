@@ -3,7 +3,7 @@
 import React from 'react'
 import { Button } from '../ui/button'
 import { CompassIcon, FilePlusIcon, RobotIcon } from '@phosphor-icons/react'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card'
+import { Card, CardContent, CardDescription, CardTitle } from '../ui/card'
 import { useRouter } from 'next/navigation'
 import { GameMode } from '@/enums/game_mode'
 
@@ -23,10 +23,10 @@ const ChooseCanvasType = ({ gameMode, onSelect}:{ gameMode: GameMode, onSelect:(
                 <div className="flex flex-col sm:flex-row justify-center w-full max-w-4xl gap-3 px-2">
 
                     <Card className='flex flex-row flex-1 cursor-pointer hover:scale-[1.02] transition-transform' onClick={() => router.push(`/themes?gameMode=${gameMode}`)}>
-                        <CardHeader className='shrink-0'>
+                        <div className='flex items-center justify-center shrink-0 pl-6'>
                             <CompassIcon size={32} />
-                        </CardHeader>
-                        <CardContent className='flex flex-col justify-center p-4 pl-0'>
+                        </div>
+                        <CardContent className='flex flex-col justify-center p-4 pl-3'>
                             <CardTitle className='text-base sm:text-lg'>
                                 Select Theme
                             </CardTitle>
@@ -37,10 +37,10 @@ const ChooseCanvasType = ({ gameMode, onSelect}:{ gameMode: GameMode, onSelect:(
                     </Card>
 
                     <Card className='flex flex-row flex-1 cursor-pointer hover:scale-[1.02] transition-transform' onClick={onSelect}>
-                        <CardHeader className='shrink-0'>
+                        <div className='flex items-center justify-center shrink-0 pl-6'>
                             <FilePlusIcon size={32} />
-                        </CardHeader>
-                        <CardContent className='flex flex-col justify-center p-4 pl-0'>
+                        </div>
+                        <CardContent className='flex flex-col justify-center p-4 pl-3'>
                             <CardTitle className='text-base sm:text-lg'>
                                 Blank Canvas
                             </CardTitle>
@@ -51,10 +51,10 @@ const ChooseCanvasType = ({ gameMode, onSelect}:{ gameMode: GameMode, onSelect:(
                     </Card>
 
                     <Card className='flex flex-row flex-1 cursor-pointer hover:scale-[1.02] transition-transform' onClick={handleGenerate}>
-                        <CardHeader className='shrink-0'>
+                        <div className='flex items-center justify-center shrink-0 pl-6'>
                             <RobotIcon size={32} />
-                        </CardHeader>
-                        <CardContent className='flex flex-col justify-center p-4 pl-0'>
+                        </div>
+                        <CardContent className='flex flex-col justify-center p-4 pl-3'>
                             <CardTitle className='text-base sm:text-lg'>
                                 Generate Game
                             </CardTitle>

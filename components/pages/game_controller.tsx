@@ -2,7 +2,7 @@
 
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
-import { SquareIcon, StarIcon, CircleIcon, TriangleIcon, UserIcon } from '@phosphor-icons/react'
+import { SquareIcon, StarIcon, CircleIcon, TriangleIcon, UsersThreeIcon, CheckCircleIcon, TrophyIcon } from '@phosphor-icons/react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import React, { useState, useEffect } from 'react'
 import { getGameSession, getGameSessionByGamePin, getQuizById, getActivePlayers } from '@/services/quiz_service'
@@ -11,13 +11,36 @@ import { GameState } from '@/enums/game_state'
 import { SocketEvents } from '@/enums/socket-events'
 import socketClient from '@/utils/socket/socket.client'
 
-// Icon mapping for answers
 const ANSWER_CONFIG = [
     { Icon: SquareIcon, color: 'bg-[#009900]', borderColor: 'border-[#006600]' },
     { Icon: StarIcon, color: 'bg-[#FF9700]', borderColor: 'border-[#cc7800]' },
     { Icon: TriangleIcon, color: 'bg-[#2819DB]', borderColor: 'border-[#1a0f8a]' },
     { Icon: CircleIcon, color: 'bg-[#F14100]', borderColor: 'border-[#b33000]' }
 ]
+
+function AutoAdvance({ onAdvance }: { onAdvance: () => void }) {
+    const [count, setCount] = useState(5)
+
+    useEffect(() => {
+        if (count <= 0) {
+            onAdvance()
+            return
+        }
+        const timer = setTimeout(() => setCount(c => c - 1), 1000)
+        return () => clearTimeout(timer)
+    }, [count, onAdvance])
+
+    return (
+        <div className='fixed top-4 left-1/2 -translate-x-1/2 z-50 animate-fadeIn'>
+            <div className='bg-white/90 rounded-xl border-2 border-slate-800 border-b-[4px] border-r-[4px] px-5 py-2 flex items-center gap-3'>
+                <div className='text-lg font-bold text-slate-800'>{count}</div>
+                <p className='text-sm font-oldschool text-slate-500'>
+                    Next question in {count}s
+                </p>
+            </div>
+        </div>
+    )
+}
 
 const GamePage = () => {
     const [quizData, setQuizData] = useState<IQuiz | null>(null)
@@ -45,7 +68,6 @@ const GamePage = () => {
         }
     }
 
-    // Fetch quiz data
     useEffect(() => {
         const fetchQuiz = async () => {
             if (!gamePinId) {
@@ -69,7 +91,6 @@ const GamePage = () => {
         fetchQuiz()
     }, [gamePinId])
 
-    // Handle countdown timer
     useEffect(() => {
         if (countdown === null || countdown <= 0) return
 
@@ -80,20 +101,17 @@ const GamePage = () => {
         return () => clearTimeout(countdownTimer)
     }, [countdown])
 
-    // Connect to WebSocket and setup listeners
     useEffect(() => {
         if (!sessionId) return
 
         const socket = socketClient.connect()
 
-        // Sync state on mount (handles page refresh)
         if (socket.connected && sessionId) {
             getGameSession(sessionId).then(response => {
                 setGameState(response.payload.status as GameState)
                 setCurrentQuestionIndex(response.payload.currentQuestionIndex)
                 setTimeLeft(response.payload.timeLeft)
             }).catch(console.error)
-            // Fetch initial player count
             getActivePlayers(sessionId)
                 .then(d => {
                     if (d?.payload?.length) setPlayerCount(d.payload.length)
@@ -121,14 +139,12 @@ const GamePage = () => {
             rejoinGame()
         })
 
-        // Listen for countdown ticks from backend
         socket.on('countdown-tick', (data) => {
             console.log('⏳ Countdown tick:', data.countdown)
             setCountdown(data.countdown)
             setGameState(GameState.COUNTDOWN)
         })
 
-        // Listen for real-time timer updates from backend
         socket.on('time-update', (data) => {
             setTimeLeft(data.timeLeft)
         })
@@ -138,21 +154,18 @@ const GamePage = () => {
             setGameState(data.state)
         })
 
-        // Listen for player answers in real-time
         socketClient.onPlayerAnswered((data) => {
             console.log('✅ Player answered:', data.playerName)
             setPlayersAnswered(prev => new Set([...prev, data.playerName]))
             setAnswersReceived(data.answerCount)
         })
 
-        // Listen for question results (when timer hits 0)
         socketClient.onQuestionResults((data) => {
             console.log('📊 Question results:', data)
             setLeaderboard(data.leaderboard)
             setGameState(GameState.RESULTS_READY)
         })
 
-        // Listen for players joining during the game
         socketClient.onPlayerJoined((data) => {
             console.log('👥 Player joined during game:', data.playerName)
             if (data.totalPlayers) {
@@ -160,20 +173,17 @@ const GamePage = () => {
             }
         })
 
-        // Listen for game ended — host auto-navigates to score
         socketClient.onGameEnded((data) => {
             console.log('🏁 Game ended:', data)
             router.push(`/score?sessionId=${sessionId}`)
         })
 
-        // Listen for question started (after countdown)
         socket.on('question-started', (data) => {
             console.log('⏱️ Question timer started:', data)
             setGameState(GameState.IN_PROGRESS)
             setCountdown(null)
         })
 
-        // Cleanup
         return () => {
             socketClient.off('player-answered')
             socketClient.off('question-results')
@@ -185,7 +195,6 @@ const GamePage = () => {
         }
     }, [sessionId])
 
-    // Reset answer tracking when moving to next question
     useEffect(() => {
         setPlayersAnswered(new Set())
         setAnswersReceived(0)
@@ -199,37 +208,31 @@ const GamePage = () => {
             setCurrentQuestionIndex(nextIndex)
             setGameState(GameState.IN_PROGRESS)
 
-            // Emit WebSocket event for next question - backend handles timer
             socketClient.nextQuestion(sessionId, nextIndex)
         } else {
-            // Game finished
             setGameState(GameState.COMPLETED)
 
-            // Emit game ended event
             socketClient.endGame(sessionId)
 
-            // Navigate to final score
             router.push(`/score?sessionId=${sessionId}`)
         }
     }
 
-    // Loading state
     if (loading) {
         return (
             <div className='game-pin-background h-screen bg-no-repeat bg-cover flex justify-center items-center'>
-                <Card>
-                    <CardHeader className='text-2xl'>Loading quiz...</CardHeader>
+                <Card className='bg-white/95 border-2 border-slate-800 border-b-[6px] border-r-[6px]'>
+                    <CardHeader className='text-2xl animate-fadeIn'>Loading quiz...</CardHeader>
                 </Card>
             </div>
         )
     }
 
-    // Error state
     if (error || !quizData) {
         return (
             <div className='game-pin-background h-screen bg-no-repeat bg-cover flex justify-center items-center'>
-                <Card>
-                    <CardHeader className='text-2xl text-red-500'>
+                <Card className='bg-white/95 border-2 border-red-400 border-b-[6px] border-r-[6px]'>
+                    <CardHeader className='text-2xl text-red-500 animate-fadeIn'>
                         {error || 'Quiz not found'}
                     </CardHeader>
                 </Card>
@@ -237,13 +240,11 @@ const GamePage = () => {
         )
     }
 
-
-    // Connection waiting
     if (!isConnected) {
         return (
             <div className='game-pin-background h-screen bg-no-repeat bg-cover flex justify-center items-center'>
-                <Card>
-                    <CardHeader className='text-2xl'>Connecting to game server...</CardHeader>
+                <Card className='bg-white/95 border-2 border-slate-800 border-b-[6px] border-r-[6px]'>
+                    <CardHeader className='text-2xl animate-fadeIn'>Connecting to game server...</CardHeader>
                 </Card>
             </div>
         )
@@ -251,40 +252,46 @@ const GamePage = () => {
 
     const currentQuestion = quizData.questions[currentQuestionIndex]
 
-    // Show countdown screen before question starts
     if (countdown !== null && countdown > 0) {
         return (
             <div className='game-pin-background h-screen bg-no-repeat bg-cover flex justify-center items-center'>
-                <div className='text-center'>
-                    <div className='text-white text-9xl font-bold animate-pulse mb-4'>
+                <div className='text-center animate-fadeIn'>
+                    <div className='text-white text-9xl font-bold mb-4'>
                         {countdown}
                     </div>
-                    <p className='text-white text-2xl'>Get Ready!</p>
+                    <p className='text-white text-2xl font-oldschool'>Get Ready!</p>
                 </div>
             </div>
         )
     }
 
-    // Show result screen
     if (gameState === GameState.RESULTS_READY || gameState === GameState.PAYOUT) {
     return (
         <div className='result-background h-screen bg-no-repeat bg-cover flex flex-col justify-center items-center p-4'>
+            <AutoAdvance onAdvance={handleNextQuestion} />
             <div className='w-full max-w-3xl space-y-6'>
-                {/* Leaderboard Card */}
-                <Card className='bg-white/95 backdrop-blur-sm'>
+                <Card className='bg-white/95 border-2 border-slate-800 border-b-[6px] border-r-[6px]'>
                     <CardHeader className='py-6'>
                         <h3 className='text-3xl font-bold text-center mb-6'>Scoreboard</h3>
                         <div className='space-y-3 max-h-[60vh] overflow-y-auto pr-2'>
                             {leaderboard.length === 0 ? (
-                                <p className='text-center text-gray-500 py-8'>Loading scores...</p>
+                                <p className='text-center text-slate-500 py-8'>Loading scores...</p>
                             ) : (
                                 leaderboard.map((player, index) => (
-                                    <div 
-                                        key={player.id} 
-                                        className='flex items-center gap-4 p-4 rounded-lg bg-slate-50'
+                                    <div
+                                        key={player.id}
+                                        className='flex items-center gap-4 p-4 rounded-lg bg-slate-50 border-2 border-slate-800 border-b-[4px] border-r-[4px]'
                                     >
-                                        <div className='text-2xl font-bold w-10 text-center'>
-                                            {index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : index + 1}
+                                        <div className='text-2xl font-bold w-10 text-center shrink-0'>
+                                            {index === 0 ? (
+                                                <TrophyIcon size={28} weight="fill" className='text-yellow-500' />
+                                            ) : index === 1 ? (
+                                                <TrophyIcon size={24} weight="fill" className='text-slate-400' />
+                                            ) : index === 2 ? (
+                                                <TrophyIcon size={20} weight="fill" className='text-orange-500' />
+                                            ) : (
+                                                <span className='text-slate-500'>#{index + 1}</span>
+                                            )}
                                         </div>
                                         <div className='flex items-center gap-3 flex-1'>
                                             <h3 className='text-xl font-oldschool truncate'>
@@ -301,37 +308,38 @@ const GamePage = () => {
                     </CardHeader>
                 </Card>
 
-                {/* Auto-advancing... */}
                 <div className='flex justify-center'>
-                    <p className='text-white/70 text-lg font-oldschool animate-pulse'>
-                        Next question coming up...
-                    </p>
+                    <Button
+                        variant="active"
+                        size="xl"
+                        onClick={handleNextQuestion}
+                        className='max-w-xs'
+                    >
+                        Next Question
+                    </Button>
                 </div>
             </div>
         </div>
     )
 }
 
-    // Show question screen
     return (
         <div className='game-pin-background h-full md:h-screen bg-no-repeat bg-cover flex justify-around'>
-            <div className='w-full flex flex-col justify-center gap-10 px-4'>
-                {/* Connection Status */}
-                <div className='absolute top-4 right-4'>
-                    <span className='text-white text-sm'>
-                        {isConnected ? '🟢 Live' : '🔴 Offline'}
+            <div className='w-full flex flex-col justify-center gap-10 px-4 max-w-5xl mx-auto'>
+                <div className='absolute top-4 right-4 flex items-center gap-2'>
+                    <span className={`w-2.5 h-2.5 rounded-full ${isConnected ? 'bg-green-400' : 'bg-red-400'}`} />
+                    <span className='text-white text-sm font-oldschool'>
+                        {isConnected ? 'Live' : 'Offline'}
                     </span>
                 </div>
 
-                {/* Question */}
-                <Card>
-                    <CardHeader className='text-3xl text-center'>
+                <Card className='bg-white/95 border-2 border-slate-800 border-b-[6px] border-r-[6px] max-w-4xl mx-auto w-full'>
+                    <CardHeader className='text-3xl text-center font-bold'>
                         {currentQuestion.question}
                     </CardHeader>
                 </Card>
 
-                {/* Answer Options */}
-                <div className='grid grid-cols-1 sm:grid-cols-2 gap-4'>
+                <div className='grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-4xl mx-auto w-full'>
                     {currentQuestion.answers.map((answer, index) => {
                         const { Icon, color, borderColor } = ANSWER_CONFIG[index % ANSWER_CONFIG.length]
                         return (
@@ -352,42 +360,46 @@ const GamePage = () => {
                     })}
                 </div>
 
-                {/* Timer, Player Count, and Question Info */}
-                <div className='flex flex-wrap justify-between items-center gap-2'>
-                    <div
-                        className='flex items-center text-white text-xl'>
-                        <div className='border-2 border-black p-5 font-[Oi] text-white text-3xl rounded-full bg-[#F24E1E]'>
+                <div className='flex flex-wrap items-center justify-center sm:justify-between gap-4 max-w-4xl mx-auto w-full'>
+                    <div className='flex items-center gap-3 order-1 sm:order-none'>
+                        <div className='border-2 border-slate-800 p-4 font-bold text-white text-3xl rounded-full bg-[#F24E1E] min-w-[60px] text-center'>
                             {timeLeft}
                         </div>
-                        <p className='ml-2'>seconds remaining</p>
+                        <p className='text-white text-lg font-oldschool'>seconds remaining</p>
                     </div>
-                    <div className='flex items-center gap-3 text-white'>
-                        <span className='bg-black/40 px-3 py-1 rounded-full text-sm'>
-                            👥 {playerCount > 0 ? `${playerCount} players` : 'Waiting for players'}
+                    <div className='flex items-center gap-4 order-3 sm:order-none sm:ml-auto'>
+                        <span className='bg-black/40 px-4 py-2 rounded-full text-white text-sm font-oldschool flex items-center gap-1.5'>
+                            <UsersThreeIcon size={18} weight="fill" />
+                            {playerCount > 0 ? `${playerCount} players` : 'Waiting for players'}
                         </span>
+                        <Button variant="active" size="xl" className='!w-auto'>
+                            Q {currentQuestionIndex + 1}/{quizData.questions.length}
+                        </Button>
                     </div>
-                    <Button variant="active" size="xl">
-                        Question {currentQuestionIndex + 1} of {quizData.questions.length}
-                    </Button>
                 </div>
 
-                {/* Players Who Answered (Real-time) */}
                 {playersAnswered.size > 0 && (
-                    <Card>
-                        <CardHeader>
-                            <p className='text-sm text-gray-600'>Players who answered:</p>
-                            <div className='flex flex-wrap gap-2 '>
-                                {Array.from(playersAnswered).map((playerName) => (
-                                    <span
-                                        key={playerName}
-                                        className='bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm'
-                                    >
-                                        {playerName} ✓
-                                    </span>
-                                ))}
-                            </div>
-                        </CardHeader>
-                    </Card>
+                    <div className='max-w-4xl mx-auto w-full'>
+                        <Card className='bg-white/95 border-2 border-slate-800 border-b-[4px] border-r-[4px]'>
+                            <CardHeader>
+                                <p className='text-sm text-slate-500 font-oldschool flex items-center gap-1.5'>
+                                    <CheckCircleIcon size={16} weight="fill" className='text-green-500' />
+                                    Players who answered
+                                </p>
+                                <div className='flex flex-wrap gap-2 mt-1'>
+                                    {Array.from(playersAnswered).map((playerName) => (
+                                        <span
+                                            key={playerName}
+                                            className='bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-oldschool flex items-center gap-1'
+                                        >
+                                            <CheckCircleIcon size={14} weight="fill" />
+                                            {playerName}
+                                        </span>
+                                    ))}
+                                </div>
+                            </CardHeader>
+                        </Card>
+                    </div>
                 )}
             </div>
         </div>

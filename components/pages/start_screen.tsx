@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react'
 import { Button } from '../ui/button'
 import { StatusBadge } from '../ui/status-badge'
-import { GameControllerIcon, MagicWandIcon, WarningCircle, ArrowClockwise, PencilSimpleLine, Shuffle, Check } from '@phosphor-icons/react'
+import { GameControllerIcon, MagicWandIcon, WarningCircleIcon, ArrowClockwiseIcon, PencilSimpleLineIcon, Shuffle, CheckIcon } from '@phosphor-icons/react'
 import { useRouter } from 'next/navigation'
 import { ConnectWalletButton } from '../custom/connect-wallet-button'
 import { useAccount } from 'wagmi'
@@ -57,13 +57,13 @@ const StartScreen = () => {
         <div className='flex items-center gap-2 animate-fadeIn'>
           {mounted && (
             isEditingName ? (
-              <div className='flex items-center gap-2 bg-white/90 rounded-lg px-3 py-2'>
+              <div className='flex items-center gap-2 bg-white/90 rounded-lg border-2 border-slate-800 border-b-[4px] border-r-[4px] px-4 py-2.5'>
                 <input
                   autoFocus
                   value={editName}
                   onChange={(e) => setEditName(e.target.value)}
                   maxLength={20}
-                  className='text-sm font-oldschool bg-transparent outline-none text-gray-800 w-28'
+                  className='text-base font-oldschool bg-transparent outline-none text-gray-800 w-32'
                   onKeyDown={(e) => {
                     if (e.key === 'Enter') handleSaveName()
                     if (e.key === 'Escape') setIsEditingName(false)
@@ -71,25 +71,27 @@ const StartScreen = () => {
                   onBlur={handleSaveName}
                 />
                 <button onClick={handleSaveName} className='cursor-pointer text-green-600 hover:text-green-800'>
-                  <Check size={16} weight="bold" />
+                  <CheckIcon size={20} weight="bold" />
                 </button>
               </div>
             ) : (
-              <div className='flex items-center gap-1.5 bg-white/90 rounded-lg px-3 py-2'>
-                <span className='text-sm font-oldschool text-gray-800'>{playerName}</span>
-                <button
-                  onClick={() => { setEditName(playerName); setIsEditingName(true) }}
-                  className='cursor-pointer text-gray-400 hover:text-gray-600'
-                  title='Edit name'
-                >
-                  <PencilSimpleLine size={14} />
-                </button>
+              <div className='relative'>
+                <div className='flex items-center gap-1.5 bg-white/90 rounded-lg border-2 border-slate-800 border-b-[4px] border-r-[4px] px-4 py-2.5'>
+                  <span className='text-base font-oldschool text-gray-800'>{playerName}</span>
+                  <button
+                    onClick={() => { setEditName(playerName); setIsEditingName(true) }}
+                    className='cursor-pointer text-gray-700 hover:text-black'
+                    title='Edit name'
+                  >
+                    <PencilSimpleLineIcon size={20} />
+                  </button>
+                </div>
                 <button
                   onClick={handleShuffle}
-                  className='cursor-pointer text-gray-400 hover:text-gray-600'
+                  className='absolute -top-2.5 -right-2.5 bg-white rounded-full p-1.5 border-2 border-slate-800 shadow-md cursor-pointer hover:bg-gray-50 transition-transform hover:scale-110 active:border-b active:border-r'
                   title='Randomize name'
                 >
-                  <Shuffle size={14} />
+                  <ArrowClockwiseIcon size={14} weight="bold" className='text-black' />
                 </button>
               </div>
             )
@@ -120,14 +122,14 @@ const StartScreen = () => {
           <div className="flex flex-col items-center mt-4 gap-2">
             {hasError && (
               <StatusBadge variant="error">
-                <WarningCircle size={16} weight="fill" />
+                <WarningCircleIcon size={16} weight="fill" />
                 <span>{error}</span>
                 <button
                   onClick={() => window.location.reload()}
                   className="ml-1 p-1 rounded-full hover:bg-gray-100 transition-colors"
                   aria-label="Retry connection"
                 >
-                  <ArrowClockwise size={14} />
+                  <ArrowClockwiseIcon size={14} />
                 </button>
               </StatusBadge>
             )}

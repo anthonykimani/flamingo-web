@@ -6,15 +6,15 @@ import { Button } from '@/components/ui/button'
 import { GamePill } from '@/components/ui/game-pill'
 import { Users } from '@phosphor-icons/react'
 
-const CARD_GRADIENTS = [
-  'from-[#FF00B7] to-[#FF6B6B]',
-  'from-[#2819DB] to-[#6C63FF]',
-  'from-[#DA0202] to-[#FF6B35]',
-  'from-[#FF9700] to-[#FFD700]',
-  'from-[#7C3AED] to-[#EC4899]',
-  'from-[#059669] to-[#34D399]',
-  'from-[#0369A1] to-[#38BDF8]',
-  'from-[#BE123C] to-[#FB7185]',
+const CARD_COLORS = [
+  'bg-[#F14100]',
+  'bg-[#2819DB]',
+  'bg-[#009900]',
+  'bg-[#FF9700]',
+  'bg-[#E950BE]',
+  'bg-[#DA0202]',
+  'bg-[#00B8D4]',
+  'bg-[#7B1FA2]',
 ]
 
 interface SwipeGamesProps {
@@ -56,13 +56,13 @@ const SwipeGames = ({ games, onJoin, isSubmitting }: SwipeGamesProps) => {
           {games.map((game, index) => (
             <div
               key={game.id}
-              className='min-w-0 flex-[0_0_85%] pl-4'
+              className='min-w-0 flex-[0_0_70%] pl-4'
             >
               <div
                 className={`
-                  bg-gradient-to-br ${CARD_GRADIENTS[index % CARD_GRADIENTS.length]}
+                  ${CARD_COLORS[index % CARD_COLORS.length]}
                   rounded-2xl p-6 sm:p-8
-                  border-2 border-black/20
+                  border-2 border-slate-800
                   border-b-[6px] border-r-[6px]
                   active:border-b-2 active:border-r-2
                   transition-all duration-150
@@ -73,17 +73,7 @@ const SwipeGames = ({ games, onJoin, isSubmitting }: SwipeGamesProps) => {
               >
                 {/* Card Content */}
                 <div className='flex-1'>
-                  <h2
-                    className='
-                      font-[Oi]
-                      text-white
-                      [-webkit-text-stroke:2px_black]
-                      sm:[-webkit-text-stroke:3px_black]
-                      text-2xl xsm:text-3xl sm:text-4xl
-                      leading-tight
-                      break-words
-                    '
-                  >
+                  <h2 className='text-2xl xsm:text-3xl sm:text-4xl font-bold text-white leading-tight break-words drop-shadow-lg'>
                     {game.gameTitle}
                   </h2>
 
@@ -102,7 +92,7 @@ const SwipeGames = ({ games, onJoin, isSubmitting }: SwipeGamesProps) => {
                 <Button
                   variant="active"
                   size="xl"
-                  className='bg-white/90 text-black hover:bg-white border-2 border-black/30 border-b-[6px] border-r-[6px] active:border-b-2 active:border-r-2'
+                  className='bg-white/90 text-black hover:bg-white border-2 border-slate-800 border-b-[6px] border-r-[6px] active:border-b-2 active:border-r-2'
                   onClick={() => onJoin(game.gamePin)}
                   disabled={isSubmitting}
                 >

@@ -26,7 +26,7 @@ export interface IGameSession {
 export interface IGameConfig {
     quizId: string;
     gameMode: GameMode;
-    hasPrizes: boolean;
+    hasPrizes?: boolean;
     entryFee?: string;
     prizePool?: number;
     minPlayers?: number;

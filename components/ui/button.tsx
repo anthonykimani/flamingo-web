@@ -91,12 +91,12 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     return (
       <div className="relative inline-block">
         {leftIcon && (
-          <div className="absolute left-4 top-1/2 -translate-y-[65%] text-slate-900 pointer-events-none z-10">
+          <div className="absolute left-4 top-1/2 -translate-y-[65%] pointer-events-none z-10">
             {leftIcon}
           </div>
         )}
         {centerIcon && (
-          <div className="absolute left-1/2 top-2/5 -translate-x-1/2 -translate-y-1/2 text-slate-900 pointer-events-none z-10">
+          <div className="absolute left-1/2 top-2/5 -translate-x-1/2 -translate-y-1/2 pointer-events-none z-10">
             {centerIcon}
           </div>
         )}
