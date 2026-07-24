@@ -2,16 +2,28 @@
 
 import { useWalletAuth } from '@/hooks/use-wallet-auth';
 import { useAccount } from 'wagmi';
+import { useWorldApp } from '@/hooks/use-world-app';
+import { useEffect } from 'react';
 
 export function SignInGate({ children }: { children: React.ReactNode }) {
   const { isConnected } = useAccount();
   const { isAuthenticated, isAuthenticating, authenticate } = useWalletAuth();
+  const {
+    isWorldApp, isAuthenticated: isWorldAppAuthed,
+    hasToken, signIn, isAuthenticating: isWorldAppLoading,
+  } = useWorldApp();
 
-  if (isAuthenticated) {
+  useEffect(() => {
+    if (isWorldApp && isWorldAppAuthed && !hasToken && !isWorldAppLoading) {
+      signIn()
+    }
+  }, [isWorldApp, isWorldAppAuthed, hasToken, isWorldAppLoading, signIn])
+
+  if (isAuthenticated || (isWorldApp && hasToken)) {
     return <>{children}</>;
   }
 
-  if (isAuthenticating) {
+  if (isAuthenticating || isWorldAppLoading) {
     return (
       <div className="flex flex-col items-center justify-center h-64 gap-3">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-amber-500" />
@@ -20,7 +32,11 @@ export function SignInGate({ children }: { children: React.ReactNode }) {
     );
   }
 
-  if (!isConnected) {
+  if (!isConnected && !isWorldApp) {
+    return <>{children}</>;
+  }
+
+  if (isWorldApp && !isWorldAppAuthed) {
     return <>{children}</>;
   }
 

@@ -11,6 +11,7 @@ import { toast } from 'sonner'
 import { Card, CardContent, CardTitle } from '../ui/card'
 import { useAccount } from 'wagmi'
 import { useWalletAuth } from '@/hooks/use-wallet-auth'
+import { useWorldApp } from '@/hooks/use-world-app'
 
 interface Theme {
   id: string
@@ -35,15 +36,32 @@ const SelectTheme = () => {
   const searchParams = useSearchParams()
   const { isConnected } = useAccount()
   const { isAuthenticated, isAuthenticating, authenticate } = useWalletAuth()
+  const {
+    isWorldApp, isAuthenticated: isWorldAppAuthed,
+    hasToken, signIn, isAuthenticating: isWorldAppLoading,
+  } = useWorldApp()
   const gameMode = (searchParams.get('gameMode') as GameMode) || GameMode.HANGOUTS
   const [loadingTheme, setLoadingTheme] = useState<string | null>(null)
 
   const handleThemeSelect = async (theme: Theme) => {
-    if (!isConnected) {
+    if (isWorldApp && !isConnected) {
+      if (!isWorldAppAuthed) {
+        toast.error('Please connect your wallet in World App first')
+        return
+      }
+      if (isWorldAppLoading) return
+      if (!hasToken) {
+        toast.info('Signing in with World App...')
+        const ok = await signIn()
+        if (!ok) {
+          toast.error('Failed to sign in with World App')
+          return
+        }
+      }
+    } else if (!isConnected) {
       toast.error('Connect your wallet to create quizzes')
       return
-    }
-    if (!isAuthenticated) {
+    } else if (!isAuthenticated) {
       toast.info('Sign in with your wallet first')
       try { await authenticate() } catch { return }
     }
