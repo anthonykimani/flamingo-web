@@ -3,7 +3,7 @@
 import { Button } from '@/components/ui/button'
 import { Progress } from '@/components/ui/progress'
 import { GameControllerIcon, CheckCircle, XCircle, FireIcon } from '@phosphor-icons/react'
-import React, { useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { getLeaderboard } from '@/services/quiz_service'
 import { IPlayer } from '@/interfaces/IQuiz'
@@ -62,7 +62,7 @@ const ScoreBoardPage = () => {
         return (
             <div className='result-background flex justify-center items-center h-screen bg-no-repeat bg-cover'>
                 <div className='bg-white/95 rounded-xl border-2 border-slate-800 border-b-[6px] border-r-[6px] mx-4 px-8 py-10 text-center animate-fadeIn'>
-                    <div className='text-lg sm:text-2xl font-oldschool text-slate-600'>Loading final scores...</div>
+                    <div className='text-lg sm:text-2xl font-oldschool text-slate-600'>Crunching the numbers...</div>
                 </div>
             </div>
         )
@@ -79,14 +79,14 @@ const ScoreBoardPage = () => {
                     <h1 className="font-[Oi] text-white [-webkit-text-stroke:1px_black] sm:[-webkit-text-stroke:2px_black] text-4xl sm:text-6xl">
                         Flamingo
                     </h1>
-                    <h2 className='text-white text-2xl sm:text-3xl font-bold drop-shadow-lg'>
+                    <h2 className='text-white text-2xl sm:text-3xl font-oldschool drop-shadow-lg'>
                         Final Results
                     </h2>
                 </div>
 
                 <div className='bg-white/95 rounded-xl border-2 border-slate-800 border-b-[6px] border-r-[6px] overflow-hidden'>
                     {leaderboard.length === 0 ? (
-                        <p className='text-center text-slate-500 py-8'>No scores to display</p>
+                        <p className='text-center text-slate-500 py-8'>No scores yet</p>
                     ) : (
                         <div>
                             {leaderboard.map((player, index) => {
@@ -110,16 +110,16 @@ const ScoreBoardPage = () => {
 
                                         <div className='flex items-center gap-3 text-sm text-slate-500 shrink-0'>
                                             <span className='flex items-center gap-1'>
-                                                <CheckCircle size={16} weight="fill" className='text-green-500' />
+                                                <CheckCircle size={16} className='text-[#009900]' />
                                                 {player.correctAnswers}
                                             </span>
                                             <span className='flex items-center gap-1'>
-                                                <XCircle size={16} weight="fill" className='text-red-400' />
+                                                <XCircle size={16} className='text-[#DA0202]' />
                                                 {player.wrongAnswers}
                                             </span>
                                             {player.bestStreak > 1 && (
                                                 <span className='flex items-center gap-1'>
-                                                    <FireIcon size={16} weight="fill" className='text-orange-500' />
+                                                    <FireIcon size={16} className='text-[#F14100]' />
                                                     {player.bestStreak}x
                                                 </span>
                                             )}
@@ -133,7 +133,7 @@ const ScoreBoardPage = () => {
 
                                         <Progress
                                             value={visibleRows > index ? pct : 0}
-                                            barColor={index === 0 ? 'bg-yellow-400' : index === 1 ? 'bg-slate-400' : index === 2 ? 'bg-orange-400' : 'bg-blue-400'}
+                                            barColor={index === 0 ? 'bg-[#FF9700]' : index === 1 ? 'bg-[#1E293B]' : index === 2 ? 'bg-[#F14100]' : 'bg-[#2819DB]'}
                                             className='hidden sm:block w-16 lg:w-24 shrink-0'
                                             style={{ transitionDelay: visibleRows > index ? `${300 + index * 100}ms` : '0ms' }}
                                         />

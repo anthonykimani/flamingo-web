@@ -1,6 +1,6 @@
 'use client'
 
-import React from 'react'
+// React import removed (new JSX transform)
 import { Button } from '../ui/button'
 import { RankingIcon, StrategyIcon, UsersThreeIcon } from '@phosphor-icons/react'
 import { useRouter } from 'next/navigation'
@@ -28,8 +28,6 @@ const ChooseGameType = ({ onGameTypeSelect }: ChooseGameTypeProps) => {
                         <UsersThreeIcon size={32} />Hangouts
                     </Button>
                     <Button
-                        showComingSoon
-                        disabled
                         onClick={() => onGameTypeSelect(GameMode.TEAM_BUILDING)}
                         variant={"active"}
                         size={"gametype"}

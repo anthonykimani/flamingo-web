@@ -1,5 +1,8 @@
 'use client';
 
+// Must be the first import: stubs indexedDB during SSR before WalletConnect loads.
+import '@/utils/ssr-guard';
+
 import '@rainbow-me/rainbowkit/styles.css';
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';

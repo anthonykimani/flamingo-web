@@ -4,11 +4,14 @@ import { Button } from '@/components/ui/button'
 import { Card, CardHeader } from '@/components/ui/card'
 import { ConnectionStatus } from '@/components/ui/connection-status'
 import { JoinGameStep } from '@/enums/join_game_step'
-import { MagicWandIcon, UserIcon } from '@phosphor-icons/react'
+import { HourglassIcon, MagicWandIcon, PencilSimpleIcon, PlayIcon, UserIcon } from '@phosphor-icons/react'
 import { useRouter } from 'next/navigation'
-import React, { useState, useEffect, useRef } from 'react'
-import { getGameSessionByGamePin, getActiveGames } from '@/services/quiz_service'
+import { useState, useEffect, useRef } from 'react'
+import { getGameSessionByGamePin, getActiveGames, joinGame } from '@/services/quiz_service'
+import { setGuestToken } from '@/utils/tokens'
+
 import { GameState } from '@/enums/game_state'
+import { GameMode } from '@/enums/game_mode'
 import socketClient from '@/utils/socket/socket.client'
 import { SocketEvents } from '@/enums/socket-events'
 import NavigationBar from '@/components/navigation/navigation-bar'
@@ -32,6 +35,7 @@ const JoinGame = () => {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [countdown, setCountdown] = useState<number | null>(null)
   const [editName, setEditName] = useState('')
+  const [isDesignatedHost, setIsDesignatedHost] = useState(false)
   const router = useRouter()
 
   const gameSessionRef = useRef(gameSession)
@@ -81,12 +85,22 @@ const JoinGame = () => {
       }
     })
 
+    socket.on('host-transferred', (data: { successorName: string }) => {
+      const name = nicknameRef.current
+      if (name === data.successorName) {
+        setIsDesignatedHost(true)
+      }
+    })
+
     return () => {
       socket.off('connect')
       socket.off('disconnect')
       socket.off('pre-game-countdown')
       socket.off('game-started')
       socket.off('game-state-changed')
+      socket.off('host-transferred')
+      socketClient.off(SocketEvents.JOINED_GAME)
+      socketClient.off(SocketEvents.ERROR)
     }
   }, [router])
 
@@ -154,23 +168,34 @@ const JoinGame = () => {
 
       const isGameAlreadyRunning = response.payload.status === GameState.COUNTDOWN || response.payload.status === GameState.IN_PROGRESS
 
+      // Register the player server-side and obtain a guest token that binds
+      // this tab to the player identity (required for socket + answers)
+      const joinResponse = await joinGame(pinToUse, nickname.trim(), userAddress ?? undefined)
+      const { session, token: guestToken } = joinResponse.payload
+      setGuestToken(guestToken)
+      setGameSession(session)
+
       if (isGameAlreadyRunning) {
-        router.push(`/play?sessionId=${response.payload.id}&playerName=${nickname}&gamePin=${response.payload.gamePin}`)
+        router.push(`/play?sessionId=${session.id}&playerName=${nickname}&gamePin=${session.gamePin}`)
         setIsSubmitting(false)
         return
       }
 
-      setGameSession(response.payload)
+      // Force reconnect so the fresh guest token is used in the socket handshake
+      socketClient.reconnect()
+      socketClient.joinGame(session.id, nickname, (userAddress ?? '') as `0x${string}`)
 
-      socketClient.joinGame(response.payload.id, nickname, (userAddress ?? '') as `0x${string}`)
+      // Remove stale listeners before registering new ones
+      socketClient.off(SocketEvents.JOINED_GAME)
+      socketClient.off(SocketEvents.ERROR)
 
       socketClient.onJoinedGame((data) => {
         console.log('Joined game via WebSocket:', data)
         if (data.success) {
           if (data.gameState === 'countdown' || data.gameState === 'in_progress') {
-            router.push(`/play?sessionId=${response.payload.id}&playerName=${nickname}&gamePin=${response.payload.gamePin}`)
+            router.push(`/play?sessionId=${session.id}&playerName=${nickname}&gamePin=${session.gamePin}`)
           } else {
-            setGameSession(response.payload)
+            setGameSession(session)
             setStepper(JoinGameStep.LOBBYROOM)
           }
         } else {
@@ -206,7 +231,7 @@ const JoinGame = () => {
 
               {loadingGames && activeGames.length === 0 ? (
                 <div className='flex justify-center py-16'>
-                  <div className='animate-fadeIn text-white/70 text-lg font-oldschool'>Loading games...</div>
+                  <div className='animate-fadeIn text-white/70 text-lg font-oldschool'>Browsing games...</div>
                 </div>
               ) : activeGames.length === 0 ? (
                 <div className='flex flex-col items-center gap-4 mt-8'>
@@ -250,6 +275,9 @@ const JoinGame = () => {
       case JoinGameStep.LOBBYROOM:
         return (
           <div className="flex flex-col gap-2 game-type-background h-screen w-screen bg-no-repeat bg-cover md:flex justify-center p-1 sm:p-3">
+            <div className="absolute top-4 left-4 z-50">
+              <NavigationBar />
+            </div>
             <h1 className="font-[Oi] text-white [-webkit-text-stroke:2px_black] sm:[-webkit-text-stroke:3px_black] text-4xl xsm:text-6xl sm:text-8xl text-center">
               Flamingo
             </h1>
@@ -263,12 +291,10 @@ const JoinGame = () => {
                 {!isEditingNickname && (
                   <button
                     onClick={() => { setEditName(nickname); setIsEditingNickname(true) }}
-                    className='absolute -top-1 -right-1 bg-white rounded-full p-1.5 shadow-md opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer'
+                    className='absolute -top-1 -right-1 bg-white rounded-full p-1.5 border-2 border-slate-800 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer hover:bg-slate-100'
                     title='Edit nickname'
                   >
-                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 256 256">
-                      <path d="M227.31,73.37,182.63,28.68a16,16,0,0,0-22.63,0L36.69,152A15.86,15.86,0,0,0,32,163.31V208a16,16,0,0,0,16,16H92.69A15.86,15.86,0,0,0,104,219.31L227.31,96a16,16,0,0,0,0-22.63ZM92.69,208H48V163.31l88-88L180.69,120ZM192,108.68,147.31,64l24-24L216,84.68Z"/>
-                    </svg>
+                    <PencilSimpleIcon size={14} />
                   </button>
                 )}
               </div>
@@ -313,34 +339,58 @@ const JoinGame = () => {
                   </button>
                 </div>
               ) : (
-                <h3 className='text-white text-2xl font-bold text-center'>{nickname}</h3>
+                <h3 className='text-white text-2xl font-oldschool text-center'>{nickname}</h3>
               )}
             </div>
 
-            <div className='flex justify-around'>
-              <Card className='w-full max-w-md'>
-                <CardHeader className='text-center px-8'>
-                  {countdown !== null && countdown > 0 ? (
-                    <div>
-                      <p className='text-5xl font-bold text-[#FF00B7] animate-pulse mb-2'>{countdown}</p>
-                      <p className='text-xl font-oldschool'>Game starting in {countdown}...</p>
-                    </div>
-                  ) : (
-                    <div>
-                      <p className='text-2xl font-oldschool mb-2'>You're in!</p>
-                      <p className='text-lg font-oldschool mb-2'>
-                        See your nickname on the host's screen?
-                      </p>
-                      <p className='text-lg font-oldschool mb-2'>Waiting for game to start...</p>
-                      <div className='animate-pulse text-black/80 text-sm flex items-center justify-center gap-2'>
-                        <span>⏳</span>
-                        <span>Get ready!</span>
+            {countdown !== null && countdown > 0 ? (
+              <div className='flex justify-center items-center flex-1'>
+                <div className='text-center animate-fadeIn'>
+                  <div className='text-white text-9xl font-bold'>{countdown}</div>
+                  <p className='text-white text-2xl font-oldschool mt-4'>Game starting in {countdown}s...</p>
+                </div>
+              </div>
+            ) : (
+              <>
+                <div className='flex justify-around'>
+                  <Card className='w-full max-w-md'>
+                    <CardHeader className='text-center px-8'>
+                      <div>
+                        <p className='text-2xl font-oldschool mb-2'>You're in!</p>
+                        {gameSession?.gameMode && (
+                          <span className='inline-block bg-black/20 text-white/80 text-xs uppercase tracking-wider px-3 py-1 rounded-full font-oldschool mb-4'>
+                            {gameSession.gameMode === GameMode.HANGOUTS ? 'Hangouts' : gameSession.gameMode === GameMode.TEAM_BUILDING ? 'Team Building' : 'Degen PvP'}
+                          </span>
+                        )}
+                        {gameSession?.gameMode === GameMode.TEAM_BUILDING && !isDesignatedHost && (
+                          <div>
+                            <p className='text-lg font-oldschool mb-2'>
+                              Waiting for game to start...
+                            </p>
+                            <div className='animate-pulse text-black/80 text-sm flex items-center justify-center gap-2'>
+                              <HourglassIcon size={16} className="animate-icon-spin" />
+                              <span>Get ready!</span>
+                            </div>
+                          </div>
+                        )}
                       </div>
-                    </div>
-                  )}
-                </CardHeader>
-              </Card>
-            </div>
+                  </CardHeader>
+                </Card>
+              </div>
+              {(gameSession?.gameMode === GameMode.HANGOUTS || isDesignatedHost) && (
+                <div className='flex justify-center'>
+                  <Button
+                    buttoncolor="gamePin"
+                    size="xl"
+                    onClick={() => socketClient.startGame(gameSession.id)}
+                    className='w-full max-w-md'
+                  >
+                    <PlayIcon size={24} /> {gameSession?.gameMode === GameMode.HANGOUTS ? 'Play!' : 'Start Game as Host'}
+                  </Button>
+                </div>
+              )}
+              </>
+            )}
 
             <ConnectionStatus>
               {isSocketConnected ? 'Connected to game' : 'Reconnecting...'}

@@ -1,9 +1,10 @@
 "use client"
 
-import React, { useState } from 'react'
+import { useState, type ChangeEvent, type MouseEvent } from 'react'
 import { Input } from '../ui/input'
 import { Button } from '../ui/button'
 import { JoystickIcon, MagicWandIcon, PlusCircleIcon, XIcon } from '@phosphor-icons/react'
+import { toast } from 'sonner'
 import Image from 'next/image'
 import { circleAnswer, squareAnswer, starAnswer, triangleAnswer } from '@/lib/svg'
 import { useRouter } from 'next/navigation'
@@ -39,14 +40,14 @@ const CreateQuiz = ({ onSave, gameMode }: CreateQuizProps) => {
     const [isSubmitting, setIsSubmitting] = useState(false)
     const router = useRouter()
 
-    const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleTitleChange = (e: ChangeEvent<HTMLInputElement>) => {
         setQuizData(prev => ({
             ...prev,
             title: e.target.value
         }))
     }
 
-    const handleQuestionChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleQuestionChange = (e: ChangeEvent<HTMLInputElement>) => {
         setQuizData(prev => ({
             ...prev,
             questions: prev.questions.map((q, idx) =>
@@ -113,11 +114,11 @@ const CreateQuiz = ({ onSave, gameMode }: CreateQuizProps) => {
         setCurrentQuestionIndex(index)
     }
 
-    const handleDeleteQuestion = (index: number, e: React.MouseEvent) => {
+    const handleDeleteQuestion = (index: number, e: MouseEvent) => {
         e.stopPropagation()
 
         if (quizData.questions.length === 1) {
-            alert("You must have at least one question")
+            toast.warning("You must have at least one question")
             return
         }
 
@@ -137,13 +138,13 @@ const CreateQuiz = ({ onSave, gameMode }: CreateQuizProps) => {
     const handleSubmit = async () => {
         // Validate quiz data
         if (!quizData.title.trim()) {
-            alert('Please add a quiz title')
+            toast.warning('Please add a quiz title')
             return
         }
 
         const hasEmptyQuestions = quizData.questions.some(q => !q.question.trim())
         if (hasEmptyQuestions) {
-            alert('Please fill in all questions')
+            toast.warning('Please fill in all questions')
             return
         }
 
@@ -151,7 +152,7 @@ const CreateQuiz = ({ onSave, gameMode }: CreateQuizProps) => {
             q.answers.some(a => !a.answer.trim())
         )
         if (hasEmptyAnswers) {
-            alert('Please fill in all answers')
+            toast.warning('Please fill in all answers')
             return
         }
 
@@ -159,7 +160,7 @@ const CreateQuiz = ({ onSave, gameMode }: CreateQuizProps) => {
             q.answers.some(a => a.correctAnswer)
         )
         if (!hasCorrectAnswers) {
-            alert('Each question must have at least one correct answer')
+            toast.warning('Each question must have at least one correct answer')
             return
         }
 
@@ -184,7 +185,7 @@ const CreateQuiz = ({ onSave, gameMode }: CreateQuizProps) => {
 
         } catch (error) {
             console.error('Failed to create quiz/session:', error)
-            alert('Failed to create game. Please try again.')
+            toast.error('Failed to create game. Please try again.')
         } finally {
             setIsSubmitting(false)
         }

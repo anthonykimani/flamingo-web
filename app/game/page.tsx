@@ -1,9 +1,10 @@
 import GamePage from '@/components/pages/game_controller'
-import React, { Suspense } from 'react'
+import { Suspense } from 'react'
+import { PageLoader } from '@/components/ui/page-loader'
 
 const GameContainter = () => {
   return (
-    <Suspense>
+    <Suspense fallback={<PageLoader />}>
         <GamePage />
     </Suspense>
   )

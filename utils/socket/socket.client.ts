@@ -1,6 +1,7 @@
 import { io, Socket } from 'socket.io-client';
 import { SocketEvents } from '@/enums/socket-events';
 import { GameState } from '@/enums/game_state';
+import { getAuthToken } from '@/utils/tokens';
 
 class SocketClient {
     private socket: Socket | null = null;
@@ -11,18 +12,28 @@ class SocketClient {
     }
 
     connect(): Socket {
-        if (this.socket?.connected) {
-            return this.socket;
+        // Create the socket once so listeners registered anywhere survive.
+        // The auth callback runs on every handshake (including automatic
+        // reconnects), so the freshest wallet/guest token is always sent.
+        if (!this.socket) {
+            this.socket = io(this.url, {
+                transports: ['websocket', 'polling'],
+                auth: (cb) => cb({ token: getAuthToken() || undefined }),
+                autoConnect: false,
+                reconnection: true,
+                reconnectionDelay: 1000,
+                reconnectionAttempts: 5
+            });
+            this.setupConnectionHandlers();
         }
 
-        this.socket = io(this.url, {
-            transports: ['websocket', 'polling'],
-            reconnection: true,
-            reconnectionDelay: 1000,
-            reconnectionAttempts: 5
-        });
+        // The server rejects anonymous handshakes — only attempt a
+        // connection once a wallet or guest token exists.
+        const token = getAuthToken();
+        if (token && !this.socket.connected && !this.socket.active) {
+            this.socket.connect();
+        }
 
-        this.setupConnectionHandlers();
         return this.socket;
     }
 
@@ -121,7 +132,7 @@ class SocketClient {
         this.socket?.on(SocketEvents.ANSWER_SUBMITTED, callback);
     }
 
-    onPlayerAnswered(callback: (data: any) => void) {
+    onPlayerAnswered(callback: (data: { playerName: string; answeredCount: number; totalPlayers: number }) => void) {
         this.socket?.on(SocketEvents.PLAYER_ANSWERED, callback);
     }
 
@@ -144,6 +155,16 @@ class SocketClient {
 
     removeAllListeners() {
         this.socket?.removeAllListeners();
+    }
+
+    /** Force reconnect so the latest auth token is used in the handshake.
+     *  Unlike disconnect(), this preserves all existing event listeners. */
+    reconnect(): Socket {
+        if (this.socket) {
+            this.socket.disconnect();
+            this.socket.connect();
+        }
+        return this.socket!;
     }
 
     disconnect() {

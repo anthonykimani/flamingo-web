@@ -1,12 +1,13 @@
 'use client'
 
 import SelectTheme from '@/components/pages/select_theme'
-import React, { Suspense } from 'react'
+import { Suspense } from 'react'
+import { PageLoader } from '@/components/ui/page-loader'
 
 const SelectThemeContainer = () => {
   return (
-    <Suspense>
-        <SelectTheme />
+    <Suspense fallback={<PageLoader />}>
+      <SelectTheme />
     </Suspense>
   )
 }

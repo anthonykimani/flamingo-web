@@ -2,9 +2,9 @@
 
 import { Button } from '@/components/ui/button'
 import { ConnectionStatus } from '@/components/ui/connection-status'
-import { UserIcon, UsersThreeIcon } from '@phosphor-icons/react'
+import { CrownSimpleIcon, UserIcon, UsersThreeIcon } from '@phosphor-icons/react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import React, { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { getGameSession, getLeaderboard } from '@/services/quiz_service'
 import { IPlayer } from '@/interfaces/IQuiz'
 import socketClient from '@/utils/socket/socket.client'
@@ -12,6 +12,8 @@ import { IGameSession } from '@/interfaces/IGame'
 import { SocketEvents } from '@/enums/socket-events'
 import { PLAYER_COLORS } from '@/lib/constant'
 import { useAccount } from 'wagmi'
+import { useWalletAuth } from '@/hooks/use-wallet-auth'
+import NavigationBar from '@/components/navigation/navigation-bar'
 
 
 const LobbyPage = () => {
@@ -22,7 +24,11 @@ const LobbyPage = () => {
     const [preGameCountdown, setPreGameCountdown] = useState<number | null>(null)
     const [gameStarted, setGameStarted] = useState(false)
     const [hostJoinedRoom, setHostJoinedRoom] = useState(false)
+    const [lobbyCountdown, setLobbyCountdown] = useState<number | null>(null)
+    const [showHostAuthPrompt, setShowHostAuthPrompt] = useState(false)
+    const lobbyTimerRef = useRef<NodeJS.Timeout | null>(null)
     const { address, isConnected } = useAccount();
+    const { isAuthenticated, isAuthenticating, authenticate } = useWalletAuth();
     const router = useRouter()
     const searchParams = useSearchParams()
     const sessionId = searchParams.get('sessionId')
@@ -67,16 +73,26 @@ const LobbyPage = () => {
         // Connect to WebSocket
         const socket = socketClient.connect()
 
-        socket.on('connect', () => {
-            console.log('✅ Connected to WebSocket')
-            setIsSocketConnected(true)
-
+        const joinRoom = () => {
             // FIX #1: Join as Host (won't create player entity in backend)
             if (sessionId) {
                 console.log('🎮 Joining game room:', sessionId)
-                socketClient.joinGame(sessionId, isHost ? 'Host' : 'Spectator', address??"")
+                socketClient.joinGame(sessionId, isHost ? 'Host' : 'Spectator', address ?? "")
             }
+        }
+
+        socket.on('connect', () => {
+            console.log('✅ Connected to WebSocket')
+            setIsSocketConnected(true)
+            joinRoom()
         })
+
+        // Socket already connected (singleton) — the 'connect' event
+        // already fired, so join the room explicitly
+        if (socket.connected) {
+            setIsSocketConnected(true)
+            joinRoom()
+        }
 
         socket.on('disconnect', () => {
             console.log('❌ Disconnected from WebSocket')
@@ -142,49 +158,77 @@ const LobbyPage = () => {
             socketClient.off(SocketEvents.ERROR)
             socket.off('pre-game-countdown')
         }
-    }, [sessionId, gamePin, isHost, router])
+    }, [sessionId, gamePin, isHost, router, address])
 
-    // Auto-start game when host + socket ready + players are present
+    const handleStartGame = () => {
+        if (!sessionId) return
+        if (!isAuthenticated) {
+            setShowHostAuthPrompt(true)
+            return
+        }
+        setShowHostAuthPrompt(false)
+        socketClient.startGame(sessionId)
+    }
+
+    // Lobby countdown: auto-start game 10s after first player joins
     useEffect(() => {
         if (!isHost || gameStarted || preGameCountdown !== null) return
         if (players.length === 0) return
         if (!isSocketConnected || !hostJoinedRoom) return
 
-        const autoStartTimer = setTimeout(() => {
-            console.log('🎮 Auto-starting game...')
-            socketClient.startGame(sessionId!)
-        }, 2000)
+        if (!isAuthenticated) {
+            setShowHostAuthPrompt(true)
+            return
+        }
+        setShowHostAuthPrompt(false)
 
-        return () => clearTimeout(autoStartTimer)
-    }, [isHost, players.length, gameStarted, preGameCountdown, isSocketConnected, hostJoinedRoom, sessionId])
+        // Clear any existing timer before starting a new one
+        if (lobbyTimerRef.current) {
+            clearTimeout(lobbyTimerRef.current)
+            lobbyTimerRef.current = null
+        }
 
-    // Host skip pre-game countdown
+        setLobbyCountdown(10)
+        let count = 10
+
+        const tick = () => {
+            count--
+            if (count <= 0) {
+                setLobbyCountdown(null)
+                socketClient.startGame(sessionId!)
+                return
+            }
+            setLobbyCountdown(count)
+            lobbyTimerRef.current = setTimeout(tick, 1000)
+        }
+
+        lobbyTimerRef.current = setTimeout(tick, 1000)
+
+        return () => {
+            if (lobbyTimerRef.current) {
+                clearTimeout(lobbyTimerRef.current)
+                lobbyTimerRef.current = null
+            }
+        }
+    }, [isHost, players.length, gameStarted, preGameCountdown, isSocketConnected, hostJoinedRoom, sessionId, isAuthenticated])
+
+    // Host skip lobby countdown
     const handleSkipCountdown = () => {
         if (!sessionId) return
-        socketClient.startGame(sessionId)
-    }
-
-
-    const handleStartGame = async () => {
-        if (!sessionId || !gameSession) return
-
-        try {
-            console.log('🎮 Starting game...')
-
-            // Emit WebSocket event to notify all players
-            console.log('📡 Broadcasting start-game event')
-            socketClient.startGame(sessionId)
-
-        } catch (error) {
-            console.error('❌ Failed to start game:', error)
+        if (lobbyTimerRef.current) {
+            clearTimeout(lobbyTimerRef.current)
+            lobbyTimerRef.current = null
         }
+        setLobbyCountdown(null)
+        handleStartGame()
     }
+
 
     if (loading) {
         return (
             <div className='game-pin-background h-screen bg-no-repeat bg-cover flex justify-center items-center'>
                 <div className='bg-white/95 rounded-xl border-2 border-slate-800 border-b-[6px] border-r-[6px] py-10 px-8 text-center animate-fadeIn'>
-                    <div className='text-2xl font-oldschool text-slate-600'>Loading lobby...</div>
+                    <div className='text-2xl font-oldschool text-slate-600'>Setting up lobby...</div>
                 </div>
             </div>
         )
@@ -204,12 +248,18 @@ const LobbyPage = () => {
 
     return (
         <div className="flex flex-col p-4 gap-4 game-type-background h-screen bg-no-repeat bg-cover justify-center items-center w-full">
+            <div className="absolute top-4 left-4 z-50">
+                <NavigationBar />
+            </div>
             {/* Connection Debug Info */}
             <ConnectionStatus>
-                {isSocketConnected ? '🟢 Connected' : '🔴 Disconnected'}
+                <span className="flex items-center gap-1">
+                    <span className={`inline-block w-2 h-2 rounded-full ${isSocketConnected ? 'bg-[#009900]' : 'bg-[#DA0202]'}`} />
+                    {isSocketConnected ? 'Connected' : 'Disconnected'}
+                </span>
                 {sessionId && <div>Room: {sessionId.slice(0, 8)}...</div>}
                 {players.length > 0 && <div>Players: {players.length}</div>}
-                {isHost && <div>👑 Host View</div>}
+                {isHost && <div className="flex items-center gap-1"><CrownSimpleIcon size={14} className="text-yellow-500" />Host View</div>}
             </ConnectionStatus>
 
             <h1 className="font-[Oi] text-white [-webkit-text-stroke:2px_black] sm:[-webkit-text-stroke:3px_black] text-4xl xsm:text-6xl sm:text-8xl">
@@ -237,7 +287,7 @@ const LobbyPage = () => {
                         {gameSession.quiz?.title || 'Untitled Quiz'}
                     </h3>
                     <div className='flex items-center gap-1.5 text-slate-500 shrink-0'>
-                        <UsersThreeIcon size={20} weight="fill" />
+                        <UsersThreeIcon size={20} />
                         <span className='text-base font-oldschool'>
                             {players.length}
                         </span>
@@ -263,30 +313,57 @@ const LobbyPage = () => {
                 </div>
             </div>
 
+            {/* Lobby Countdown */}
+            {lobbyCountdown !== null && lobbyCountdown > 0 && (
+                <div className='text-center animate-fadeIn'>
+                    <div className='text-white text-9xl font-bold'>
+                        {lobbyCountdown}
+                    </div>
+                    <p className='text-white text-2xl font-oldschool mt-4'>
+                        Game starting in {lobbyCountdown}s...
+                    </p>
+                    <button
+                        onClick={handleSkipCountdown}
+                        className='mt-3 text-white/70 hover:text-white underline cursor-pointer font-oldschool text-sm'
+                    >
+                        Start Now
+                    </button>
+                </div>
+            )}
+
             {/* Pre-game Countdown */}
             {preGameCountdown !== null && preGameCountdown > 0 && (
+                <div className='text-center animate-fadeIn'>
+                    <div className='text-white text-9xl font-bold'>
+                        {preGameCountdown}
+                    </div>
+                    <p className='text-white text-2xl font-oldschool mt-4'>
+                        Game starting in {preGameCountdown}...
+                    </p>
+                </div>
+            )}
+
+            {/* Auth prompt for host */}
+            {showHostAuthPrompt && isHost && (
                 <div className='w-full max-w-md bg-white rounded-xl border-2 border-slate-800 border-b-[6px] border-r-[6px]'>
-                    <div className='text-center py-8 px-6'>
-                        <div className='text-7xl sm:text-8xl font-bold text-black leading-none animate-fadeIn'>
-                            {preGameCountdown}
-                        </div>
-                        <p className='text-lg font-oldschool text-slate-600 mt-4'>
-                            Game starting in {preGameCountdown}...
+                    <div className='text-center py-6 px-6'>
+                        <p className='text-lg font-oldschool text-slate-800 mb-3'>
+                            Sign with your wallet to start
                         </p>
-                        {isHost && (
-                            <button
-                                onClick={handleSkipCountdown}
-                                className='mt-3 text-sm text-slate-400 hover:text-slate-700 underline cursor-pointer font-oldschool'
-                            >
-                                Start Now
-                            </button>
-                        )}
+                        <Button
+                            onClick={isAuthenticating ? undefined : authenticate}
+                            disabled={isAuthenticating}
+                            variant="active"
+                            size="xl"
+                        >
+                            {isAuthenticating ? 'Signing...' : isConnected ? 'Sign In' : 'Connect Wallet'}
+                        </Button>
                     </div>
                 </div>
             )}
 
             {/* Waiting for players */}
-            {preGameCountdown === null && (
+            {preGameCountdown === null && lobbyCountdown === null && !showHostAuthPrompt && (
                 <div className='flex flex-col gap-2 w-full max-w-md'>
                     {isHost && players.length === 0 && (
                         <p className='text-white/70 text-center text-sm font-oldschool'>

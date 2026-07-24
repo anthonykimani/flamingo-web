@@ -5,6 +5,6 @@ export const PLAYER_COLORS = [
     'bg-[#FF9700]', // Orange
     'bg-[#E950BE]', // Pink
     'bg-[#DA0202]', // Red
-    'bg-[#00B8D4]', // Cyan
-    'bg-[#7B1FA2]', // Purple
+    'bg-[#FF00B7]', // Magenta
+    'bg-[#1E293B]', // Slate-800
 ]

@@ -1,9 +1,10 @@
 import ScoreBoardPage from '@/components/pages/score_board'
-import React, { Suspense } from 'react'
+import { Suspense } from 'react'
+import { PageLoader } from '@/components/ui/page-loader'
 
 const ScoreBoardContainer = () => {
     return (
-        <Suspense>
+        <Suspense fallback={<PageLoader />}>
             <ScoreBoardPage />
         </Suspense>
     )

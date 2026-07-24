@@ -1,7 +1,6 @@
-import React from 'react'
+import { useRouter } from 'next/navigation'
 import { Button } from '../ui/button'
 import { ArrowFatLeftIcon } from '@phosphor-icons/react/dist/ssr'
-import { useRouter } from 'next/navigation'
 
 interface NavigationBarProps {
     route?: string
@@ -17,13 +16,14 @@ const NavigationBar = ({ route }: NavigationBarProps) => {
         }
     }
     return (
-        <div>
+        <div className='flex items-center'>
             <div className='hidden sm:block'>
                 <Button
                     onClick={handleClick}
-                    leftIcon={<ArrowFatLeftIcon size={20} color="bg-transparent" />}
-                    variant={"default"}
-                    size='default'
+                    leftIcon={<ArrowFatLeftIcon size={16} />}
+                    variant='active'
+                    size='xl'
+                    className='w-auto'
                 >
                     Back
                 </Button>
@@ -32,10 +32,10 @@ const NavigationBar = ({ route }: NavigationBarProps) => {
             <div className='block sm:hidden'>
                 <Button
                     onClick={handleClick}
-                    centerIcon={<ArrowFatLeftIcon size={18} color="bg-transparent" />}
-                    variant={"default"}
+                    variant='active'
                     size='icon'
                 >
+                    <ArrowFatLeftIcon size={16} />
                 </Button>
             </div>
         </div>

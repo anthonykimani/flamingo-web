@@ -1,9 +1,10 @@
 import PlayGame from '@/components/pages/play_game'
-import React, { Suspense } from 'react'
+import { Suspense } from 'react'
+import { PageLoader } from '@/components/ui/page-loader'
 
 const PlayGameContainer = () => {
     return (
-        <Suspense>
+        <Suspense fallback={<PageLoader />}>
             <PlayGame />
         </Suspense>
     )

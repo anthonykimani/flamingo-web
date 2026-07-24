@@ -1,18 +1,20 @@
 'use client'
 
-import React, { useState } from 'react'
+import { useState, type ReactNode } from 'react'
 import { Button } from '../ui/button'
-import { XIcon } from '@phosphor-icons/react'
-import { AtomIcon, FilmSlateIcon, FlaskIcon, GlobeHemisphereWestIcon, LightbulbIcon, MusicNoteIcon, ScrollIcon, TrophyIcon } from '@phosphor-icons/react'
+import { AtomIcon, FilmSlateIcon, GlobeHemisphereWestIcon, LeafIcon, LightbulbIcon, MusicNoteIcon, ScrollIcon, TrophyIcon, XIcon } from '@phosphor-icons/react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { addAgentQuiz, createGameSession } from '@/services/quiz_service'
 import NavigationBar from '../navigation/navigation-bar'
 import { GameMode } from '@/enums/game_mode'
+import { toast } from 'sonner'
 import { Card, CardContent, CardTitle } from '../ui/card'
+import { useAccount } from 'wagmi'
+import { useWalletAuth } from '@/hooks/use-wallet-auth'
 
 interface Theme {
   id: string
-  icon: React.ReactNode
+  icon: ReactNode
   label: string
   prompt: string
 }
@@ -25,16 +27,27 @@ const themes: Theme[] = [
   { id: 'geography',   icon: <GlobeHemisphereWestIcon size={32} />, label: 'Geography',         prompt: '10 quiz questions about world geography including countries, capitals, and landmarks' },
   { id: 'movies',      icon: <FilmSlateIcon size={32} />,           label: 'Movies',            prompt: '10 quiz questions about movies and cinema including classic films, directors, and actors' },
   { id: 'general',     icon: <LightbulbIcon size={32} />,           label: 'General Knowledge', prompt: '10 quiz questions about general knowledge covering a wide range of fun topics' },
-  { id: 'nature',      icon: <FlaskIcon size={32} />,               label: 'Nature & Animals',  prompt: '10 quiz questions about nature, animals, plants, and the environment' },
+  { id: 'nature',      icon: <LeafIcon size={32} />,               label: 'Nature & Animals',  prompt: '10 quiz questions about nature, animals, plants, and the environment' },
 ]
 
 const SelectTheme = () => {
   const router = useRouter()
   const searchParams = useSearchParams()
+  const { isConnected } = useAccount()
+  const { isAuthenticated, isAuthenticating, authenticate } = useWalletAuth()
   const gameMode = (searchParams.get('gameMode') as GameMode) || GameMode.HANGOUTS
   const [loadingTheme, setLoadingTheme] = useState<string | null>(null)
 
   const handleThemeSelect = async (theme: Theme) => {
+    if (!isConnected) {
+      toast.error('Connect your wallet to create quizzes')
+      return
+    }
+    if (!isAuthenticated) {
+      toast.info('Sign in with your wallet first')
+      try { await authenticate() } catch { return }
+    }
+
     setLoadingTheme(theme.id)
     try {
       const quizResponse = await addAgentQuiz(theme.prompt)
@@ -52,7 +65,7 @@ const SelectTheme = () => {
       router.push(`/lobby?sessionId=${sessionResponse.payload.id}&gamePin=${sessionResponse.payload.gamePin}&host=true`)
     } catch (error) {
       console.error('Failed to create quiz/session:', error)
-      alert(error)
+      toast.error(error instanceof Error ? error.message : 'Failed to create quiz')
     } finally {
       setLoadingTheme(null)
     }
@@ -86,7 +99,7 @@ const SelectTheme = () => {
               <CardContent className='flex flex-col items-center gap-2 pt-6'>
                 {theme.icon}
                 <CardTitle className='text-sm sm:text-base'>
-                  {loadingTheme === theme.id ? 'Generating...' : theme.label}
+                  {loadingTheme === theme.id ? 'Brewing...' : theme.label}
                 </CardTitle>
               </CardContent>
             </Card>

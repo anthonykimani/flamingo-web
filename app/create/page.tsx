@@ -4,10 +4,11 @@ import ChooseCanvasType from '@/components/pages/choose_canvas_type';
 import ChooseGameType from '@/components/pages/choose_game_type'
 import CreateQuiz from '@/components/pages/create_quiz';
 import NavigationBar from '@/components/navigation/navigation-bar';
+import { SignInGate } from '@/components/auth/sign-in-gate';
 import { CreateGameStep } from '@/enums/create_game_step';
 import { GameMode } from '@/enums/game_mode';
 import { useRouter } from 'next/navigation';
-import React, { useState } from 'react'
+import { useState } from 'react'
 
 const GameType = () => {
   const [stepper, setStepper] = useState<CreateGameStep>(CreateGameStep.GAMETYPE);
@@ -60,7 +61,9 @@ const GameType = () => {
         return (
           <div className='quiz-form-background h-full md:h-screen w-screen bg-no-repeat bg-cover md:flex md:justify-center md:items-center p-1 sm:p-3'>
             <NavigationBar />
-            <CreateQuiz gameMode={gameMode} onSave={handleQuizSave} />
+            <SignInGate>
+              <CreateQuiz gameMode={gameMode} onSave={handleQuizSave} />
+            </SignInGate>
           </div>
         )
     }

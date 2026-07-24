@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import useEmblaCarousel from 'embla-carousel-react'
 import { Button } from '@/components/ui/button'
 import { GamePill } from '@/components/ui/game-pill'
@@ -56,28 +56,28 @@ const SwipeGames = ({ games, onJoin, isSubmitting }: SwipeGamesProps) => {
           {games.map((game, index) => (
             <div
               key={game.id}
-              className='min-w-0 flex-[0_0_70%] pl-4'
+              className='min-w-0 flex-[0_0_85%] xxs:flex-[0_0_75%] xsm:flex-[0_0_65%] sm:flex-[0_0_70%] pl-3 xsm:pl-4'
             >
               <div
                 className={`
                   ${CARD_COLORS[index % CARD_COLORS.length]}
-                  rounded-2xl p-6 sm:p-8
+                  rounded-2xl p-4 xsm:p-6 sm:p-8
                   border-2 border-slate-800
                   border-b-[6px] border-r-[6px]
                   active:border-b-2 active:border-r-2
                   transition-all duration-150
-                  min-h-[320px] sm:min-h-[360px]
+                  min-h-[260px] xsm:min-h-[320px] sm:min-h-[360px]
                   flex flex-col justify-between
                   select-none
                 `}
               >
                 {/* Card Content */}
                 <div className='flex-1'>
-                  <h2 className='text-2xl xsm:text-3xl sm:text-4xl font-bold text-white leading-tight break-words drop-shadow-lg'>
+                  <h2 className='text-xl xsm:text-2xl sm:text-4xl font-bold text-white leading-tight break-words drop-shadow-lg'>
                     {game.gameTitle}
                   </h2>
 
-                  <div className='mt-4 flex items-center gap-3'>
+                  <div className='mt-3 xsm:mt-4 flex flex-wrap items-center gap-2 xsm:gap-3'>
                     <GamePill variant="default">
                       <Users size={16} weight='fill' />
                       {game.playerCount} {game.playerCount === 1 ? 'player' : 'players'}

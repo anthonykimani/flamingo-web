@@ -1,4 +1,4 @@
-import React from 'react'
+// React import removed (new JSX transform)
 
 const TestPage = () => {
   return (

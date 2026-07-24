@@ -1,13 +1,14 @@
 'use client'
 
-import React, { useState } from 'react'
+import { useState, type ChangeEvent } from 'react'
 import { Button } from '../ui/button'
-import { JoystickIcon, XIcon } from '@phosphor-icons/react'
+import { JoystickIcon, LightningIcon, XIcon } from '@phosphor-icons/react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Input } from '../ui/input'
 import { addAgentQuiz, createGameSession } from '@/services/quiz_service'
 import NavigationBar from '../navigation/navigation-bar'
 import { GameMode } from '@/enums/game_mode'
+import { toast } from 'sonner'
 
 const GenerateQuiz = () => {
     const router = useRouter();
@@ -17,13 +18,13 @@ const GenerateQuiz = () => {
     const [prompt, setPrompt] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
 
-    const handlePromptChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handlePromptChange = (e: ChangeEvent<HTMLInputElement>) => {
         setPrompt(e.target.value);
     }
 
     const handleSubmit = async () => {
         if (!prompt.trim()) {
-            alert('Please enter a prompt for quiz generation');
+            toast.warning('Please enter a prompt for quiz generation');
             return;
         }
 
@@ -45,7 +46,7 @@ const GenerateQuiz = () => {
             router.push(`/lobby?sessionId=${sessionResponse.payload.id}&gamePin=${sessionResponse.payload.gamePin}&host=true`)
         } catch (error) {
             console.error('Failed to create quiz/session:', error)
-            alert(error)
+            toast.error(error instanceof Error ? error.message : 'Failed to create quiz')
         } finally {
             setIsSubmitting(false);
         }
@@ -110,8 +111,8 @@ const GenerateQuiz = () => {
                     >
                         {isSubmitting ? (
                             <span className='flex items-center gap-2'>
-                                <span className='animate-spin'>⚡</span>
-                                Generating Quiz...
+                                <LightningIcon size={16} className="animate-spin" />
+                                Summoning quiz...
                             </span>
                         ) : (
                             'Create Game'

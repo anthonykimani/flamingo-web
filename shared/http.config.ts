@@ -1,6 +1,7 @@
-import axios from "axios";
+import axios, { AxiosError } from "axios";
 import { IResponse } from "../interfaces/IResponse";
 import { apiOptions } from "./api.config";
+import { getAuthToken } from "@/utils/tokens";
 
 interface Params {
   headers: any;
@@ -8,9 +9,22 @@ interface Params {
 
 const getHttpConfig = (): Params => ({
   headers: {
-    Authorization: `Bearer ${localStorage.getItem('token')}`
+    Authorization: `Bearer ${getAuthToken() ?? ''}`
   },
 });
+
+function extractError(er: unknown): { status: number; message: string } {
+  if (er instanceof AxiosError && er.response) {
+    return {
+      status: er.response.status,
+      message: er.response.data?.message || er.response.statusText || er.message,
+    };
+  }
+  if (er instanceof Error) {
+    return { status: 512, message: er.message };
+  }
+  return { status: 512, message: "Unknown error" };
+}
 
 const Http = {
   /**
@@ -26,6 +40,7 @@ const Http = {
         url: `${url}`,
         data,
         method: "post",
+        ...httpConfig,
       });
 
       return {
@@ -34,27 +49,18 @@ const Http = {
         message: response.statusText,
       };
     } catch (er) {
-      console.log(er);
-      return {
-        payload: undefined,
-        status: 512,
-        message: er,
-      };
+      const { status, message } = extractError(er);
+      return { payload: undefined, status, message };
     }
   },
 
-  /**
-   * Get request
-   * @param url Url endpoint path
-   * @param data Get data
-   * @returns Promise<IResponse>
-   */
   get: async function (url: string): Promise<IResponse> {
     const httpConfig = getHttpConfig(); 
     try {
       let response = await axios({
         url: `${url}`,
         method: "get",
+        ...httpConfig,
       });
 
       return {
@@ -63,20 +69,11 @@ const Http = {
         message: response.statusText,
       };
     } catch (er) {
-      return {
-        payload: undefined,
-        status: 512,
-        message: er,
-      };
+      const { status, message } = extractError(er);
+      return { payload: undefined, status, message };
     }
   },
 
-  /**
-   * delete request
-   * @param url Url endpoint path
-   * @param data Delete data
-   * @returns Promise<IResponse>
-   */
   delete: async function (url: string, data: any): Promise<IResponse> {
     const httpConfig = getHttpConfig(); 
     try {
@@ -84,6 +81,7 @@ const Http = {
         url: `${url}`,
         data,
         method: "delete",
+        ...httpConfig,
       });
 
       return {
@@ -92,11 +90,8 @@ const Http = {
         message: response.statusText,
       };
     } catch (er) {
-      return {
-        payload: undefined,
-        status: 512,
-        message: er,
-      };
+      const { status, message } = extractError(er);
+      return { payload: undefined, status, message };
     }
   },
 

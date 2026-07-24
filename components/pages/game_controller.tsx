@@ -2,9 +2,10 @@
 
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
-import { SquareIcon, StarIcon, CircleIcon, TriangleIcon, UsersThreeIcon, CheckCircleIcon, TrophyIcon } from '@phosphor-icons/react'
+import { GamePill } from '@/components/ui/game-pill'
+import { SquareIcon, StarIcon, CircleIcon, TriangleIcon, UsersThreeIcon, CheckCircleIcon, TrophyIcon, UserIcon } from '@phosphor-icons/react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import React, { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { getGameSession, getGameSessionByGamePin, getQuizById, getActivePlayers } from '@/services/quiz_service'
 import { IPlayer, IQuiz } from '@/interfaces/IQuiz'
 import { GameState } from '@/enums/game_state'
@@ -79,7 +80,13 @@ const GamePage = () => {
             try {
                 setLoading(true)
                 const gamePinData = await getGameSessionByGamePin(gamePinId)
-                const response = await getQuizById(gamePinData.payload.quiz.id)
+                const quizId = gamePinData.payload?.quiz?.id
+                if (!quizId) {
+                    setError('Quiz not found for this game')
+                    setLoading(false)
+                    return
+                }
+                const response = await getQuizById(quizId)
                 setQuizData(response.payload)
                 setLoading(false)
             } catch (err) {
@@ -119,19 +126,10 @@ const GamePage = () => {
         }
 
         if (socket.connected) {
-            console.log('✅ Already connected to WebSocket')
+            console.log('✅ Already connected to WebSocket — joining host room')
             setIsConnected(true)
+            rejoinGame()
         }
-
-        socket.on('connect', () => {
-            console.log('✅ Host connected to WebSocket')
-            setIsConnected(true)
-        })
-
-        socket.on('disconnect', () => {
-            console.log('❌ Host disconnected from WebSocket')
-            setIsConnected(false)
-        })
 
         socket.on('connect', () => {
             console.log('✅ Host WebSocket reconnected — rejoining room')
@@ -139,9 +137,14 @@ const GamePage = () => {
             rejoinGame()
         })
 
+        socket.on('disconnect', () => {
+            console.log('❌ Host disconnected from WebSocket')
+            setIsConnected(false)
+        })
+
         socket.on('countdown-tick', (data) => {
-            console.log('⏳ Countdown tick:', data.countdown)
-            setCountdown(data.countdown)
+            console.log('⏳ Countdown tick:', data.count)
+            setCountdown(data.count)
             setGameState(GameState.COUNTDOWN)
         })
 
@@ -157,7 +160,7 @@ const GamePage = () => {
         socketClient.onPlayerAnswered((data) => {
             console.log('✅ Player answered:', data.playerName)
             setPlayersAnswered(prev => new Set([...prev, data.playerName]))
-            setAnswersReceived(data.answerCount)
+            setAnswersReceived(data.answeredCount)
         })
 
         socketClient.onQuestionResults((data) => {
@@ -175,6 +178,7 @@ const GamePage = () => {
 
         socketClient.onGameEnded((data) => {
             console.log('🏁 Game ended:', data)
+            if (!sessionId) return
             router.push(`/score?sessionId=${sessionId}`)
         })
 
@@ -200,7 +204,7 @@ const GamePage = () => {
         setAnswersReceived(0)
     }, [currentQuestionIndex])
 
-    const handleNextQuestion = async () => {
+    const handleNextQuestion = useCallback(async () => {
         if (!quizData || !sessionId) return
 
         if (currentQuestionIndex < quizData.questions.length - 1) {
@@ -214,15 +218,16 @@ const GamePage = () => {
 
             socketClient.endGame(sessionId)
 
+            if (!sessionId) return
             router.push(`/score?sessionId=${sessionId}`)
         }
-    }
+    }, [quizData, sessionId, currentQuestionIndex, router])
 
     if (loading) {
         return (
             <div className='game-pin-background h-screen bg-no-repeat bg-cover flex justify-center items-center'>
                 <div className='bg-white/95 rounded-xl border-2 border-slate-800 border-b-[6px] border-r-[6px] py-10 px-8 text-center animate-fadeIn'>
-                    <div className='text-2xl font-oldschool text-slate-600'>Loading quiz...</div>
+                    <div className='text-2xl font-oldschool text-slate-600'>Preparing quiz...</div>
                 </div>
             </div>
         )
@@ -244,7 +249,7 @@ const GamePage = () => {
         return (
             <div className='game-pin-background h-screen bg-no-repeat bg-cover flex justify-center items-center'>
                 <div className='bg-white/95 rounded-xl border-2 border-slate-800 border-b-[6px] border-r-[6px] py-10 px-8 text-center animate-fadeIn'>
-                    <div className='text-2xl font-oldschool text-slate-600'>Connecting to game server...</div>
+                    <div className='text-2xl font-oldschool text-slate-600'>Knocking on the server...</div>
                 </div>
             </div>
         )
@@ -266,51 +271,92 @@ const GamePage = () => {
     }
 
     if (gameState === GameState.RESULTS_READY || gameState === GameState.PAYOUT) {
+    const currentQuestion = quizData?.questions?.[currentQuestionIndex]
     return (
-        <div className='result-background h-screen bg-no-repeat bg-cover flex flex-col justify-center items-center p-4'>
+        <div className='game-pin-background h-screen bg-no-repeat bg-cover flex flex-col justify-center items-center p-4'>
             <AutoAdvance onAdvance={handleNextQuestion} />
             <div className='w-full max-w-3xl space-y-6'>
-                <Card className='bg-white/95 border-2 border-slate-800 border-b-[6px] border-r-[6px]'>
-                    <CardHeader className='py-6'>
-                        <h3 className='text-3xl font-bold text-center mb-6'>Scoreboard</h3>
-                        <div className='space-y-3 max-h-[60vh] overflow-y-auto pr-2'>
+                <div className='bg-white rounded-xl border-2 border-slate-800 border-b-[6px] border-r-[6px] overflow-hidden'>
+                    <div className='flex items-center justify-between px-6 py-4 bg-slate-50 border-b-2 border-slate-200'>
+                        <div className='flex items-center gap-3'>
+                            <GamePill variant="meta">RESULTS</GamePill>
+                            <span className='text-sm font-oldschool text-slate-500'>
+                                {leaderboard.length} player{leaderboard.length !== 1 ? 's' : ''}
+                            </span>
+                        </div>
+                    </div>
+
+                    {currentQuestion && (
+                        <div className='px-6 py-5 border-b-2 border-slate-200'>
+                            <p className='text-xs font-bold text-slate-400 uppercase tracking-wider mb-3'>
+                                Answer
+                            </p>
+                            <div className='space-y-2'>
+                                {currentQuestion.answers?.map((answer) => {
+                                    const isCorrect = answer.correctAnswer
+                                    return (
+                                        <div
+                                            key={answer.id}
+                                            className={`flex items-center gap-3 px-4 py-3 rounded-xl font-oldschool text-sm ${
+                                                isCorrect
+                                                    ? 'bg-[#009900]/8 border-2 border-[#009900] border-b-[4px] border-r-[4px] text-[#009900]'
+                                                    : 'bg-slate-50 border border-slate-200 text-slate-400'
+                                            }`}
+                                        >
+                                            {isCorrect && <CheckCircleIcon size={20} weight="fill" />}
+                                            <span className={isCorrect ? 'font-bold' : ''}>{answer.answer}</span>
+                                        </div>
+                                    )
+                                })}
+                            </div>
+                        </div>
+                    )}
+
+                    <div className='px-6 py-5'>
+                        <div className='flex items-center gap-2 mb-4'>
+                            <GamePill variant="meta">SCOREBOARD</GamePill>
+                        </div>
+                        <div className='space-y-2 max-h-[50vh] overflow-y-auto pr-1'>
                             {leaderboard.length === 0 ? (
-                                <p className='text-center text-slate-500 py-8'>Loading scores...</p>
+                                <p className='text-center text-slate-400 py-8 font-oldschool'>
+                                    Tallying scores...
+                                </p>
                             ) : (
                                 leaderboard.map((player, index) => (
                                     <div
                                         key={player.id}
-                                        className='flex items-center gap-4 p-4 rounded-lg bg-slate-50 border-2 border-slate-800 border-b-[4px] border-r-[4px]'
+                                        className='flex items-center gap-3 px-4 py-3 rounded-xl border-2 border-slate-800 border-b-[4px] border-r-[4px] bg-white'
                                     >
-                                        <div className='text-2xl font-bold w-10 text-center shrink-0'>
+                                        <div className='w-8 h-8 flex items-center justify-center shrink-0'>
                                             {index === 0 ? (
-                                                <TrophyIcon size={28} weight="fill" className='text-yellow-500' />
+                                                <TrophyIcon size={22} className='text-[#FF9700]' weight="fill" />
                                             ) : index === 1 ? (
-                                                <TrophyIcon size={24} weight="fill" className='text-slate-400' />
+                                                <TrophyIcon size={20} className='text-[#1E293B]' weight="fill" />
                                             ) : index === 2 ? (
-                                                <TrophyIcon size={20} weight="fill" className='text-orange-500' />
+                                                <TrophyIcon size={18} className='text-[#F14100]' weight="fill" />
                                             ) : (
-                                                <span className='text-slate-500'>#{index + 1}</span>
+                                                <span className='text-xs font-bold text-slate-400'>{index + 1}</span>
                                             )}
                                         </div>
-                                        <div className='flex items-center gap-3 flex-1'>
-                                            <h3 className='text-xl font-oldschool truncate'>
+                                        <div className='flex items-center gap-2 flex-1 min-w-0'>
+                                            <UserIcon size={16} className='text-slate-400 shrink-0' />
+                                            <h3 className='text-base font-oldschool truncate text-slate-800'>
                                                 {player.playerName}
                                             </h3>
                                         </div>
-                                        <div className='text-3xl font-bold text-slate-700'>
+                                        <div className='bg-black/10 px-3 py-1 rounded-full font-bold text-sm text-slate-700 shrink-0'>
                                             {player.totalScore}
                                         </div>
                                     </div>
                                 ))
                             )}
                         </div>
-                    </CardHeader>
-                </Card>
+                    </div>
+                </div>
 
                 <div className='flex justify-center'>
                     <Button
-                        variant="active"
+                        buttoncolor="gamePin"
                         size="xl"
                         onClick={handleNextQuestion}
                         className='max-w-xs'
@@ -326,15 +372,23 @@ const GamePage = () => {
     return (
         <div className='game-pin-background h-full md:h-screen bg-no-repeat bg-cover flex justify-around'>
             <div className='w-full flex flex-col justify-center gap-10 px-4 max-w-5xl mx-auto'>
+                <div className='absolute top-4 left-4 z-50'>
+                    <span
+                        onClick={() => router.push('/')}
+                        className='text-white text-sm font-oldschool underline cursor-pointer hover:text-white/70'
+                    >
+                        Exit
+                    </span>
+                </div>
                 <div className='absolute top-4 right-4 flex items-center gap-2'>
-                    <span className={`w-2.5 h-2.5 rounded-full ${isConnected ? 'bg-green-400' : 'bg-red-400'}`} />
+                    <span className={`w-2.5 h-2.5 rounded-full ${isConnected ? 'bg-[#009900]' : 'bg-[#DA0202]'}`} />
                     <span className='text-white text-sm font-oldschool'>
                         {isConnected ? 'Live' : 'Offline'}
                     </span>
                 </div>
 
                 <Card className='bg-white/95 border-2 border-slate-800 border-b-[6px] border-r-[6px] max-w-4xl mx-auto w-full'>
-                    <CardHeader className='text-3xl text-center font-bold'>
+                    <CardHeader className='text-3xl text-center font-oldschool'>
                         {currentQuestion.question}
                     </CardHeader>
                 </Card>
@@ -348,7 +402,7 @@ const GamePage = () => {
                                 className={`${color} ${borderColor} border-2 border-b-[6px] border-r-[6px] cursor-default h-[150px] flex items-center justify-center relative`}
                             >
                                 <div className="absolute left-6 top-1/2 -translate-y-1/2">
-                                    <Icon size={48} color="white" weight="fill" />
+                                    <Icon size={48} color="white" />
                                 </div>
                                 <CardContent className="flex items-center justify-center w-full pl-20 pr-6">
                                     <p className="text-4xl font-bold text-white text-center line-clamp-3 overflow-hidden break-words">
@@ -369,7 +423,7 @@ const GamePage = () => {
                     </div>
                     <div className='flex items-center gap-4 order-3 sm:order-none sm:ml-auto'>
                         <span className='bg-black/40 px-4 py-2 rounded-full text-white text-sm font-oldschool flex items-center gap-1.5'>
-                            <UsersThreeIcon size={18} weight="fill" />
+                            <UsersThreeIcon size={18} />
                             {playerCount > 0 ? `${playerCount} players` : 'Waiting for players'}
                         </span>
                         <Button variant="active" size="xl" className='!w-auto'>
@@ -383,7 +437,7 @@ const GamePage = () => {
                         <Card className='bg-white/95 border-2 border-slate-800 border-b-[4px] border-r-[4px]'>
                             <CardHeader>
                                 <p className='text-sm text-slate-500 font-oldschool flex items-center gap-1.5'>
-                                    <CheckCircleIcon size={16} weight="fill" className='text-green-500' />
+                                    <CheckCircleIcon size={16} className='text-green-500' />
                                     Players who answered
                                 </p>
                                 <div className='flex flex-wrap gap-2 mt-1'>
@@ -392,7 +446,7 @@ const GamePage = () => {
                                             key={playerName}
                                             className='bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-oldschool flex items-center gap-1'
                                         >
-                                            <CheckCircleIcon size={14} weight="fill" />
+                                            <CheckCircleIcon size={14} />
                                             {playerName}
                                         </span>
                                     ))}

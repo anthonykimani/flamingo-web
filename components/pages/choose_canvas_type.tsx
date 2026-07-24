@@ -1,6 +1,6 @@
 'use client'
 
-import React from 'react'
+// React import removed (new JSX transform)
 import { Button } from '../ui/button'
 import { CompassIcon, FilePlusIcon, RobotIcon } from '@phosphor-icons/react'
 import { Card, CardContent, CardDescription, CardTitle } from '../ui/card'

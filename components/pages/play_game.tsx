@@ -2,14 +2,17 @@
 
 import { Button } from '@/components/ui/button'
 import { Card, CardHeader } from '@/components/ui/card'
+import { GamePill } from '@/components/ui/game-pill'
 import { GameState } from '@/enums/game_state'
 import { SocketEvents } from '@/enums/socket-events'
 import { IAnswer, IPlayer, IQuestion } from '@/interfaces/IQuiz'
 import { getGameSession } from '@/services/quiz_service'
 import socketClient from '@/utils/socket/socket.client'
-import { CircleIcon, SquareIcon, StarIcon, TriangleIcon, CheckCircleIcon, XCircleIcon, FireIcon, ClockIcon, HourglassIcon } from '@phosphor-icons/react'
+import { CircleIcon, SquareIcon, StarIcon, TriangleIcon, CheckCircleIcon, XCircleIcon, FireIcon, ClockIcon, HourglassIcon, TrophyIcon, UserIcon } from '@phosphor-icons/react'
+import { toast } from 'sonner'
+import NavigationBar from '@/components/navigation/navigation-bar'
 import { useRouter, useSearchParams } from 'next/navigation'
-import React, { useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 
 const ANSWER_CONFIG = [
     { Icon: TriangleIcon, color: 'bg-[#009900]', borderColor: 'border-[#006600]' },
@@ -33,6 +36,8 @@ const PlayGame = () => {
         currentStreak: number;
     } | null>(null)
     const [countdown, setCountdown] = useState<number | null>(null)
+    const [preGameCountdown, setPreGameCountdown] = useState<number | null>(null)
+    const [gameStarted, setGameStarted] = useState(false)
     const [questionStartTime, setQuestionStartTime] = useState<Date | null>(null)
     const [leaderboard, setLeaderboard] = useState<IPlayer[]>([])
 
@@ -60,6 +65,10 @@ const PlayGame = () => {
             getGameSession(sessionId).then(response => {
                 setGameState(response.payload.status as GameState)
             }).catch(console.error)
+
+            // Socket already connected (singleton) — the 'connect' event
+            // already fired, so join the room explicitly
+            rejoinGame()
         }
 
         socket.on('connect', () => {
@@ -67,10 +76,21 @@ const PlayGame = () => {
             rejoinGame()
         })
 
+        socketClient.onGameStarted(() => {
+            console.log('🚀 Game started')
+            setGameStarted(true)
+        })
+
+        socket.on('pre-game-countdown', (data: { count: number }) => {
+            console.log('⏳ Pre-game countdown:', data.count)
+            setPreGameCountdown(data.count)
+        })
+
         socket.on('countdown-tick', (data: { count: number }) => {
             console.log('⏰ Countdown:', data.count)
             setCountdown(data.count)
             setGameState(GameState.COUNTDOWN)
+            setPreGameCountdown(null)
         })
 
         socketClient.onQuestionStarted((data: {
@@ -90,6 +110,8 @@ const PlayGame = () => {
             setAnswerResult(null)
             setGameState(GameState.IN_PROGRESS)
             setCountdown(null)
+            setPreGameCountdown(null)
+            setGameStarted(false)
             setQuestionStartTime(new Date(data.startTime))
         })
 
@@ -122,17 +144,20 @@ const PlayGame = () => {
 
         socketClient.onGameEnded((data: { leaderboard: any[] }) => {
             console.log('🏁 Game ended:', data)
+            if (!sessionId) return
             router.push(`/score?sessionId=${sessionId}`)
         })
 
         socketClient.onError((data: { message: string }) => {
             console.error('⚠️ Socket error:', data.message)
-            alert(data.message)
+            toast.error(data.message)
         })
 
         return () => {
             socket.off('countdown-tick')
             socket.off('time-update')
+            socket.off('pre-game-countdown')
+            socket.off(SocketEvents.GAME_STARTED)
             socketClient.off(SocketEvents.QUESTION_STARTED)
             socketClient.off(SocketEvents.ANSWER_SUBMITTED)
             socketClient.off(SocketEvents.QUESTION_RESULTS)
@@ -145,15 +170,20 @@ const PlayGame = () => {
     const handleAnswerSelect = async (answer: IAnswer) => {
         if (hasAnswered || !question || !sessionId || !playerName || !questionStartTime) return
 
-        setSelectedAnswer(answer.id!)
+        if (!answer.id || !question.id) {
+            console.error('Missing answer or question ID')
+            return
+        }
+
+        setSelectedAnswer(answer.id)
 
         const timeToAnswer = (new Date().getTime() - questionStartTime.getTime()) / 1000
 
         socketClient.submitAnswer({
             gameSessionId: sessionId,
             playerName: playerName,
-            questionId: question.id!,
-            answerId: answer.id!,
+            questionId: question.id,
+            answerId: answer.id,
             timeToAnswer: Math.round(timeToAnswer)
         })
     }
@@ -161,6 +191,9 @@ const PlayGame = () => {
     if (countdown !== null && gameState === GameState.COUNTDOWN) {
         return (
             <div className='game-pin-background h-screen bg-no-repeat bg-cover flex justify-center items-center'>
+                <div className='absolute top-4 left-4 z-50'>
+                    <NavigationBar route="/" />
+                </div>
                 <div className='text-center animate-fadeIn'>
                     <div className='text-white text-9xl font-bold'>
                         {countdown}
@@ -171,16 +204,39 @@ const PlayGame = () => {
         )
     }
 
+    if (preGameCountdown !== null) {
+        return (
+            <div className='game-pin-background h-screen bg-no-repeat bg-cover flex justify-center items-center'>
+                <div className='absolute top-4 left-4 z-50'>
+                    <NavigationBar route="/" />
+                </div>
+                <div className='text-center animate-fadeIn'>
+                    <div className='text-white text-9xl font-bold'>
+                        {preGameCountdown}
+                    </div>
+                    <p className='text-white text-2xl font-oldschool mt-4'>
+                        Game starting in {preGameCountdown}s...
+                    </p>
+                </div>
+            </div>
+        )
+    }
+
     if (gameState === GameState.WAITING) {
         return (
             <div className='game-pin-background h-screen bg-no-repeat bg-cover flex justify-center items-center'>
+                <div className='absolute top-4 left-4 z-50'>
+                    <NavigationBar route="/" />
+                </div>
                 <div className='w-full max-w-md mx-4 bg-white/95 rounded-xl border-2 border-slate-800 border-b-[6px] border-r-[6px] py-10 px-8 text-center animate-fadeIn'>
                     <div className='flex justify-center mb-5'>
-                        <HourglassIcon size={48} weight="fill" className='text-slate-600 animate-icon-spin' />
+                        <HourglassIcon size={48} className='text-slate-600 animate-icon-spin' />
                     </div>
-                    <p className='text-2xl font-oldschool mb-3 text-slate-800'>Loading Game...</p>
+                    <p className='text-2xl font-oldschool mb-3 text-slate-800'>
+                        {gameStarted ? 'Game is starting...' : 'Getting game ready...'}
+                    </p>
                     <p className='text-base text-slate-500'>
-                        Waiting for host to start the game
+                        {gameStarted ? 'Get ready!' : 'Waiting for host to start the game'}
                     </p>
                     <div className='mt-6 text-sm text-slate-400'>
                         Player: <strong className='text-slate-700'>{playerName}</strong>
@@ -192,16 +248,19 @@ const PlayGame = () => {
 
     if (gameState === GameState.RESULTS_READY) {
     return (
-        <div className='result-background flex justify-center items-center h-screen bg-no-repeat bg-cover p-4'>
+        <div className='game-pin-background flex justify-center items-center h-screen bg-no-repeat bg-cover p-4'>
+            <div className='absolute top-4 left-4 z-50'>
+                <NavigationBar route="/" />
+            </div>
             <div className='w-full max-w-2xl'>
                 <div className='bg-white/95 rounded-xl border-2 border-slate-800 border-b-[6px] border-r-[6px] overflow-hidden'>
                     {answerResult && (
-                        <div className={`flex items-center justify-between px-4 sm:px-6 py-4 ${answerResult.isCorrect ? 'bg-green-50 border-b-2 border-green-200' : 'bg-red-50 border-b-2 border-red-200'}`}>
+                        <div className={`flex items-center justify-between px-4 sm:px-6 py-4 ${answerResult.isCorrect ? 'bg-[#009900]/10 border-b-2 border-[#009900]/30' : 'bg-[#DA0202]/10 border-b-2 border-[#DA0202]/30'}`}>
                             <div className='flex items-center gap-3'>
                                 {answerResult.isCorrect ? (
-                                    <CheckCircleIcon size={28} weight="fill" className='text-green-500 shrink-0' />
+                                    <CheckCircleIcon size={28} className='text-[#009900] shrink-0' />
                                 ) : (
-                                    <XCircleIcon size={28} weight="fill" className='text-red-500 shrink-0' />
+                                    <XCircleIcon size={28} className='text-[#DA0202] shrink-0' />
                                 )}
                                 <div>
                                     <p className='text-lg font-bold text-slate-800'>
@@ -210,8 +269,8 @@ const PlayGame = () => {
                                     <div className='flex items-center gap-3 text-xs text-slate-500'>
                                         <span>Total: <strong className='text-slate-700'>{playerScore}</strong></span>
                                         {answerResult.currentStreak > 0 && (
-                                            <span className='flex items-center gap-0.5 text-orange-600'>
-                                                <FireIcon size={12} weight="fill" />
+                                            <span className='flex items-center gap-0.5 text-[#F14100]'>
+                                                <FireIcon size={12} />
                                                 {answerResult.currentStreak}x streak
                                             </span>
                                         )}
@@ -227,7 +286,7 @@ const PlayGame = () => {
                     {!answerResult && hasAnswered && (
                         <div className='flex items-center gap-2 px-6 py-4 border-b-2 border-slate-200 bg-slate-50'>
                             <ClockIcon size={20} weight="bold" className='text-slate-500' />
-                            <p className='text-base font-oldschool text-slate-500'>Answer recorded! Calculating results...</p>
+                            <p className='text-base font-oldschool text-slate-500'>Answer locked! Crunching results...</p>
                         </div>
                     )}
 
@@ -237,32 +296,79 @@ const PlayGame = () => {
                         </div>
                     )}
 
-                    <div>
-                        {leaderboard.length === 0 ? (
-                            <p className='text-center text-slate-500 py-6'>Loading scores...</p>
-                        ) : (
-                            leaderboard.map((player, index) => (
-                                <div
-                                    key={player.id}
-                                    className={`flex items-center gap-3 px-4 sm:px-6 py-3 border-b border-slate-100 last:border-b-0 ${
-                                        player.playerName === playerName ? 'bg-[#FF9700]/5' : ''
-                                    }`}
-                                >
-                                    <span className='w-6 text-xs font-bold text-slate-400 text-center shrink-0'>
-                                        {index === 0 ? '1st' : index === 1 ? '2nd' : index === 2 ? '3rd' : `#${index + 1}`}
-                                    </span>
-                                    <span className='text-sm sm:text-base font-oldschool truncate text-slate-800 flex-1'>
-                                        {player.playerName}
-                                        {player.playerName === playerName && (
-                                            <span className='text-xs text-[#FF9700] ml-1.5 font-bold'>(You)</span>
-                                        )}
-                                    </span>
-                                    <span className='text-sm sm:text-base font-bold text-slate-700 shrink-0'>
-                                        {player.totalScore}
-                                    </span>
-                                </div>
-                            ))
-                        )}
+                    {question && (
+                        <div className='px-4 sm:px-6 py-5 border-b-2 border-slate-200'>
+                            <p className='text-xs font-bold text-slate-400 uppercase tracking-wider mb-3'>Answer</p>
+                            <div className='space-y-2'>
+                                {question.answers.map((answer) => {
+                                    const isSelected = selectedAnswer === answer.id
+                                    const isCorrectAnswer = answer.correctAnswer
+                                    return (
+                                        <div
+                                            key={answer.id}
+                                            className={`flex items-center gap-3 px-4 py-3 rounded-xl font-oldschool text-sm ${
+                                                isCorrectAnswer
+                                                    ? 'bg-[#009900]/8 border-2 border-[#009900] border-b-[4px] border-r-[4px] text-[#009900] font-bold'
+                                                    : isSelected && !isCorrectAnswer
+                                                        ? 'bg-[#DA0202]/8 border-2 border-[#DA0202] border-b-[4px] border-r-[4px] text-[#DA0202] font-bold'
+                                                        : 'bg-slate-50 border border-slate-200 text-slate-400'
+                                            }`}
+                                        >
+                                            {isCorrectAnswer ? <CheckCircleIcon size={20} weight="fill" /> : isSelected ? <XCircleIcon size={20} weight="fill" /> : null}
+                                            <span>{answer.answer}</span>
+                                        </div>
+                                    )
+                                })}
+                            </div>
+                        </div>
+                    )}
+
+                    <div className='px-4 sm:px-6 py-5'>
+                        <div className='flex items-center gap-2 mb-4'>
+                            <GamePill variant="meta">SCOREBOARD</GamePill>
+                        </div>
+                        <div className='space-y-2 max-h-[40vh] overflow-y-auto pr-1'>
+                            {leaderboard.length === 0 ? (
+                                <p className='text-center text-slate-400 py-8 font-oldschool'>
+                                    Tallying up...
+                                </p>
+                            ) : (
+                                leaderboard.map((player, index) => (
+                                    <div
+                                        key={player.id}
+                                        className={`flex items-center gap-3 px-4 py-3 rounded-xl border-2 border-slate-800 border-b-[4px] border-r-[4px] ${
+                                            player.playerName === playerName
+                                                ? 'bg-[#FF9700]/5 border-[#FF9700]/30'
+                                                : 'bg-white'
+                                        }`}
+                                    >
+                                        <div className='w-8 h-8 flex items-center justify-center shrink-0'>
+                                            {index === 0 ? (
+                                                <TrophyIcon size={22} className='text-[#FF9700]' weight="fill" />
+                                            ) : index === 1 ? (
+                                                <TrophyIcon size={20} className='text-[#1E293B]' weight="fill" />
+                                            ) : index === 2 ? (
+                                                <TrophyIcon size={18} className='text-[#F14100]' weight="fill" />
+                                            ) : (
+                                                <span className='text-xs font-bold text-slate-400'>{index + 1}</span>
+                                            )}
+                                        </div>
+                                        <div className='flex items-center gap-2 flex-1 min-w-0'>
+                                            <UserIcon size={16} className='text-slate-400 shrink-0' />
+                                            <span className='text-sm sm:text-base font-oldschool truncate text-slate-800'>
+                                                {player.playerName}
+                                                {player.playerName === playerName && (
+                                                    <span className='text-xs text-[#FF9700] ml-1.5 font-bold'>(You)</span>
+                                                )}
+                                            </span>
+                                        </div>
+                                        <div className='bg-black/10 px-3 py-1 rounded-full font-bold text-sm text-slate-700 shrink-0'>
+                                            {player.totalScore}
+                                        </div>
+                                    </div>
+                                ))
+                            )}
+                        </div>
                     </div>
                 </div>
             </div>
@@ -272,12 +378,15 @@ const PlayGame = () => {
     if (question && gameState === GameState.IN_PROGRESS) {
         return (
             <div className='game-pin-background flex flex-col justify-between h-screen bg-no-repeat bg-cover p-4'>
+                <div className='absolute top-4 left-4 z-50'>
+                    <NavigationBar route="/" />
+                </div>
                 <div className='flex items-center justify-between gap-2 max-w-4xl mx-auto w-full'>
                     <div className='text-white font-oldschool text-lg min-w-0 truncate'>
                         Q {currentQuestionNumber}/{totalQuestions}
                     </div>
                     <div className='bg-black/50 px-4 py-2 rounded-full text-white font-bold text-xl flex items-center gap-2 shrink-0'>
-                        <ClockIcon size={20} weight="fill" />
+                        <ClockIcon size={20} />
                         {timeLeft}s
                     </div>
                     <div className='text-white font-oldschool text-lg shrink-0'>
@@ -286,7 +395,7 @@ const PlayGame = () => {
                 </div>
 
                 <Card className='w-full bg-white/95 border-2 border-slate-800 border-b-[6px] border-r-[6px] max-w-4xl mx-auto'>
-                    <CardHeader className='text-center text-2xl font-bold text-slate-800'>
+                    <CardHeader className='text-center text-2xl font-oldschool text-slate-800'>
                         {question.question}
                     </CardHeader>
                 </Card>
@@ -301,7 +410,7 @@ const PlayGame = () => {
                                 key={answer.id}
                                 onClick={() => handleAnswerSelect(answer)}
                                 disabled={hasAnswered}
-                                leftIcon={<Icon size={32} color="white" weight="fill" />}
+                                leftIcon={<Icon size={32} color="white" />}
                                 className={`
                                     ${color}
                                     border-2 ${borderColor} border-b-[6px] border-r-[6px]
@@ -323,7 +432,7 @@ const PlayGame = () => {
                         <Card className='bg-white/95 border-2 border-slate-800 border-b-[4px] border-r-[4px]'>
                             <CardHeader>
                                 <p className='text-lg font-oldschool text-slate-700 flex items-center justify-center gap-2'>
-                                    <CheckCircleIcon size={20} weight="fill" className='text-green-500' />
+                                    <CheckCircleIcon size={20} className='text-[#009900]' />
                                     Answer submitted! Waiting for results...
                                 </p>
                             </CardHeader>
@@ -340,10 +449,13 @@ const PlayGame = () => {
 
     return (
         <div className='game-pin-background h-screen bg-no-repeat bg-cover flex justify-center items-center'>
+            <div className='absolute top-4 left-4 z-50'>
+                <NavigationBar route="/" />
+            </div>
             <div className='bg-white/95 rounded-xl border-2 border-slate-800 border-b-[6px] border-r-[6px] py-10 px-8 text-center animate-fadeIn'>
                 <div className='flex items-center gap-3 justify-center'>
                     <ClockIcon size={24} weight="bold" className='text-slate-600' />
-                    <span className='text-2xl font-oldschool text-slate-600'>Connecting...</span>
+                    <span className='text-2xl font-oldschool text-slate-600'>Knocking...</span>
                 </div>
             </div>
         </div>

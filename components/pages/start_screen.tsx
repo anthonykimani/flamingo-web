@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Button } from '../ui/button'
 import { StatusBadge } from '../ui/status-badge'
 import { GameControllerIcon, MagicWandIcon, WarningCircleIcon, ArrowClockwiseIcon, PencilSimpleLineIcon, Shuffle, CheckIcon } from '@phosphor-icons/react'
@@ -122,7 +122,7 @@ const StartScreen = () => {
           <div className="flex flex-col items-center mt-4 gap-2">
             {hasError && (
               <StatusBadge variant="error">
-                <WarningCircleIcon size={16} weight="fill" />
+                <WarningCircleIcon size={16} />
                 <span>{error}</span>
                 <button
                   onClick={() => window.location.reload()}

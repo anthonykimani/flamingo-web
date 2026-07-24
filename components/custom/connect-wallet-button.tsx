@@ -5,10 +5,18 @@ import { UserIcon } from '@phosphor-icons/react';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '../ui/dialog';
 import { useMiniPayInjector } from '@/hooks/use-minipay-injector';
 import { useEffect } from 'react';
+import { useAccount } from 'wagmi';
 import { Button } from '../ui/button';
 
 export const ConnectWalletButton = () => {
-  const { setUserAddress } = useMiniPayInjector()
+  const { setUserAddress, address: userAddress } = useMiniPayInjector()
+  const { address: wagmiAddress, isConnected } = useAccount()
+
+  useEffect(() => {
+    if (isConnected && wagmiAddress && wagmiAddress !== userAddress) {
+      setUserAddress(wagmiAddress)
+    }
+  }, [isConnected, wagmiAddress, userAddress, setUserAddress])
 
   return (
     <ConnectButton.Custom>
@@ -29,13 +37,6 @@ export const ConnectWalletButton = () => {
           chain &&
           (!authenticationStatus ||
             authenticationStatus === 'authenticated');
-
-        useEffect(() => {
-          if (connected && account?.address) {
-            setUserAddress(account?.address)
-          }
-
-        },[ connected, account?.address, setUserAddress])
 
         return (
           <div

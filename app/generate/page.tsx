@@ -1,12 +1,16 @@
 'use client'
 
 import GenerateQuiz from '@/components/pages/generate_quiz'
-import React, { Suspense } from 'react'
+import { SignInGate } from '@/components/auth/sign-in-gate'
+import { Suspense } from 'react'
+import { PageLoader } from '@/components/ui/page-loader'
 
 const GenerateQuizCointainer = () => {
   return (
-    <Suspense>
+    <Suspense fallback={<PageLoader />}>
+      <SignInGate>
         <GenerateQuiz />
+      </SignInGate>
     </Suspense>
   )
 }
