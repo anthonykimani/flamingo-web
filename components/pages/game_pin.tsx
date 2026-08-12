@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button'
 import { ConnectionStatus } from '@/components/ui/connection-status'
 import { CrownSimpleIcon, UserIcon, UsersThreeIcon } from '@phosphor-icons/react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import { getGameSession, getLeaderboard } from '@/services/quiz_service'
 import { IPlayer } from '@/interfaces/IQuiz'
 import socketClient from '@/utils/socket/socket.client'
@@ -22,11 +22,7 @@ const LobbyPage = () => {
     const [loading, setLoading] = useState(true)
     const [isSocketConnected, setIsSocketConnected] = useState(false)
     const [preGameCountdown, setPreGameCountdown] = useState<number | null>(null)
-    const [gameStarted, setGameStarted] = useState(false)
-    const [hostJoinedRoom, setHostJoinedRoom] = useState(false)
-    const [lobbyCountdown, setLobbyCountdown] = useState<number | null>(null)
     const [showHostAuthPrompt, setShowHostAuthPrompt] = useState(false)
-    const lobbyTimerRef = useRef<NodeJS.Timeout | null>(null)
     const { address, isConnected } = useAccount();
     const { isAuthenticated, isAuthenticating, authenticate } = useWalletAuth();
     const router = useRouter()
@@ -128,7 +124,6 @@ const LobbyPage = () => {
         // Listen for game started event
         socketClient.onGameStarted((data) => {
             console.log('🚀 Game started:', data)
-            setGameStarted(true)
             if (isHost) {
                 router.push(`/game?sessionId=${sessionId}&gamePin=${gamePin}`)
             } else {
@@ -139,9 +134,6 @@ const LobbyPage = () => {
         // Listen for host room join confirmation
         socketClient.onJoinedGame((data) => {
             console.log('✅ Host confirmed in room:', data)
-            if (data.isHost) {
-                setHostJoinedRoom(true)
-            }
         })
 
         // Listen for errors
@@ -169,60 +161,6 @@ const LobbyPage = () => {
         setShowHostAuthPrompt(false)
         socketClient.startGame(sessionId)
     }
-
-    // Lobby countdown: auto-start game 10s after first player joins
-    useEffect(() => {
-        if (!isHost || gameStarted || preGameCountdown !== null) return
-        if (players.length === 0) return
-        if (!isSocketConnected || !hostJoinedRoom) return
-
-        if (!isAuthenticated) {
-            setShowHostAuthPrompt(true)
-            return
-        }
-        setShowHostAuthPrompt(false)
-
-        // Clear any existing timer before starting a new one
-        if (lobbyTimerRef.current) {
-            clearTimeout(lobbyTimerRef.current)
-            lobbyTimerRef.current = null
-        }
-
-        setLobbyCountdown(10)
-        let count = 10
-
-        const tick = () => {
-            count--
-            if (count <= 0) {
-                setLobbyCountdown(null)
-                socketClient.startGame(sessionId!)
-                return
-            }
-            setLobbyCountdown(count)
-            lobbyTimerRef.current = setTimeout(tick, 1000)
-        }
-
-        lobbyTimerRef.current = setTimeout(tick, 1000)
-
-        return () => {
-            if (lobbyTimerRef.current) {
-                clearTimeout(lobbyTimerRef.current)
-                lobbyTimerRef.current = null
-            }
-        }
-    }, [isHost, players.length, gameStarted, preGameCountdown, isSocketConnected, hostJoinedRoom, sessionId, isAuthenticated])
-
-    // Host skip lobby countdown
-    const handleSkipCountdown = () => {
-        if (!sessionId) return
-        if (lobbyTimerRef.current) {
-            clearTimeout(lobbyTimerRef.current)
-            lobbyTimerRef.current = null
-        }
-        setLobbyCountdown(null)
-        handleStartGame()
-    }
-
 
     if (loading) {
         return (
@@ -313,24 +251,6 @@ const LobbyPage = () => {
                 </div>
             </div>
 
-            {/* Lobby Countdown */}
-            {lobbyCountdown !== null && lobbyCountdown > 0 && (
-                <div className='text-center animate-fadeIn'>
-                    <div className='text-white text-9xl font-bold'>
-                        {lobbyCountdown}
-                    </div>
-                    <p className='text-white text-2xl font-oldschool mt-4'>
-                        Game starting in {lobbyCountdown}s...
-                    </p>
-                    <button
-                        onClick={handleSkipCountdown}
-                        className='mt-3 text-white/70 hover:text-white underline cursor-pointer font-oldschool text-sm'
-                    >
-                        Start Now
-                    </button>
-                </div>
-            )}
-
             {/* Pre-game Countdown */}
             {preGameCountdown !== null && preGameCountdown > 0 && (
                 <div className='text-center animate-fadeIn'>
@@ -340,6 +260,14 @@ const LobbyPage = () => {
                     <p className='text-white text-2xl font-oldschool mt-4'>
                         Game starting in {preGameCountdown}...
                     </p>
+                    {isHost && (
+                        <button
+                            onClick={handleStartGame}
+                            className='mt-3 text-white/70 hover:text-white underline cursor-pointer font-oldschool text-sm'
+                        >
+                            Start Now
+                        </button>
+                    )}
                 </div>
             )}
 
@@ -363,12 +291,22 @@ const LobbyPage = () => {
             )}
 
             {/* Waiting for players */}
-            {preGameCountdown === null && lobbyCountdown === null && !showHostAuthPrompt && (
-                <div className='flex flex-col gap-2 w-full max-w-md'>
+            {preGameCountdown === null && !showHostAuthPrompt && (
+                <div className='flex flex-col gap-3 w-full max-w-md'>
                     {isHost && players.length === 0 && (
                         <p className='text-white/70 text-center text-sm font-oldschool'>
                             Share the PIN above with players
                         </p>
+                    )}
+                    {isHost && players.length > 0 && (
+                        <Button
+                            buttoncolor="gamePin"
+                            size="xl"
+                            onClick={handleStartGame}
+                            className='w-full'
+                        >
+                            Start Game
+                        </Button>
                     )}
                     {!isHost && players.length > 0 && preGameCountdown === null && (
                         <div className='w-full max-w-md bg-white rounded-xl border-2 border-slate-800 border-b-[6px] border-r-[6px]'>

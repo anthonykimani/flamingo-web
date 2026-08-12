@@ -8,18 +8,13 @@ import { SocketEvents } from '@/enums/socket-events'
 import { IAnswer, IPlayer, IQuestion } from '@/interfaces/IQuiz'
 import { getGameSession } from '@/services/quiz_service'
 import socketClient from '@/utils/socket/socket.client'
-import { CircleIcon, SquareIcon, StarIcon, TriangleIcon, CheckCircleIcon, XCircleIcon, FireIcon, ClockIcon, HourglassIcon, TrophyIcon, UserIcon } from '@phosphor-icons/react'
+import { CheckCircleIcon, XCircleIcon, FireIcon, ClockIcon, HourglassIcon, TrophyIcon, UserIcon } from '@phosphor-icons/react'
 import { toast } from 'sonner'
 import NavigationBar from '@/components/navigation/navigation-bar'
+import { ANSWER_CONFIG } from '@/components/ui/answer-config'
+import { GameTimer } from '@/components/ui/game-timer'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useEffect, useState } from 'react'
-
-const ANSWER_CONFIG = [
-    { Icon: TriangleIcon, color: 'bg-[#009900]', borderColor: 'border-[#006600]' },
-    { Icon: CircleIcon, color: 'bg-[#FF9700]', borderColor: 'border-[#cc7800]' },
-    { Icon: SquareIcon, color: 'bg-[#2819DB]', borderColor: 'border-[#1a0f8a]' },
-    { Icon: StarIcon, color: 'bg-[#F14100]', borderColor: 'border-[#b33000]' }
-]
 
 const PlayGame = () => {
     const [question, setQuestion] = useState<IQuestion | null>(null)
@@ -255,67 +250,88 @@ const PlayGame = () => {
             <div className='w-full max-w-2xl'>
                 <div className='bg-white/95 rounded-xl border-2 border-slate-800 border-b-[6px] border-r-[6px] overflow-hidden'>
                     {answerResult && (
-                        <div className={`flex items-center justify-between px-4 sm:px-6 py-4 ${answerResult.isCorrect ? 'bg-[#009900]/10 border-b-2 border-[#009900]/30' : 'bg-[#DA0202]/10 border-b-2 border-[#DA0202]/30'}`}>
+                        <div className={`px-4 sm:px-6 py-5 flex items-center justify-between gap-3 ${answerResult.isCorrect ? 'bg-[#009900]' : 'bg-[#DA0202]'} animate-fadeIn`}>
                             <div className='flex items-center gap-3'>
                                 {answerResult.isCorrect ? (
-                                    <CheckCircleIcon size={28} className='text-[#009900] shrink-0' />
+                                    <CheckCircleIcon size={32} weight="fill" className='text-white shrink-0' />
                                 ) : (
-                                    <XCircleIcon size={28} className='text-[#DA0202] shrink-0' />
+                                    <XCircleIcon size={32} weight="fill" className='text-white shrink-0' />
                                 )}
                                 <div>
-                                    <p className='text-lg font-bold text-slate-800'>
+                                    <p className='text-2xl sm:text-3xl font-bold text-white leading-none'>
                                         {answerResult.isCorrect ? 'Correct!' : 'Wrong!'}
                                     </p>
-                                    <div className='flex items-center gap-3 text-xs text-slate-500'>
-                                        <span>Total: <strong className='text-slate-700'>{playerScore}</strong></span>
+                                    <div className='flex items-center gap-3 mt-1.5 text-sm font-oldschool text-white/90'>
+                                        <span>Total: <strong className='text-white'>{playerScore}</strong></span>
                                         {answerResult.currentStreak > 0 && (
-                                            <span className='flex items-center gap-0.5 text-[#F14100]'>
-                                                <FireIcon size={12} />
+                                            <span className='flex items-center gap-1 bg-white/20 px-2.5 py-0.5 rounded-full text-white'>
+                                                <FireIcon size={14} weight="fill" />
                                                 {answerResult.currentStreak}x streak
                                             </span>
                                         )}
                                     </div>
                                 </div>
                             </div>
-                            <div className='text-3xl sm:text-4xl font-bold text-[#FF9700] shrink-0'>
+                            <div className='bg-white rounded-xl border-2 border-slate-800 border-b-[4px] border-r-[4px] px-4 py-2 text-2xl sm:text-3xl font-bold text-[#FF9700] shrink-0'>
                                 +{answerResult.pointsEarned}
                             </div>
                         </div>
                     )}
 
                     {!answerResult && hasAnswered && (
-                        <div className='flex items-center gap-2 px-6 py-4 border-b-2 border-slate-200 bg-slate-50'>
-                            <ClockIcon size={20} weight="bold" className='text-slate-500' />
-                            <p className='text-base font-oldschool text-slate-500'>Answer locked! Crunching results...</p>
+                        <div className='flex items-center gap-2 px-6 py-4 border-b-2 border-slate-200 bg-[#FF9700]/10'>
+                            <ClockIcon size={20} weight="bold" className='text-[#FF9700]' />
+                            <p className='text-base font-oldschool text-[#cc7800] font-bold'>Answer locked! Crunching results...</p>
                         </div>
                     )}
 
                     {!hasAnswered && (
-                        <div className='px-6 py-4 border-b-2 border-slate-200 bg-slate-50'>
-                            <p className='text-base font-oldschool text-slate-500 text-center'>Time's up!</p>
+                        <div className='px-6 py-5 border-b-2 border-slate-200 bg-[#F14100]/5'>
+                            <p className='text-lg font-oldschool text-[#F14100] text-center font-bold flex items-center justify-center gap-2'>
+                                <ClockIcon size={20} weight="bold" />
+                                Time's up!
+                            </p>
                         </div>
                     )}
 
                     {question && (
                         <div className='px-4 sm:px-6 py-5 border-b-2 border-slate-200'>
-                            <p className='text-xs font-bold text-slate-400 uppercase tracking-wider mb-3'>Answer</p>
+                            <div className='flex items-center gap-2 mb-3'>
+                                <GamePill variant="meta">ANSWER</GamePill>
+                            </div>
                             <div className='space-y-2'>
-                                {question.answers.map((answer) => {
+                                {question.answers.map((answer, index) => {
+                                    const { Icon } = ANSWER_CONFIG[index % ANSWER_CONFIG.length]
                                     const isSelected = selectedAnswer === answer.id
                                     const isCorrectAnswer = answer.correctAnswer
+                                    const isWrongPick = isSelected && !isCorrectAnswer
                                     return (
                                         <div
                                             key={answer.id}
                                             className={`flex items-center gap-3 px-4 py-3 rounded-xl font-oldschool text-sm ${
                                                 isCorrectAnswer
-                                                    ? 'bg-[#009900]/8 border-2 border-[#009900] border-b-[4px] border-r-[4px] text-[#009900] font-bold'
-                                                    : isSelected && !isCorrectAnswer
-                                                        ? 'bg-[#DA0202]/8 border-2 border-[#DA0202] border-b-[4px] border-r-[4px] text-[#DA0202] font-bold'
+                                                    ? 'bg-[#009900] border-2 border-[#006600] border-b-[4px] border-r-[4px] text-white font-bold'
+                                                    : isWrongPick
+                                                        ? 'bg-[#DA0202] border-2 border-[#8a0101] border-b-[4px] border-r-[4px] text-white font-bold'
                                                         : 'bg-slate-50 border border-slate-200 text-slate-400'
                                             }`}
                                         >
-                                            {isCorrectAnswer ? <CheckCircleIcon size={20} weight="fill" /> : isSelected ? <XCircleIcon size={20} weight="fill" /> : null}
+                                            {isCorrectAnswer ? (
+                                                <CheckCircleIcon size={20} weight="fill" className='shrink-0' />
+                                            ) : isWrongPick ? (
+                                                <XCircleIcon size={20} weight="fill" className='shrink-0' />
+                                            ) : (
+                                                <span className='w-6 h-6 rounded-md bg-black/10 flex items-center justify-center shrink-0'>
+                                                    <Icon size={16} color="#64748b" />
+                                                </span>
+                                            )}
                                             <span>{answer.answer}</span>
+                                            {isCorrectAnswer && (
+                                                <span className='ml-auto text-xs font-bold uppercase tracking-wider text-white/80'>Correct</span>
+                                            )}
+                                            {isWrongPick && (
+                                                <span className='ml-auto text-xs font-bold uppercase tracking-wider text-white/80'>Your pick</span>
+                                            )}
                                         </div>
                                     )
                                 })}
@@ -333,40 +349,46 @@ const PlayGame = () => {
                                     Tallying up...
                                 </p>
                             ) : (
-                                leaderboard.map((player, index) => (
-                                    <div
-                                        key={player.id}
-                                        className={`flex items-center gap-3 px-4 py-3 rounded-xl border-2 border-slate-800 border-b-[4px] border-r-[4px] ${
-                                            player.playerName === playerName
-                                                ? 'bg-[#FF9700]/5 border-[#FF9700]/30'
-                                                : 'bg-white'
-                                        }`}
-                                    >
-                                        <div className='w-8 h-8 flex items-center justify-center shrink-0'>
-                                            {index === 0 ? (
-                                                <TrophyIcon size={22} className='text-[#FF9700]' weight="fill" />
-                                            ) : index === 1 ? (
-                                                <TrophyIcon size={20} className='text-[#1E293B]' weight="fill" />
-                                            ) : index === 2 ? (
-                                                <TrophyIcon size={18} className='text-[#F14100]' weight="fill" />
-                                            ) : (
-                                                <span className='text-xs font-bold text-slate-400'>{index + 1}</span>
-                                            )}
-                                        </div>
-                                        <div className='flex items-center gap-2 flex-1 min-w-0'>
-                                            <UserIcon size={16} className='text-slate-400 shrink-0' />
-                                            <span className='text-sm sm:text-base font-oldschool truncate text-slate-800'>
-                                                {player.playerName}
-                                                {player.playerName === playerName && (
-                                                    <span className='text-xs text-[#FF9700] ml-1.5 font-bold'>(You)</span>
+                                leaderboard.map((player, index) => {
+                                    const isYou = player.playerName === playerName
+                                    return (
+                                        <div
+                                            key={player.id}
+                                            className={`flex items-center gap-3 px-4 py-3 rounded-xl border-2 border-b-[4px] border-r-[4px] animate-fadeIn ${
+                                                isYou
+                                                    ? 'bg-[#FF9700] border-[#cc7800]'
+                                                    : 'bg-white border-slate-800'
+                                            }`}
+                                            style={{ animationDelay: `${index * 60}ms` }}
+                                        >
+                                            <div className='w-8 h-8 flex items-center justify-center shrink-0'>
+                                                {index === 0 ? (
+                                                    <TrophyIcon size={22} className={isYou ? 'text-white' : 'text-[#FF9700]'} weight="fill" />
+                                                ) : index === 1 ? (
+                                                    <TrophyIcon size={20} className={isYou ? 'text-white' : 'text-[#1E293B]'} weight="fill" />
+                                                ) : index === 2 ? (
+                                                    <TrophyIcon size={18} className={isYou ? 'text-white' : 'text-[#F14100]'} weight="fill" />
+                                                ) : (
+                                                    <span className={`text-xs font-bold ${isYou ? 'text-white' : 'text-slate-400'}`}>{index + 1}</span>
                                                 )}
-                                            </span>
+                                            </div>
+                                            <div className='flex items-center gap-2 flex-1 min-w-0'>
+                                                <UserIcon size={16} className={isYou ? 'text-white' : 'text-slate-400'} shrink-0 />
+                                                <span className={`text-sm sm:text-base font-oldschool truncate ${isYou ? 'text-white' : 'text-slate-800'}`}>
+                                                    {player.playerName}
+                                                    {isYou && (
+                                                        <span className='text-xs bg-white/25 px-1.5 py-0.5 rounded-full ml-1.5 font-bold'>
+                                                            (You)
+                                                        </span>
+                                                    )}
+                                                </span>
+                                            </div>
+                                            <div className={`px-3 py-1 rounded-full font-bold text-sm shrink-0 ${isYou ? 'bg-white text-[#cc7800]' : 'bg-black/10 text-slate-700'}`}>
+                                                {player.totalScore}
+                                            </div>
                                         </div>
-                                        <div className='bg-black/10 px-3 py-1 rounded-full font-bold text-sm text-slate-700 shrink-0'>
-                                            {player.totalScore}
-                                        </div>
-                                    </div>
-                                ))
+                                    )
+                                })
                             )}
                         </div>
                     </div>
@@ -385,10 +407,7 @@ const PlayGame = () => {
                     <div className='text-white font-oldschool text-lg min-w-0 truncate'>
                         Q {currentQuestionNumber}/{totalQuestions}
                     </div>
-                    <div className='bg-black/50 px-4 py-2 rounded-full text-white font-bold text-xl flex items-center gap-2 shrink-0'>
-                        <ClockIcon size={20} />
-                        {timeLeft}s
-                    </div>
+                    <GameTimer seconds={timeLeft} />
                     <div className='text-white font-oldschool text-lg shrink-0'>
                         Score: {playerScore}
                     </div>

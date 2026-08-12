@@ -3,7 +3,7 @@
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { GamePill } from '@/components/ui/game-pill'
-import { SquareIcon, StarIcon, CircleIcon, TriangleIcon, UsersThreeIcon, CheckCircleIcon, TrophyIcon, UserIcon } from '@phosphor-icons/react'
+import { UsersThreeIcon, CheckCircleIcon, TrophyIcon, UserIcon } from '@phosphor-icons/react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useState, useEffect, useCallback } from 'react'
 import { getGameSession, getGameSessionByGamePin, getQuizById, getActivePlayers } from '@/services/quiz_service'
@@ -11,13 +11,9 @@ import { IPlayer, IQuiz } from '@/interfaces/IQuiz'
 import { GameState } from '@/enums/game_state'
 import { SocketEvents } from '@/enums/socket-events'
 import socketClient from '@/utils/socket/socket.client'
-
-const ANSWER_CONFIG = [
-    { Icon: SquareIcon, color: 'bg-[#009900]', borderColor: 'border-[#006600]' },
-    { Icon: StarIcon, color: 'bg-[#FF9700]', borderColor: 'border-[#cc7800]' },
-    { Icon: TriangleIcon, color: 'bg-[#2819DB]', borderColor: 'border-[#1a0f8a]' },
-    { Icon: CircleIcon, color: 'bg-[#F14100]', borderColor: 'border-[#b33000]' }
-]
+import NavigationBar from '@/components/navigation/navigation-bar'
+import { ANSWER_CONFIG } from '@/components/ui/answer-config'
+import { GameTimer } from '@/components/ui/game-timer'
 
 function AutoAdvance({ onAdvance }: { onAdvance: () => void }) {
     const [count, setCount] = useState(5)
@@ -277,10 +273,10 @@ const GamePage = () => {
             <AutoAdvance onAdvance={handleNextQuestion} />
             <div className='w-full max-w-3xl space-y-6'>
                 <div className='bg-white rounded-xl border-2 border-slate-800 border-b-[6px] border-r-[6px] overflow-hidden'>
-                    <div className='flex items-center justify-between px-6 py-4 bg-slate-50 border-b-2 border-slate-200'>
+                    <div className='flex items-center justify-between px-6 py-4 bg-[#FF9700] border-b-2 border-[#cc7800] animate-fadeIn'>
                         <div className='flex items-center gap-3'>
-                            <GamePill variant="meta">RESULTS</GamePill>
-                            <span className='text-sm font-oldschool text-slate-500'>
+                            <GamePill variant="meta" className='!bg-white/25 !text-white'>RESULTS</GamePill>
+                            <span className='text-sm font-oldschool text-white'>
                                 {leaderboard.length} player{leaderboard.length !== 1 ? 's' : ''}
                             </span>
                         </div>
@@ -288,23 +284,33 @@ const GamePage = () => {
 
                     {currentQuestion && (
                         <div className='px-6 py-5 border-b-2 border-slate-200'>
-                            <p className='text-xs font-bold text-slate-400 uppercase tracking-wider mb-3'>
-                                Answer
-                            </p>
+                            <div className='flex items-center gap-2 mb-3'>
+                                <GamePill variant="meta">ANSWER</GamePill>
+                            </div>
                             <div className='space-y-2'>
-                                {currentQuestion.answers?.map((answer) => {
+                                {currentQuestion.answers?.map((answer, index) => {
+                                    const { Icon } = ANSWER_CONFIG[index % ANSWER_CONFIG.length]
                                     const isCorrect = answer.correctAnswer
                                     return (
                                         <div
                                             key={answer.id}
                                             className={`flex items-center gap-3 px-4 py-3 rounded-xl font-oldschool text-sm ${
                                                 isCorrect
-                                                    ? 'bg-[#009900]/8 border-2 border-[#009900] border-b-[4px] border-r-[4px] text-[#009900]'
+                                                    ? 'bg-[#009900] border-2 border-[#006600] border-b-[4px] border-r-[4px] text-white font-bold'
                                                     : 'bg-slate-50 border border-slate-200 text-slate-400'
                                             }`}
                                         >
-                                            {isCorrect && <CheckCircleIcon size={20} weight="fill" />}
-                                            <span className={isCorrect ? 'font-bold' : ''}>{answer.answer}</span>
+                                            {isCorrect ? (
+                                                <CheckCircleIcon size={20} weight="fill" className='shrink-0' />
+                                            ) : (
+                                                <span className='w-6 h-6 rounded-md bg-black/10 flex items-center justify-center shrink-0'>
+                                                    <Icon size={16} color="#64748b" />
+                                                </span>
+                                            )}
+                                            <span className={isCorrect ? '' : ''}>{answer.answer}</span>
+                                            {isCorrect && (
+                                                <span className='ml-auto text-xs font-bold uppercase tracking-wider text-white/80'>Correct</span>
+                                            )}
                                         </div>
                                     )
                                 })}
@@ -325,7 +331,8 @@ const GamePage = () => {
                                 leaderboard.map((player, index) => (
                                     <div
                                         key={player.id}
-                                        className='flex items-center gap-3 px-4 py-3 rounded-xl border-2 border-slate-800 border-b-[4px] border-r-[4px] bg-white'
+                                        className='flex items-center gap-3 px-4 py-3 rounded-xl border-2 border-slate-800 border-b-[4px] border-r-[4px] bg-white animate-fadeIn'
+                                        style={{ animationDelay: `${index * 60}ms` }}
                                     >
                                         <div className='w-8 h-8 flex items-center justify-center shrink-0'>
                                             {index === 0 ? (
@@ -373,12 +380,7 @@ const GamePage = () => {
         <div className='game-pin-background h-full md:h-screen bg-no-repeat bg-cover flex justify-around'>
             <div className='w-full flex flex-col justify-center gap-10 px-4 max-w-5xl mx-auto'>
                 <div className='absolute top-4 left-4 z-50'>
-                    <span
-                        onClick={() => router.push('/')}
-                        className='text-white text-sm font-oldschool underline cursor-pointer hover:text-white/70'
-                    >
-                        Exit
-                    </span>
+                    <NavigationBar route="/" />
                 </div>
                 <div className='absolute top-4 right-4 flex items-center gap-2'>
                     <span className={`w-2.5 h-2.5 rounded-full ${isConnected ? 'bg-[#009900]' : 'bg-[#DA0202]'}`} />
@@ -416,9 +418,7 @@ const GamePage = () => {
 
                 <div className='flex flex-wrap items-center justify-center sm:justify-between gap-4 max-w-4xl mx-auto w-full'>
                     <div className='flex items-center gap-3 order-1 sm:order-none'>
-                        <div className='border-2 border-slate-800 p-4 font-bold text-white text-3xl rounded-full bg-[#F24E1E] min-w-[60px] text-center'>
-                            {timeLeft}
-                        </div>
+                        <GameTimer seconds={timeLeft} />
                         <p className='text-white text-lg font-oldschool'>seconds remaining</p>
                     </div>
                     <div className='flex items-center gap-4 order-3 sm:order-none sm:ml-auto'>

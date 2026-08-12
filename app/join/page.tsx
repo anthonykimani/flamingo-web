@@ -377,7 +377,7 @@ const JoinGame = () => {
                   </CardHeader>
                 </Card>
               </div>
-              {(gameSession?.gameMode === GameMode.HANGOUTS || isDesignatedHost) && (
+              {isDesignatedHost && (
                 <div className='flex justify-center'>
                   <Button
                     buttoncolor="gamePin"
@@ -385,7 +385,7 @@ const JoinGame = () => {
                     onClick={() => socketClient.startGame(gameSession.id)}
                     className='w-full max-w-md'
                   >
-                    <PlayIcon size={24} /> {gameSession?.gameMode === GameMode.HANGOUTS ? 'Play!' : 'Start Game as Host'}
+                    <PlayIcon size={24} /> Start Game as Host
                   </Button>
                 </div>
               )}

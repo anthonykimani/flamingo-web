@@ -12,7 +12,7 @@ import { addQuiz, createGameSession } from '@/services/quiz_service'
 import { IQuestion, IQuiz } from '@/interfaces/IQuiz'
 import { GameMode } from '@/enums/game_mode'
 
-const ANSWER_ICONS = [circleAnswer, starAnswer, triangleAnswer, squareAnswer]
+const ANSWER_ICONS = [triangleAnswer, circleAnswer, squareAnswer, starAnswer]
 
 interface CreateQuizProps {
     onSave: (gameSession: any) => void;
