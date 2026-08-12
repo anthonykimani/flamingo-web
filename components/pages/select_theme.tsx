@@ -6,10 +6,12 @@ import { AtomIcon, FilmSlateIcon, GlobeHemisphereWestIcon, LeafIcon, LightbulbIc
 import { useRouter, useSearchParams } from 'next/navigation'
 import { addAgentQuiz, createGameSession } from '@/services/quiz_service'
 import NavigationBar from '../navigation/navigation-bar'
+import { ConnectWalletButton } from '../custom/connect-wallet-button'
 import { GameMode } from '@/enums/game_mode'
 import { toast } from 'sonner'
 import { Card, CardContent, CardTitle } from '../ui/card'
 import { useAccount } from 'wagmi'
+import { useConnectModal } from '@rainbow-me/rainbowkit'
 import { useWalletAuth } from '@/hooks/use-wallet-auth'
 import { useWorldApp } from '@/hooks/use-world-app'
 
@@ -35,6 +37,7 @@ const SelectTheme = () => {
   const router = useRouter()
   const searchParams = useSearchParams()
   const { isConnected } = useAccount()
+  const { openConnectModal } = useConnectModal()
   const { isAuthenticated, isAuthenticating, authenticate } = useWalletAuth()
   const {
     isWorldApp, isAuthenticated: isWorldAppAuthed,
@@ -44,7 +47,7 @@ const SelectTheme = () => {
   const [loadingTheme, setLoadingTheme] = useState<string | null>(null)
 
   const handleThemeSelect = async (theme: Theme) => {
-    if (isWorldApp && !isConnected) {
+    if (isWorldApp) {
       if (!isWorldAppAuthed) {
         toast.error('Please connect your wallet in World App first')
         return
@@ -60,6 +63,7 @@ const SelectTheme = () => {
       }
     } else if (!isConnected) {
       toast.error('Connect your wallet to create quizzes')
+      openConnectModal?.()
       return
     } else if (!isAuthenticated) {
       toast.info('Sign in with your wallet first')
@@ -93,6 +97,7 @@ const SelectTheme = () => {
     <div className='game-pin-background h-screen bg-no-repeat bg-cover flex flex-col p-2 overflow-y-auto'>
       <div className='flex flex-row justify-between sm:items-center mb-4'>
         <NavigationBar />
+        {!isWorldApp && <ConnectWalletButton />}
       </div>
 
       <div className='flex flex-col justify-center items-center p-2 flex-1 gap-6 max-w-4xl mx-auto w-full'>

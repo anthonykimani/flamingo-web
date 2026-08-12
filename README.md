@@ -2,6 +2,44 @@
 
 A modern, responsive Next.js frontend for a real-time multiplayer quiz game similar to Kahoot. Built with Next.js 14, TypeScript, TailwindCSS, and Socket.IO.
 
+## 🚀 Changelog
+
+### Overview
+
+This release makes the quiz-game flow feel complete and polished: each game mode now behaves the way it's supposed to, players have an easier time joining and playing, and the app finally looks consistent across screens. It also fixes a batch of long-standing bugs around hosting, reconnection, and the scoreboard.
+
+### New Features
+
+- **Game modes now work differently.** Hangouts auto-starts the game when players join; Team Building requires the host to start it; Degen PvP stays host-controlled. This matches how each mode is meant to be played.
+- **Host failover for Team Building.** If the host leaves before the game starts, the first player who joined automatically becomes the new host and can start the game — no more dead lobbies.
+- **Auto-start lobby countdown.** Hangouts lobbies show a countdown and launch automatically once players are in, so games start without awkward waiting.
+- **Guest mode enabled.** Players can now join and play as a guest with a fun, random name instead of being forced to connect a wallet.
+- **Degen PvP unlocked** (it was previously disabled).
+
+### Changes & Improvements
+
+- **Simplified joining.** The join screen now includes a game lobby and a built-in "play" flow so players land where they need to be with fewer clicks.
+- **Brand-consistent styling.** Borders, buttons, backgrounds, and fonts were unified across most pages — the app now has one recognizable look instead of a patchwork of styles.
+- **Redesigned results screen.** After each question, players see a scoreboard and the correct answer in the same visual style as the rest of the app, with clear highlight for right/wrong picks.
+- **Polished game screens.** Better loading states, a progress bar, an hourglass spinner, and a cleaner scoreboard and navigation bar.
+- **Responsive game cards.** Game cards now look right on small phone screens.
+- **Reusable UI components.** Shared elements were extracted into a common component library to reduce duplication and keep the codebase tidy.
+
+### Bug Fixes
+
+- **Host disconnect** no longer breaks an in-progress game.
+- **Reconnection** after a network blip is more reliable — players can get back into their game.
+- **Player counts** now update correctly in the lobby.
+- **Back buttons** were fixed and added where missing, so users can navigate back without getting stuck. *(Note: on some screens the back button navigates home intentionally rather than to the previous page.)*
+- **Stale browser cache** issues were resolved; the app reconnects with a fresh session instead of erroring out.
+
+### Behind the Scenes
+
+- The TypeScript setup was cleaned up and font loading was made more reliable.
+- The quiz/game API layer was restructured to be easier to extend in future releases.
+
+---
+
 ## 📋 Table of Contents
 
 - [Features](#features)

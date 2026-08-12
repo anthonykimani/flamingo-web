@@ -11,10 +11,11 @@ import {
     connectorsForWallets,
 } from '@rainbow-me/rainbowkit';
 import { WagmiProvider, createConfig, http } from 'wagmi';
-import { celo, celoSepolia } from 'wagmi/chains';
+import { celo, celoSepolia, worldchain } from 'wagmi/chains';
 import { injectedWallet, rainbowWallet } from '@rainbow-me/rainbowkit/wallets';
+import { worldApp } from '@worldcoin/minikit-js/wagmi';
 
-const connectors = connectorsForWallets(
+const rainbowConnectors = connectorsForWallets(
     [
         {
             groupName: 'Recommended',
@@ -28,11 +29,12 @@ const connectors = connectorsForWallets(
 );
 
 export const config = createConfig({
-    connectors,
-    chains: [celo, celoSepolia],
+    connectors: [worldApp(), ...rainbowConnectors],
+    chains: [celo, celoSepolia, worldchain],
     transports: {
         [celoSepolia.id]: http(),
         [celo.id]: http(),
+        [worldchain.id]: http(),
     },
 });
 

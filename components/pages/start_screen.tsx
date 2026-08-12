@@ -106,9 +106,9 @@ const StartScreen = () => {
                 {hasError && 'Connection failed'}
                 {!isLoading && !hasError && (isAuthenticated ? 'World ID ✓' : 'Connecting...')}
               </StatusBadge>
-            ) : isConnected ? (
+            ) : (
               <ConnectWalletButton />
-            ) : null
+            )
           )}
         </div>
       </div>

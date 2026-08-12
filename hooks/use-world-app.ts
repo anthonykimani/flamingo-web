@@ -21,47 +21,65 @@ export interface WorldAppState {
 
 export function useWorldApp(): WorldAppState {
   const { isInstalled } = useMiniKit()
+  const isWorldApp = isInstalled === true
   const [walletAddress, setWalletAddress] = useState<string | undefined>()
   const [username, setUsername] = useState<string | undefined>()
   const [profilePictureUrl, setProfilePictureUrl] = useState<string | undefined>()
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [isAuthenticating, setIsAuthenticating] = useState(false)
   const [signInError, setSignInError] = useState<string | null>(null)
-  const [isSigningIn, setIsSigningIn] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   const signIn = useCallback(async (): Promise<boolean> => {
-    const addr = walletAddress
-    if (!addr) return false
+    if (!isWorldApp) return false
 
-    setIsSigningIn(true)
+    setIsAuthenticating(true)
     setSignInError(null)
 
     try {
+      const address = MiniKit.user?.walletAddress
+      if (!address) {
+        setSignInError('No wallet address available')
+        return false
+      }
+
       const nonceRes = await fetch(`${apiOptions.endpoints.gameService}/auth/nonce`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ walletAddress: addr }),
+        body: JSON.stringify({ walletAddress: address }),
       })
       const nonceData = await nonceRes.json()
-      if (!nonceData.data?.message) {
+      const { nonce } = nonceData.data ?? {}
+      if (!nonce) {
         setSignInError('Failed to get nonce')
         return false
       }
 
-      const msgResult = await (MiniKit.commandsAsync as any).signMessage({ message: nonceData.data.message })
-      if (msgResult.finalPayload.status !== 'success') {
-        setSignInError('Signature rejected')
+      const result = await MiniKit.walletAuth({
+        nonce,
+        statement: 'Sign in to Flamingo',
+        expirationTime: new Date(Date.now() + 1000 * 60 * 60),
+      })
+
+      if (result.executedWith === 'fallback') {
+        setSignInError('World App authentication unavailable')
         return false
       }
+
+      const { address: authAddress, message, signature } = result.data
+
+      setWalletAddress(authAddress)
+      setUsername(MiniKit.user?.username)
+      setProfilePictureUrl(MiniKit.user?.profilePictureUrl)
+      setIsAuthenticated(true)
 
       const verifyRes = await fetch(`${apiOptions.endpoints.gameService}/auth/verify`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          walletAddress: addr,
-          signature: msgResult.finalPayload.signature,
-          message: nonceData.data.message,
+          walletAddress: authAddress,
+          nonce,
+          payload: { address: authAddress, message, signature },
         }),
       })
       const verifyData = await verifyRes.json()
@@ -76,12 +94,12 @@ export function useWorldApp(): WorldAppState {
       setSignInError('Authentication failed')
       return false
     } finally {
-      setIsSigningIn(false)
+      setIsAuthenticating(false)
     }
-  }, [walletAddress])
+  }, [isWorldApp])
 
   useEffect(() => {
-    if (!isInstalled) return
+    if (!isWorldApp) return
 
     const address = MiniKit.user?.walletAddress
     const user = MiniKit.user?.username
@@ -93,50 +111,18 @@ export function useWorldApp(): WorldAppState {
     }
     if (user) setUsername(user)
     if (pfp) setProfilePictureUrl(pfp)
-
-    if (user && address) return
-
-    const doAuth = async () => {
-      setIsAuthenticating(true)
-      setError(null)
-      try {
-        const nonce = crypto.randomUUID().replace(/-/g, "")
-        const result = await MiniKit.commandsAsync.walletAuth({
-          nonce,
-          statement: "Sign in to Flamingo",
-          expirationTime: new Date(Date.now() + 1000 * 60 * 60),
-        })
-
-        if (result.finalPayload.status === 'error') {
-          setError('Authentication failed')
-          return
-        }
-
-        setWalletAddress(result.finalPayload.address)
-        setUsername(MiniKit.user?.username)
-        setProfilePictureUrl(MiniKit.user?.profilePictureUrl)
-        setIsAuthenticated(true)
-      } catch {
-        setError('World App authentication failed')
-      } finally {
-        setIsAuthenticating(false)
-      }
-    }
-
-    doAuth()
-  }, [isInstalled])
+  }, [isWorldApp])
 
   const hasToken = typeof window !== 'undefined' && !!localStorage.getItem('token')
 
   return {
-    isWorldApp: typeof window !== 'undefined' &&
-      window.navigator?.userAgent?.includes('World') === true,
-    isInstalled: isInstalled === true,
+    isWorldApp,
+    isInstalled: isWorldApp,
     walletAddress,
     username,
     profilePictureUrl,
     isAuthenticated,
-    isAuthenticating: isAuthenticating || isSigningIn,
+    isAuthenticating,
     hasToken,
     signInError,
     signIn,

@@ -2,12 +2,15 @@
 
 import { useAccount, useSignMessage } from 'wagmi';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { useMiniKit } from "@worldcoin/minikit-js/minikit-provider";
 import { apiOptions } from '@/shared/api.config';
 
 const TOKEN_KEY = 'token';
 
 export function useWalletAuth() {
   const { address, isConnected } = useAccount();
+  const { isInstalled } = useMiniKit();
+  const isWorldApp = isInstalled === true;
   const { signMessageAsync } = useSignMessage();
   const [token, setToken] = useState<string | null>(null);
   const [isAuthenticating, setIsAuthenticating] = useState(false);
@@ -61,10 +64,10 @@ export function useWalletAuth() {
   }, []);
 
   useEffect(() => {
-    if (isConnected && address && !token && !authenticatingRef.current && !localStorage.getItem(TOKEN_KEY)) {
+    if (!isWorldApp && isConnected && address && !token && !authenticatingRef.current && !localStorage.getItem(TOKEN_KEY)) {
       authenticate();
     }
-  }, [isConnected, address, authenticate]);
+  }, [isWorldApp, isConnected, address, authenticate]);
 
   return { token, isAuthenticated: !!token, isAuthenticating, authError, authenticate, clearToken };
 }
