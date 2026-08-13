@@ -13,7 +13,6 @@ import {
 import { WagmiProvider, createConfig, http } from 'wagmi';
 import { celo, celoSepolia, worldchain } from 'wagmi/chains';
 import { injectedWallet, rainbowWallet } from '@rainbow-me/rainbowkit/wallets';
-import { worldApp } from '@worldcoin/minikit-js/wagmi';
 
 const rainbowConnectors = connectorsForWallets(
     [
@@ -29,7 +28,7 @@ const rainbowConnectors = connectorsForWallets(
 );
 
 export const config = createConfig({
-    connectors: [worldApp(), ...rainbowConnectors],
+    connectors: rainbowConnectors,
     chains: [celo, celoSepolia, worldchain],
     transports: {
         [celoSepolia.id]: http(),
