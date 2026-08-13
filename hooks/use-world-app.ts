@@ -35,23 +35,19 @@ export function useWorldApp(): WorldAppState {
 
     setIsAuthenticating(true)
     setSignInError(null)
+    setError(null)
 
     try {
-      const address = MiniKit.user?.walletAddress
-      if (!address) {
-        setSignInError('No wallet address available')
-        return false
-      }
-
       const nonceRes = await fetch(`${apiOptions.endpoints.gameService}/auth/nonce`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ walletAddress: address }),
+        body: JSON.stringify({}),
       })
       const nonceData = await nonceRes.json()
       const { nonce } = nonceData.data ?? {}
       if (!nonce) {
         setSignInError('Failed to get nonce')
+        setError('Failed to get nonce')
         return false
       }
 
@@ -63,6 +59,7 @@ export function useWorldApp(): WorldAppState {
 
       if (result.executedWith === 'fallback') {
         setSignInError('World App authentication unavailable')
+        setError('World App authentication unavailable')
         return false
       }
 
@@ -77,7 +74,6 @@ export function useWorldApp(): WorldAppState {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          walletAddress: authAddress,
           nonce,
           payload: { address: authAddress, message, signature },
         }),
@@ -85,6 +81,7 @@ export function useWorldApp(): WorldAppState {
       const verifyData = await verifyRes.json()
       if (!verifyData.data?.token) {
         setSignInError('Verification failed')
+        setError('Verification failed')
         return false
       }
 
@@ -92,6 +89,7 @@ export function useWorldApp(): WorldAppState {
       return true
     } catch {
       setSignInError('Authentication failed')
+      setError('Authentication failed')
       return false
     } finally {
       setIsAuthenticating(false)
@@ -114,6 +112,15 @@ export function useWorldApp(): WorldAppState {
   }, [isWorldApp])
 
   const hasToken = typeof window !== 'undefined' && !!localStorage.getItem('token')
+
+  // Auto-connect: prompt the SIWE signature on load when inside World App
+  // and not yet authenticated. The token persists in localStorage, so this
+  // only prompts once per session.
+  useEffect(() => {
+    if (isWorldApp && !hasToken && !isAuthenticated && !isAuthenticating) {
+      signIn()
+    }
+  }, [isWorldApp, hasToken, isAuthenticated, isAuthenticating, signIn])
 
   return {
     isWorldApp,
