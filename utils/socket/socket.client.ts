@@ -22,9 +22,12 @@ class SocketClient {
                 autoConnect: false,
                 reconnection: true,
                 reconnectionDelay: 1000,
-                reconnectionAttempts: 5
+                reconnectionDelayMax: 10000,
+                randomizationFactor: 0.5,
+                reconnectionAttempts: Infinity
             });
             this.setupConnectionHandlers();
+            this.setupVisibilityReconnect();
         }
 
         // The server rejects anonymous handshakes — only attempt a
@@ -51,6 +54,31 @@ class SocketClient {
         this.socket.on('connect_error', (error) => {
             console.error('Connection error:', error.message);
         });
+    }
+
+    /** Reconnect when the app becomes visible again (e.g. phone screen
+     *  turns back on) or the network comes back online. socket.io already
+     *  retries with backoff, but the browser pauses timers while the page
+     *  is hidden/off, so proactively (re)connect here. */
+    private setupVisibilityReconnect() {
+        if (typeof window === 'undefined') return;
+
+        const reconnectIfNeeded = () => {
+            if (this.socket && !this.socket.connected) {
+                console.log('🔌 Socket idle (visible/online) — reconnecting...');
+                this.socket.connect();
+            }
+        };
+
+        document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'visible') reconnectIfNeeded();
+        });
+
+        window.addEventListener('pageshow', (event) => {
+            if (event.persisted) reconnectIfNeeded();
+        });
+
+        window.addEventListener('online', reconnectIfNeeded);
     }
 
     // Game Events
