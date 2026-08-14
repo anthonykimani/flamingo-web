@@ -94,6 +94,10 @@ class SocketClient {
         this.socket?.emit(SocketEvents.START_GAME, { gameSessionId });
     }
 
+    claimHost(gameSessionId: string) {
+        this.socket?.emit(SocketEvents.CLAIM_HOST, { gameSessionId });
+    }
+
     nextQuestion(gameSessionId: string, questionIndex: number) {
         this.socket?.emit(SocketEvents.NEXT_QUESTION, { gameSessionId, questionIndex });
     }
@@ -146,6 +150,14 @@ class SocketClient {
 
     onGameStarted(callback: (data: any) => void) {
         this.socket?.on(SocketEvents.GAME_STARTED, callback);
+    }
+
+    onHostStatus(callback: (data: { present: boolean; gameSessionId: string }) => void) {
+        this.socket?.on(SocketEvents.HOST_STATUS, callback);
+    }
+
+    onHostTransferred(callback: (data: { successorName: string; gameSessionId: string }) => void) {
+        this.socket?.on(SocketEvents.HOST_TRANSFERRED, callback);
     }
 
     onQuestionStarted(callback: (data: any) => void) {

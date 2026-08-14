@@ -36,6 +36,7 @@ const JoinGame = () => {
   const [countdown, setCountdown] = useState<number | null>(null)
   const [editName, setEditName] = useState('')
   const [isDesignatedHost, setIsDesignatedHost] = useState(false)
+  const [hostPresent, setHostPresent] = useState(true)
   const router = useRouter()
 
   const gameSessionRef = useRef(gameSession)
@@ -89,7 +90,13 @@ const JoinGame = () => {
       const name = nicknameRef.current
       if (name === data.successorName) {
         setIsDesignatedHost(true)
+        setHostPresent(true)
       }
+    })
+
+    socketClient.onHostStatus((data: { present: boolean }) => {
+      console.log('👑 Host status:', data.present ? 'present' : 'absent')
+      setHostPresent(data.present)
     })
 
     return () => {
@@ -101,6 +108,7 @@ const JoinGame = () => {
       socket.off('host-transferred')
       socketClient.off(SocketEvents.JOINED_GAME)
       socketClient.off(SocketEvents.ERROR)
+      socketClient.off(SocketEvents.HOST_STATUS)
     }
   }, [router])
 
@@ -195,6 +203,8 @@ const JoinGame = () => {
           if (data.gameState === 'countdown' || data.gameState === 'in_progress') {
             router.push(`/play?sessionId=${session.id}&playerName=${nickname}&gamePin=${session.gamePin}`)
           } else {
+            if (data.isHost) setIsDesignatedHost(true)
+            setHostPresent(data.hostPresent ?? true)
             setGameSession(session)
             setStepper(JoinGameStep.LOBBYROOM)
           }
@@ -362,10 +372,10 @@ const JoinGame = () => {
                             {gameSession.gameMode === GameMode.HANGOUTS ? 'Hangouts' : gameSession.gameMode === GameMode.TEAM_BUILDING ? 'Team Building' : 'Degen PvP'}
                           </span>
                         )}
-                        {gameSession?.gameMode === GameMode.TEAM_BUILDING && !isDesignatedHost && (
+                        {hostPresent && !isDesignatedHost && (
                           <div>
                             <p className='text-lg font-oldschool mb-2'>
-                              Waiting for game to start...
+                              Waiting for the host to start...
                             </p>
                             <div className='animate-pulse text-black/80 text-sm flex items-center justify-center gap-2'>
                               <HourglassIcon size={16} className="animate-icon-spin" />
@@ -373,10 +383,21 @@ const JoinGame = () => {
                             </div>
                           </div>
                         )}
+                        {!hostPresent && !isDesignatedHost && (
+                          <div>
+                            <p className='text-base font-oldschool mb-3 text-slate-600'>
+                              No host is present in this game.
+                            </p>
+                            <p className='text-sm text-slate-400 mb-3'>
+                              You can take over as host, play solo, or wait for others.
+                            </p>
+                          </div>
+                        )}
                       </div>
                   </CardHeader>
                 </Card>
               </div>
+
               {isDesignatedHost && (
                 <div className='flex justify-center'>
                   <Button
@@ -387,6 +408,29 @@ const JoinGame = () => {
                   >
                     <PlayIcon size={24} /> Start Game as Host
                   </Button>
+                </div>
+              )}
+
+              {!hostPresent && !isDesignatedHost && (
+                <div className='flex flex-col sm:flex-row justify-center gap-2 w-full max-w-md'>
+                  <Button
+                    buttoncolor="gamePin"
+                    size="xl"
+                    onClick={() => socketClient.claimHost(gameSession.id)}
+                    className='w-full'
+                  >
+                    <PlayIcon size={24} /> Become Host
+                  </Button>
+                  {(gameSession?.gameMode === GameMode.HANGOUTS || gameSession?.gameMode === GameMode.TEAM_BUILDING) && (
+                    <Button
+                      variant="active"
+                      size="xl"
+                      onClick={() => socketClient.startGame(gameSession.id)}
+                      className='w-full'
+                    >
+                      Play Solo
+                    </Button>
+                  )}
                 </div>
               )}
               </>
