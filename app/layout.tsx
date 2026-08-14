@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 import { Poppins } from "next/font/google";
-import Script from "next/script";
 import Providers from "@/provider/providers";
+import { ErudaDebug } from "@/components/eruda-debug";
 import "./globals.css";
 
 const poppins = Poppins({
@@ -56,13 +56,7 @@ export default function RootLayout({
         <Providers>
           {children}
         </Providers>
-        {process.env.NEXT_PUBLIC_ENABLE_ERUDA === "true" && (
-          <Script
-            src="https://cdn.jsdelivr.net/npm/eruda"
-            strategy="beforeInteractive"
-            onLoad={() => (window as any).eruda?.init()}
-          />
-        )}
+        {process.env.NEXT_PUBLIC_ENABLE_ERUDA === "true" && <ErudaDebug />}
       </body>
     </html>
   );
