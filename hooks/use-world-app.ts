@@ -31,46 +31,67 @@ export function useWorldApp(): WorldAppState {
   const [error, setError] = useState<string | null>(null)
 
   const signIn = useCallback(async (): Promise<boolean> => {
-    if (!isWorldApp) return false
+    if (!isWorldApp) {
+      console.log('[WorldApp] signIn skipped — not in World App')
+      return false
+    }
+
+    console.log('[WorldApp] signIn started')
 
     setIsAuthenticating(true)
     setSignInError(null)
     setError(null)
 
     try {
-      const nonceRes = await fetch(`${apiOptions.endpoints.gameService}/auth/nonce`, {
+      const nonceUrl = `${apiOptions.endpoints.gameService}/auth/nonce`
+      console.log('[WorldApp] fetching nonce:', nonceUrl)
+
+      const nonceRes = await fetch(nonceUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({}),
       })
+      console.log('[WorldApp] nonce response status:', nonceRes.status)
+
       const nonceData = await nonceRes.json()
+      console.log('[WorldApp] nonce response body:', JSON.stringify(nonceData))
+
       const { nonce } = nonceData.data ?? {}
       if (!nonce) {
+        console.error('[WorldApp] no nonce in response')
         setSignInError('Failed to get nonce')
         setError('Failed to get nonce')
         return false
       }
 
+      console.log('[WorldApp] nonce received, calling walletAuth...')
       const result = await MiniKit.walletAuth({
         nonce,
         statement: 'Sign in to Flamingo',
         expirationTime: new Date(Date.now() + 1000 * 60 * 60),
       })
+      console.log('[WorldApp] walletAuth executedWith:', result.executedWith)
 
       if (result.executedWith === 'fallback') {
+        console.error('[WorldApp] walletAuth fell back (not native)')
         setSignInError('World App authentication unavailable')
         setError('World App authentication unavailable')
         return false
       }
 
       const { address: authAddress, message, signature } = result.data
+      console.log('[WorldApp] walletAuth address:', authAddress)
+      console.log('[WorldApp] walletAuth signature present:', !!signature, 'message present:', !!message)
 
       setWalletAddress(authAddress)
       setUsername(MiniKit.user?.username)
       setProfilePictureUrl(MiniKit.user?.profilePictureUrl)
       setIsAuthenticated(true)
+      console.log('[WorldApp] MiniKit user:', JSON.stringify({ username: MiniKit.user?.username, walletAddress: MiniKit.user?.walletAddress }))
 
-      const verifyRes = await fetch(`${apiOptions.endpoints.gameService}/auth/verify`, {
+      const verifyUrl = `${apiOptions.endpoints.gameService}/auth/verify`
+      console.log('[WorldApp] verifying at:', verifyUrl)
+      const verifyRes = await fetch(verifyUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -78,20 +99,28 @@ export function useWorldApp(): WorldAppState {
           payload: { address: authAddress, message, signature },
         }),
       })
+      console.log('[WorldApp] verify response status:', verifyRes.status)
+
       const verifyData = await verifyRes.json()
+      console.log('[WorldApp] verify response body:', JSON.stringify({ ...verifyData, data: verifyData.data?.token ? { token: '(present)' } : verifyData.data }))
+
       if (!verifyData.data?.token) {
+        console.error('[WorldApp] verify returned no token')
         setSignInError('Verification failed')
         setError('Verification failed')
         return false
       }
 
       localStorage.setItem('token', verifyData.data.token)
+      console.log('[WorldApp] signIn SUCCESS — token stored')
       return true
-    } catch {
+    } catch (err) {
+      console.error('[WorldApp] signIn threw:', err)
       setSignInError('Authentication failed')
       setError('Authentication failed')
       return false
     } finally {
+      console.log('[WorldApp] signIn finished (authenticating -> false)')
       setIsAuthenticating(false)
     }
   }, [isWorldApp])
@@ -103,9 +132,12 @@ export function useWorldApp(): WorldAppState {
     const user = MiniKit.user?.username
     const pfp = MiniKit.user?.profilePictureUrl
 
+    console.log('[WorldApp] mount effect — isInstalled:', isWorldApp, 'user:', JSON.stringify({ address, user, pfp }))
+
     if (address) {
       setWalletAddress(address)
       setIsAuthenticated(true)
+      console.log('[WorldApp] cached wallet address found, marked authenticated:', address)
     }
     if (user) setUsername(user)
     if (pfp) setProfilePictureUrl(pfp)
@@ -117,7 +149,9 @@ export function useWorldApp(): WorldAppState {
   // and not yet authenticated. The token persists in localStorage, so this
   // only prompts once per session.
   useEffect(() => {
+    console.log('[WorldApp] auto-connect check — isWorldApp:', isWorldApp, 'hasToken:', hasToken, 'isAuthenticated:', isAuthenticated, 'isAuthenticating:', isAuthenticating)
     if (isWorldApp && !hasToken && !isAuthenticated && !isAuthenticating) {
+      console.log('[WorldApp] triggering auto-connect signIn()')
       signIn()
     }
   }, [isWorldApp, hasToken, isAuthenticated, isAuthenticating, signIn])
