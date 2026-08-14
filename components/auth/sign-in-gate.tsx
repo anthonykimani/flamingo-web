@@ -10,16 +10,16 @@ export function SignInGate({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, isAuthenticating, authenticate } = useWalletAuth();
   const {
     isWorldApp, isAuthenticated: isWorldAppAuthed,
-    hasToken, signIn, isAuthenticating: isWorldAppLoading,
+    signIn, isAuthenticating: isWorldAppLoading,
   } = useWorldApp();
 
   useEffect(() => {
-    if (isWorldApp && isWorldAppAuthed && !hasToken && !isWorldAppLoading) {
+    if (isWorldApp && !isWorldAppAuthed && !isWorldAppLoading) {
       signIn()
     }
-  }, [isWorldApp, isWorldAppAuthed, hasToken, isWorldAppLoading, signIn])
+  }, [isWorldApp, isWorldAppAuthed, isWorldAppLoading, signIn])
 
-  if (isAuthenticated || (isWorldApp && hasToken)) {
+  if (isAuthenticated || (isWorldApp && isWorldAppAuthed)) {
     return <>{children}</>;
   }
 

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { MiniKit } from "@worldcoin/minikit-js"
 import { useMiniKit } from "@worldcoin/minikit-js/minikit-provider"
 import { apiOptions } from '@/shared/api.config'
@@ -29,6 +29,7 @@ export function useWorldApp(): WorldAppState {
   const [isAuthenticating, setIsAuthenticating] = useState(false)
   const [signInError, setSignInError] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const autoConnectAttempted = useRef(false)
 
   const signIn = useCallback(async (): Promise<boolean> => {
     if (!isWorldApp) {
@@ -146,15 +147,16 @@ export function useWorldApp(): WorldAppState {
   const hasToken = typeof window !== 'undefined' && !!localStorage.getItem('token')
 
   // Auto-connect: prompt the SIWE signature on load when inside World App
-  // and not yet authenticated. The token persists in localStorage, so this
-  // only prompts once per session.
+  // and not yet authenticated. Guarded to attempt once per mount so a
+  // rejected signature doesn't re-prompt in a loop.
   useEffect(() => {
-    console.log('[WorldApp] auto-connect check — isWorldApp:', isWorldApp, 'hasToken:', hasToken, 'isAuthenticated:', isAuthenticated, 'isAuthenticating:', isAuthenticating)
-    if (isWorldApp && !hasToken && !isAuthenticated && !isAuthenticating) {
+    console.log('[WorldApp] auto-connect check — isWorldApp:', isWorldApp, 'isAuthenticated:', isAuthenticated, 'isAuthenticating:', isAuthenticating, 'attempted:', autoConnectAttempted.current)
+    if (isWorldApp && !isAuthenticated && !isAuthenticating && !autoConnectAttempted.current) {
+      autoConnectAttempted.current = true
       console.log('[WorldApp] triggering auto-connect signIn()')
       signIn()
     }
-  }, [isWorldApp, hasToken, isAuthenticated, isAuthenticating, signIn])
+  }, [isWorldApp, isAuthenticated, isAuthenticating, signIn])
 
   return {
     isWorldApp,

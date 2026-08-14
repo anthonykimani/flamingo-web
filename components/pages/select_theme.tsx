@@ -41,19 +41,15 @@ const SelectTheme = () => {
   const { isAuthenticated, isAuthenticating, authenticate } = useWalletAuth()
   const {
     isWorldApp, isAuthenticated: isWorldAppAuthed,
-    hasToken, signIn, isAuthenticating: isWorldAppLoading,
+    signIn, isAuthenticating: isWorldAppLoading,
   } = useWorldApp()
   const gameMode = (searchParams.get('gameMode') as GameMode) || GameMode.HANGOUTS
   const [loadingTheme, setLoadingTheme] = useState<string | null>(null)
 
   const handleThemeSelect = async (theme: Theme) => {
     if (isWorldApp) {
-      if (!isWorldAppAuthed) {
-        toast.error('Please connect your wallet in World App first')
-        return
-      }
       if (isWorldAppLoading) return
-      if (!hasToken) {
+      if (!isWorldAppAuthed) {
         toast.info('Signing in with World App...')
         const ok = await signIn()
         if (!ok) {
